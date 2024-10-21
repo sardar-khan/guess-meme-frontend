@@ -7,6 +7,7 @@ import Profile from './Pages/Profile';
 import ComingSoon from './Pages/ComingSoon';
 import HowItWorks from './Pages/HowItWorks';
 import RevealsBestPerformers from './Pages/RevealsBestPerformers';
+import Threads from './Pages/Threads';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path='/howitworks' element={<HowItWorks />} />
           <Route path='/howitworks' element={<HowItWorks />} />
           <Route path='/revealsBestPerformers' element={<RevealsBestPerformers />} />
+          <Route path='/Threads' element={<Threads />} />
           
         </Routes>
       </Router>

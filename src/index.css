@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@font-face {
+  font-family: 'Robtronika';
+  src: url('/Fonts/robtronika/Robtronika-Regular.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'PixelOperator';
+  src: url('/Fonts/pixel_operator/PixelOperator.ttf') format('opentype');
+}
+
+@font-face {
+  font-family: 'PixelOperatorbold';
+  src: url('/Fonts/pixel_operator/PixelOperator-Bold.ttf') format('opentype');
+}
+
+@font-face {
+  font-family: 'Segoe UI';
+  src: url('/Fonts/pixel_operator/segoeuithibd.ttf') format('opentype');
+}
+
+
+
+:root {
+  color: #000;
+  background-color: #EEF2FF;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* --primary-clr: '#7D73BF'; */
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* font-family: "Chakra Petch", sans-serif; */
+  font-family: "Robtronika", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+h5 {
+  color: #000;
+  font-family: "PixelOperator";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.PixelOperator {
+  font-family: 'PixelOperator', sans-serif;
+}
+
+.PixelOperatorbold {
+  font-family: 'PixelOperatorbold', sans-serif;
+}
+
+.Inter {
+  font-family: "Inter", sans-serif;
+}
+
+.SegoeUi {
+  font-family: 'Segoe UI';
+}
+
+.formLabel {
+  color: #000;
+  /* overflow: hidden; */
+  /* text-overflow: ellipsis; */
+  /* white-space: nowrap; */
+  font-family: 'Segoe UI';
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: -0.48px;
+}

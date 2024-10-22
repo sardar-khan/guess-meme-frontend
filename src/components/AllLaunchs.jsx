@@ -12,13 +12,11 @@ const AllLaunchs = () => {
     };
 
     return (
-        <div className='p-4'>
+        <div className='p-2 md:p-4'>
 
-            {/* Tab buttons */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
 
-                <div className="space-x-2">
-                    {/* Revealed Tab */}
+                <div className="space-x-2 w-full md:w-[45%]">
                     <button
                         className={`Inter rounded-xl text-[15px] text-white px-4 py-2 ${activeTab === 'Revealed' ? 'bg-[#7539F4]' : 'bg-[#7539f466]'}`}
                         onClick={() => handleTabClick('Revealed')}
@@ -26,7 +24,6 @@ const AllLaunchs = () => {
                         Revealed
                     </button>
 
-                    {/* Hidden Tab */}
                     <button
                         className={`Inter rounded-xl text-[15px] text-white px-4 py-2 ${activeTab === 'Hidden' ? 'bg-[#7539F4]' : 'bg-[#7539f466]'}`}
                         onClick={() => handleTabClick('Hidden')}
@@ -34,7 +31,6 @@ const AllLaunchs = () => {
                         Hidden
                     </button>
 
-                    {/* New Tab */}
                     <button
                         className={`Inter rounded-xl text-[15px] text-white px-4 py-2 ${activeTab === 'New' ? 'bg-[#7539F4]' : 'bg-[#7539f466]'}`}
                         onClick={() => handleTabClick('New')}
@@ -43,21 +39,21 @@ const AllLaunchs = () => {
                     </button>
                 </div>
 
-                {/* Center button */}
-                <div>
-                    <button className="themeBtn PixelOperator">
-                        <span>All Launches</span>
-                    </button>
-                </div>
+                <div className='flex justify-between items-center gap-2 w-full md:w-[55%] mt-4 md:mt-0'>
+                    <div>
+                        <button className="themeBtn PixelOperatorbold">
+                            <span>All Launches</span>
+                        </button>
+                    </div>
 
-                {/* Right dropdown */}
-                <div>
-                    <WindowDropdown />
+                    <div>
+                        <WindowDropdown />
+                    </div>
                 </div>
             </div>
 
             {/* Content based on active tab */}
-            <div className='grid grid-cols-3 gap-2'>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2'>
                 {activeTab === 'Revealed' && (
                     <>
                         <LaunchCard setSpace="medium" />

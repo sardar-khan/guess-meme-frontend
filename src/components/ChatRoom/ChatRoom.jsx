@@ -7,7 +7,7 @@ const ChatRoom = () => {
     return (
         <>
             <h2>ChatRoom</h2>
-            <div className='mt-3'>
+            <div className='flex flex-col gap-1 mt-3'>
 
                 <div className='secondary-bg p-[4px] pb-2'>
                     <div className='flex items-center gap-2'>
@@ -15,7 +15,7 @@ const ChatRoom = () => {
                         <span className='Inter text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8E8DC7]'>FoykzN (dev)</span>
                     </div>
                     <div className='flex gap-3'>
-                        <div className='w-[128px] h-[128px]'>
+                        <div className='w-[128px] h-full max-h-[128px]'>
                             <img src={cmtImg} className='w-full h-full' alt="" />
                         </div>
                         <div className="w-[calc(100%-128px)]">
@@ -29,8 +29,25 @@ const ChatRoom = () => {
                     </div>
                 </div>
 
-                <button className='themeBtn w-fit px-5 SegoeUi mt-5'><span>Referral</span></button>
+                {/* Referral */}
+                <div className='secondary-bg p-[4px] pb-2'>
+                    <div className='flex items-center gap-2'>
+                        <img src={logoSmall} alt="" />
+                        <span className='Inter text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8E8DC7]'>FoykzN (dev)</span>
+                    </div>
+                    <div className='flex gap-3'>
+                        <div className='w-[128px] h-full max-h-[128px] border'>
+                            <img src={cmtImg2} className='w-full h-full' alt="" />
+                        </div>
+                        <div className="w-[calc(100%-128px)]">
+                            <p className='Inter text-xs font-normal text-[#555]'>
+                                Dex ready, burn incoming, get your seats !
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
+                <button className='themeBtn w-fit px-5 py-4 SegoeUi mt-5'><span>Referral</span></button>
 
 
             </div>

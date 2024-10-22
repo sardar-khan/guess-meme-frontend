@@ -2,6 +2,11 @@ import React from 'react'
 import Arrowback from '../assets/icons/Arrowback.svg'
 import { Link } from 'react-router-dom'
 import ChatRoom from '../components/ChatRoom/ChatRoom'
+import TradesTable from '../components/Tables/TradesTable'
+import HoldersTable from '../components/Tables/HoldersTable'
+import CandlestickComboChart from '../components/Charts/CandlestickComboChart'
+import PlaceTrade from '../components/PlaceTrade/PlaceTrade'
+import logoSmall from '../assets/icons/logoSmall.png'
 
 const Threads = () => {
     return (
@@ -12,12 +17,40 @@ const Threads = () => {
                 <span className='Inter text-[#515151] font-normal text-xs'>GO BACK</span>
             </Link>
 
-            <div className='flex justify-between gap-2'>
-                <div className='w-[72%] mt-10'>
+
+            <div className='flex justify-between gap-3'>
+                <div className='w-[70%] mt-5'>
+                    <div className='flex justify-between mb-[20px]'>
+                        <div className='flex items-end gap-[15px] '>
+                            <span className='Inter text-[#515151] font-normal text-xs'>GOD PEPE</span>
+                            <span className='Inter text-[#515151] font-normal text-xs'>Ticker: GODPE</span>
+                            <span className='Inter text-[#662286] font-normal text-xs'>Market cap: $4,408.952</span>
+                            <div className='flex items-end gap-2'>
+                                <span className='Inter text-[#515151] font-normal text-xs'>CA:</span>
+                                <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
+                                    <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
+                                        <input type="text" name="" id="" className='w-[150px] px-2 py-1 text-xs font-normal' />
+                                    </div>
+                                </div>
+                                <button className='themeBtn PixelOperatorbold !text-[10px] font-normal min-w-fit px-2 py-1'><span>Copy</span></button>
+                            </div>
+                        </div>
+
+                        <div className='Inter flex text-xs items-end text-[#662286]'>
+                            created by:
+                            <div className='flex items-center gap-1'>
+                                <img src={logoSmall} alt="" />
+                                <span className='Inter text-black text-[12px] font-medium p-[2px] rounded-md bg-[#8E8DC7]'>FoykzN (dev)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <CandlestickComboChart />
                     <ChatRoom />
                 </div>
-                <div className='w-[28%]'>
-                    Trades
+                <div className='flex flex-col gap-6 w-[30%]'>
+                    <PlaceTrade />
+                    <TradesTable />
+                    <HoldersTable />
                 </div>
             </div>
 

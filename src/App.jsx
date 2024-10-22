@@ -20,9 +20,8 @@ function App() {
           <Route path='/profile' element={<Profile />} />
           <Route path='/comingSoon' element={<ComingSoon />} />
           <Route path='/howitworks' element={<HowItWorks />} />
-          <Route path='/howitworks' element={<HowItWorks />} />
           <Route path='/revealsBestPerformers' element={<RevealsBestPerformers />} />
-          <Route path='/Threads' element={<Threads />} />
+          <Route path='/threads' element={<Threads />} />
           
         </Routes>
       </Router>

@@ -5,9 +5,9 @@ import LaunchCard from './LaunchCard';
 
 const Hero = () => {
     return (
-        <div className='py-8 flex flex-col items-center'>
+        <div className='py-8 px-2 md:px-4 flex flex-col items-center'>
             {/* <h1 className='text-center text-[#986AE8] text-6xl font-extrabold'>Guess <br /> Master</h1> */}
-            <h1 className='text-center text-[#C720EF] text-[45px] leading-[50px] font-extrabold '
+            <h1 className='text-center text-[#C720EF] text-[30px] leading-[30px] md:text-[45px] md:leading-[50px] font-extrabold '
                 style={{
                     textShadow: '2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000'
                 }}>

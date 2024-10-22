@@ -13,7 +13,7 @@ const ComingSoon = () => {
 
                 <div className='flex items-center justify-between gap-1 px-4 py-1 primary-bg'>
                     <div className='flex items-center gap-1'>
-                        <span className='PixelOperator text-white text-[31px] !font-normal pl-2'>Profile</span>
+                        <span className='PixelOperator text-white text-[18px] py-2 sm:py-0 sm:text-[31px] !font-normal'>Profile</span>
                     </div>
                     <div className='flex items-center gap-1 cursor-pointer'>
                         <img src={minimize} alt="" />

@@ -4,6 +4,13 @@ import herologo from '../assets/images/Group 159.png';
 import LaunchCard from './LaunchCard';
 
 const Hero = () => {
+    const progress = 71;
+    const radius = 50;
+    const stroke = 10;
+    const normalizedRadius = radius - stroke * 2;
+    const circumference = normalizedRadius * 2 * Math.PI;
+    const strokeDashoffset = circumference - (progress / 100) * circumference;
+
     return (
         <div className='py-8 px-2 md:px-4 flex flex-col items-center'>
             {/* <h1 className='text-center text-[#986AE8] text-6xl font-extrabold'>Guess <br /> Master</h1> */}
@@ -14,7 +21,40 @@ const Hero = () => {
                 Guess <br /> Master
             </h1>
 
-            <div className='flex flex-col justify-center items-center w-full max-w-[516px] mt-[18px] p-4 rounded-2xl' style={{ backgroundImage: `url(${group160})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+            <div className='relative flex flex-col justify-center items-center w-full max-w-[516px] mt-[18px] p-4 rounded-2xl' style={{ backgroundImage: `url(${group160})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+
+                <div className="absolute top-0 right-0">
+                    <svg
+                        height={100}
+                        width={100}
+                        className="transform -rotate-90"
+                    >
+                        <circle
+                            stroke="#39393980"
+                            fill="transparent"
+                            strokeWidth={stroke}
+                            r={normalizedRadius}
+                            cx={radius}
+                            cy={radius}
+                        />
+                        <circle
+                            stroke="#FB4EFF"
+                            fill="transparent"
+                            strokeWidth={stroke}
+                            strokeDasharray={circumference}
+                            style={{ strokeDashoffset }}
+                            r={normalizedRadius}
+                            cx={radius}
+                            cy={radius}
+                        />
+                    </svg>
+                    {/* Text in the center */}
+                    <div className="PixelOperatorbold absolute inset-0 flex items-center justify-center text-[#FFF9F9] text-xl font-bold">
+                        {progress}
+                    </div>
+                </div>
+
+
 
                 <div className='w-[105px] h-[105px] bg-[#D680FF] rounded-2xl'>
                     <img src={herologo} alt="" />

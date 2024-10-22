@@ -10,7 +10,7 @@ import logoSmall from '../assets/icons/logoSmall.png'
 
 const Threads = () => {
     return (
-        <div className='p-10'>
+        <div className='py-10 px-4 md:p-10'>
 
             <Link to='' className='flex items-center gap-2'>
                 <img src={Arrowback} alt="" />
@@ -18,10 +18,10 @@ const Threads = () => {
             </Link>
 
 
-            <div className='flex justify-between gap-3'>
-                <div className='w-[70%] mt-5'>
-                    <div className='flex justify-between mb-[20px]'>
-                        <div className='flex items-end gap-[15px] '>
+            <div className='flex justify-between flex-col lg:flex-row gap-3'>
+                <div className='w-full lg:w-[70%] mt-5'>
+                    <div className='flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between mb-[20px]'>
+                        <div className='flex items-end gap-[15px] flex-wrap lg:flex-nowrap'>
                             <span className='Inter text-[#515151] font-normal text-xs'>GOD PEPE</span>
                             <span className='Inter text-[#515151] font-normal text-xs'>Ticker: GODPE</span>
                             <span className='Inter text-[#662286] font-normal text-xs'>Market cap: $4,408.952</span>
@@ -32,22 +32,22 @@ const Threads = () => {
                                         <input type="text" name="" id="" className='w-[150px] px-2 py-1 text-xs font-normal' />
                                     </div>
                                 </div>
-                                <button className='themeBtn PixelOperatorbold !text-[10px] font-normal min-w-fit px-2 py-1'><span>Copy</span></button>
+                                <button className='themeBtn PixelOperatorbold !text-[10px] font-normal min-w-fit px-2 py-1 z-[0]'><span>Copy</span></button>
                             </div>
                         </div>
 
-                        <div className='Inter flex text-xs items-end text-[#662286]'>
+                        <div className='Inter flex text-xs items-end text-[#662286] whitespace-nowrap'>
                             created by:
                             <div className='flex items-center gap-1'>
                                 <img src={logoSmall} alt="" />
-                                <span className='Inter text-black text-[12px] font-medium p-[2px] rounded-md bg-[#8E8DC7]'>FoykzN (dev)</span>
+                                <span className='Inter text-black text-[12px] font-medium p-[2px] rounded-md bg-[#8E8DC7] whitespace-nowrap'>FoykzN (dev)</span>
                             </div>
                         </div>
                     </div>
                     <CandlestickComboChart />
                     <ChatRoom />
                 </div>
-                <div className='flex flex-col gap-6 w-[30%]'>
+                <div className='flex flex-col gap-6 w-full lg:w-[30%]'>
                     <PlaceTrade />
                     <TradesTable />
                     <HoldersTable />

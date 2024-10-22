@@ -36,7 +36,7 @@ const Navbar = () => {
                 </div>
 
                 {/* Desktop Menu */}
-                <div className='hidden lg:flex gap-2'>
+                <div className='hidden lg:flex gap-2 relative z-[999]'>
                     <WindowDropdown />
                     <button className='themeBtn uppercase'><span>Mega</span></button>
                     <Link to='/launchToken' className='themeBtn text-xs uppercase'>

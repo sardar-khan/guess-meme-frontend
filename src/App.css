@@ -149,3 +149,27 @@ h2 {
     background: #8C0DEF;
     box-shadow: -2px 0px 1px 0px rgba(0, 0, 0, 0.50), 5px 5px 5px 0px #9D16F0 inset, -2px -4px 15px 0px rgba(0, 0, 0, 0.25) inset;
 }
+
+
+@media only screen and (max-width: 640px) {
+    .connectBtn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 0px 50px 50px 0px;
+        max-width: 100px;
+        padding: 5px;
+    }
+
+    .connectBtn img {
+        width: 40px;
+        height: 40px;
+        margin-left: -15px;
+        margin-top: 5px;
+    }
+
+    .connectBtn h2 {
+        font-size: 16px !important;
+        display: none;
+    }
+}

@@ -45,9 +45,9 @@ const Navbar = () => {
                     <button className='themeBtn w-[35px] min-w-[50px] uppercase'>
                         <span className='mt-[-8px]'>⚡</span>
                     </button>
-                    <button className='themeBtn w-[35px] min-w-[50px] text-xl uppercase'>
+                    <Link to='/howitworks' className='themeBtn w-[35px] min-w-[50px] text-xl uppercase'>
                         <span className='PixelOperatorbold'>?</span>
-                    </button>
+                    </Link>
                 </div>
             </div>
 

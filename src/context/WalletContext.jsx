@@ -1,31 +1,16 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { useAccount } from 'wagmi';
+import { createContext, useContext } from "react";
 
+const WalletContext = createContext(undefined)
 
-
-const WalletContext = createContext();
-
-export const WalletProvider = ({ children }) => {
-    // const [responseStatus, setResponseStatus] = useState(false);
-    const [status, setStatus] = useState(false)
-    const [account, setAccount] = useState();
-    const [checkSignature, setCheckSignature] = useState(false);
-    const { isConnected, address } = useAccount();
-    const [connectedAddress, setConnectedAddress] = useState('');
-
-    useEffect(() => {
-        if (isConnected && address) {
-            setConnectedAddress(address);
-        } else {
-            setConnectedAddress('');
-        }
-    }, [isConnected, address]);
-
+export const WalletApi = ({ children }) => {
     return (
-        <WalletContext.Provider value={{ status, setStatus, connectedAddress, checkSignature, setCheckSignature }}>
+        <WalletContext.Provider value={{}}>
             {children}
         </WalletContext.Provider>
     );
 };
 
-export const useWallet = () => useContext(WalletContext);
+export const useWalletContext = () => useContext(WalletContext);
+
+
+export default WalletContext;

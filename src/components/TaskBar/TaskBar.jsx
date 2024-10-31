@@ -23,7 +23,7 @@ const TaskBar = () => {
         `overflow-hidden whitespace-nowrap text-ellipsis text-white flex items-center gap-2 w-full max-w-[220px] ${isActive ? 'taskActive' : 'taskActiveNot'}`;
 
     return (
-        <div className='fixed bottom-0 left-0 right-0 flex justify-between items-center h-[50px] w-full bg-[#6F48A1] shadow1 z-[99]'>
+        <div className='fixed bottom-0 left-0 right-0 flex justify-between items-center h-[50px] w-full bg-[#6F48A1] shadow1 z-[1000]'>
 
             <ConnectButton />
 

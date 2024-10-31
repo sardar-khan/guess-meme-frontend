@@ -1,33 +1,59 @@
-
-
-import React, { useState, useEffect } from 'react';
-import { useWeb3Modal } from '@web3modal/wagmi/react';
-import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
+// ConnectButton.jsx
+import React, { useEffect, useCallback, useState } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton, useWalletModal } from '@solana/wallet-adapter-react-ui';
 import logo from '../assets/logo.png';
+import { handleSignUp } from '../utils/api';
+import { toast } from 'react-toastify';
 
 const ConnectButton = () => {
-    const { open, close } = useWeb3Modal();
-    const { isConnected, address } = useAccount();
+    const { connected, publicKey, disconnect } = useWallet();
+    const { setVisible } = useWalletModal();
     const [connectedAddress, setConnectedAddress] = useState('');
 
+    // Handle the wallet sign-up and authentication
+    const handleSignin = useCallback(async () => {
+        try {
+            if (connected && publicKey) {
+                const address = publicKey.toString();
+                const response = await handleSignUp(address, 'solana');
+                if (response?.status === 201 || response?.status === 200) {
+                    toast.success(response.message, { autoClose: 1000 });
+                    console.log("Authentication:", response.message);
+                    setConnectedAddress(address);
+                }
+            }
+        } catch (error) {
+            disconnect();
+            console.error('Error connecting wallet:', error);
+            toast.error('Failed to connect wallet.', { autoClose: 1000 });
+        }
+    }, [connected, publicKey, disconnect]);
 
-    const { disconnect } = useDisconnect()
-
-
+    // Manage the connection state
     useEffect(() => {
-        if (isConnected && address) {
+        if (connected && publicKey) {
+            const address = publicKey.toString();
             setConnectedAddress(address);
+            if (!localStorage.getItem('token')) {
+                handleSignin();
+            }
         } else {
             setConnectedAddress('');
+            localStorage.removeItem('token');
         }
-    }, [isConnected, address]);
+    }, [connected, publicKey, handleSignin]);
 
+    const handleConnectClick = () => {
+        if (connected) {
+            disconnect();
+        } else {
+            setVisible(true);
+        }
+    };
 
     return (
-
-
-
-        <div className='connectBtn flex items-center w-[275px] cursor-pointer' onClick={() => open()}>
+        <div className='connectBtn flex items-center w-[275px] cursor-pointer' onClick={handleConnectClick}>
             <img src={logo} className='w-[55px] h-[55px]' alt="Logo" />
             <h2 className='SegoeUi'>
                 {connectedAddress ? (
@@ -37,7 +63,6 @@ const ConnectButton = () => {
                 )}
             </h2>
         </div>
-
     );
 };
 

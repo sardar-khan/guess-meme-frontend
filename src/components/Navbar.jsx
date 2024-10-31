@@ -42,9 +42,9 @@ const Navbar = () => {
                     <Link to='/launchToken' className='themeBtn text-xs uppercase'>
                         <span className='PixelOperatorbold'>Launch Token</span>
                     </Link>
-                    <button className='themeBtn w-[35px] min-w-[50px] uppercase'>
+                    <Link to='/profile' className='themeBtn w-[35px] min-w-[50px] uppercase'>
                         <span className='mt-[-8px]'>⚡</span>
-                    </button>
+                    </Link>
                     <Link to='/howitworks' className='themeBtn w-[35px] min-w-[50px] text-xl uppercase'>
                         <span className='PixelOperatorbold'>?</span>
                     </Link>

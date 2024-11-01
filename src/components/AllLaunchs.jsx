@@ -1,21 +1,33 @@
-import React, { useState } from 'react'
-import WindowDropdown from './WindowDropdown/WindowDropdown'
-import LaunchCard from './LaunchCard'
+import React, { useState, useEffect } from 'react';
+import WindowDropdown from './WindowDropdown/WindowDropdown';
+import LaunchCard from './LaunchCard';
+import { viewCoins } from '../utils/api';
 
 const AllLaunchs = () => {
-    // State to keep track of the active tab
     const [activeTab, setActiveTab] = useState('Revealed');
+    const [coins, setCoins] = useState([]);
 
-    // Function to handle tab changes
     const handleTabClick = (tab) => {
         setActiveTab(tab);
     };
 
+    useEffect(() => {
+        const fetchCoins = async () => {
+            try {
+                const data = await viewCoins();
+                console.log('Fetched coins:', data.data);
+                setCoins(data.data);
+            } catch (error) {
+                console.error('Error fetching coins:', error);
+            }
+        };
+
+        fetchCoins();
+    }, []);
+
     return (
-        <div className='p-2 md:p-4'>
-
+        <div className='p-2 md:p-4 !pb-[150px]'>
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-
                 <div className="space-x-2 w-full md:w-[45%]">
                     <button
                         className={`Inter rounded-xl text-[15px] text-white px-4 py-2 ${activeTab === 'Revealed' ? 'bg-[#7539F4]' : 'bg-[#7539f466]'}`}
@@ -56,14 +68,12 @@ const AllLaunchs = () => {
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2'>
                 {activeTab === 'Revealed' && (
                     <>
-                        <LaunchCard setSpace="medium" />
-                        <LaunchCard setSpace="medium" />
-                        <LaunchCard setSpace="medium" />
-                        <LaunchCard setSpace="medium" />
-                        <LaunchCard setSpace="medium" />
-                        <LaunchCard setSpace="medium" />
+                        {coins.map((coin, index) => (
+                            <LaunchCard key={index} setSpace="medium" coinData={coin} />
+                        ))}
                     </>
                 )}
+
                 {activeTab === 'Hidden' && (
                     <>
                         {/* Render Hidden content here */}
@@ -77,9 +87,8 @@ const AllLaunchs = () => {
                     </>
                 )}
             </div>
-
         </div>
-    )
-}
+    );
+};
 
 export default AllLaunchs;

@@ -74,6 +74,11 @@ h5 {
   font-family: 'Segoe UI';
 }
 
+input,
+textarea {
+  font-family: 'Segoe UI';
+}
+
 .formLabel {
   color: #000;
   /* overflow: hidden; */

@@ -1,18 +1,34 @@
 // utils/api.js
-import axios from "axios";
+import axios from 'axios';
 import { toast } from 'react-toastify';
 import SecureLS from 'secure-ls';
 
 // Initialize SecureLS
 const ls = new SecureLS({ encodingType: 'aes' });
 const apiUrl = import.meta.env.VITE_API_URL;
-const token = localStorage.getItem('token');
 
+const apiInstance = axios.create({
+    baseURL: apiUrl,
+});
+
+// Interceptor to attach the token in headers for every request
+apiInstance.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers['x-access-token'] = token;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+// handleSignUp function
 export const handleSignUp = async (address, blockchain) => {
     try {
-        const response = await axios.post(`${apiUrl}user/register`, {
-            address: address,
-            blockchain: blockchain
+        const response = await apiInstance.post('user/register', {
+            address,
+            blockchain,
         });
         const token = response.data.data.token;
 
@@ -27,19 +43,11 @@ export const handleSignUp = async (address, blockchain) => {
     }
 };
 
-
-
+// viewProfile function
 export const viewProfile = async () => {
     try {
-        const response = await axios.get(
-            `${apiUrl}user/view-profile`,
-            {
-                headers: {
-                    'x-access-token': token,
-                },
-            }
-        );
-        console.log("viewProfile", response.data);
+        const response = await apiInstance.get('user/view-profile');
+        console.log('viewProfile', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching profile:', error);
@@ -47,24 +55,15 @@ export const viewProfile = async () => {
     }
 };
 
-
-// Update the editProfile function
-export const editProfile = async ({ user_name, bio, prfoile_photo }) => {
+// editProfile function
+export const editProfile = async ({ user_name, bio, profile_photo }) => {
     try {
-        const response = await axios.post(
-            `${apiUrl}user/edit-profile`,
-            {
-                user_name,
-                bio,
-                prfoile_photo
-            },
-            {
-                headers: {
-                    'x-access-token': token,
-                },
-            }
-        );
-        console.log("editProfile", response.data);
+        const response = await apiInstance.post('user/edit-profile', {
+            user_name,
+            bio,
+            profile_photo,
+        });
+        console.log('editProfile', response.data);
         return response.data;
     } catch (error) {
         console.error('Error during edit Profile:', error);
@@ -72,3 +71,55 @@ export const editProfile = async ({ user_name, bio, prfoile_photo }) => {
     }
 };
 
+//viewCoins function
+export const viewCoins = async () => {
+    try {
+        const response = await apiInstance.get('user/view-coins');
+        console.log('ViewCoins', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+    }
+};
+
+//createCoin function
+export const createCoin = async ({ name, ticker, description, image, max_supply, twitter_link, telegram_link, website, bonding_curve, max_buy_percentage, fee, timer }) => {
+    try {
+        const response = await apiInstance.post('user/create-coin', {
+            name,
+            ticker,
+            description,
+            image,
+            max_supply,
+            twitter_link,
+            telegram_link,
+            website,
+            bonding_curve,
+            max_buy_percentage,
+            fee,
+            timer
+        });
+
+        console.log('createCoin', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error during createCoin:', error);
+        throw error;
+    }
+};
+
+
+// Function to upload the image
+export const uploadImage = async (formData) => {
+    try {
+        const response = await apiInstance.post('getimageurl', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Image upload failed');
+    }
+};

@@ -1,146 +1,147 @@
-import React from 'react'
-import rocket from '../assets/icons/rocket.png'
-import minimize from '../assets/icons/minimize.png'
-import maximize from '../assets/icons/maximize.png'
-import cross from '../assets/icons/cross.png'
-import folder from '../assets/icons/Group 110.png'
+import React, { useState } from 'react';
+import folder from '../assets/icons/Group 110.png';
+import BoxHeader from '../components/Global/BoxHeader';
+import InputField from '../components/Global/InputField';
+import TextArea from '../components/Global/TextArea';
+import { createCoin, uploadImage } from '../utils/api'; // Import the new uploadImage function
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const LaunchTokens = () => {
-    return (
-        <div className='border flex justify-center items-center py-[55px] px-4 w-full '>
+    const [name, setName] = useState('');
+    const [ticker, setTicker] = useState('');
+    const [revealTime, setRevealTime] = useState('');
+    const [description, setDescription] = useState('');
+    const [maxSupply, setMaxSupply] = useState('');
+    const [imageFile, setImageFile] = useState(null); // State for image file
+    const [imageUrl, setImageUrl] = useState(''); // State for image URL
+    const [fileName, setFileName] = useState(''); // State for file name
 
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append('profile_photo', file);
+            setFileName(file.name); // Set the file name
+
+            try {
+                const data = await uploadImage(formData);
+                console.log("imageUrl", data.imageUrl);
+                setImageUrl(data.imageUrl);
+                toast.success('Image uploaded successfully!');
+            } catch (error) {
+                toast.error(`Error uploading image: ${error.message}`);
+            }
+        }
+    };
+
+    const handleSubmit = async () => {
+        try {
+            const formattedRevealTime = revealTime ? new Date(revealTime).toISOString() : null;
+
+            const response = await createCoin({
+                name,
+                ticker,
+                description,
+                image: imageUrl || 'upload',
+                max_supply: maxSupply,
+                twitter_link: 'https://twitter.com',
+                telegram_link: 'https://telegram.com',
+                website: 'https://website.com',
+                bonding_curve: 0,
+                max_buy_percentage: 0,
+                fee: 0,
+                timer: formattedRevealTime,
+            });
+
+            // Check if the response status is 200
+            if (response.status === 200) {
+                toast.success(response.message); // Display the response message in the toast
+
+                // Clear the input fields and textarea
+                setName('');
+                setTicker('');
+                setDescription('');
+                setMaxSupply('');
+                setRevealTime('');
+                setImageFile(null); // Reset the image file
+                setImageUrl(''); // Reset the image URL
+                setFileName(''); // Reset the file name
+            } else {
+                toast.error('Failed to create coin. Please try again.'); // Handle other statuses
+            }
+        } catch (error) {
+            toast.error('Error creating coin. Please try again.');
+            console.error('Error creating coin:', error);
+        }
+    };
+
+
+    const currentDateTime = new Date().toISOString().slice(0, 16);
+
+    return (
+        <div className='border flex justify-center items-center py-[55px] px-4 w-full pb-[100px]'>
             <div className='relative w-full max-w-[830px] border-t-[5px] border-t-[#fff] border-l-[5px] border-l-[#fff] border-r-[2px] border-r-[#353535] border-b-[2px] border-b-[#353535]'>
                 <div className='absolute top-0 left-0 h-[5px] w-full bg-white'></div>
 
-                <div className='flex items-center justify-between gap-1 px-4 py-1 primary-bg'>
-                    <div className='flex items-center gap-1'>
-                        <img src={rocket} alt="" />
-                        <span className='PixelOperator text-white text-[18px] py-2 sm:py-0 sm:text-[31px] !font-normal'>Launch Token</span>
-                    </div>
-                    <div className='flex items-center gap-1 cursor-pointer'>
-                        <img src={minimize} alt="" />
-                        <img src={maximize} alt="" />
-                        <img src={cross} alt="" />
-                    </div>
-                </div>
+                <BoxHeader label='Launch Token' />
 
                 <div className='secondary-bg p-[14px]'>
-
                     <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
                         <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
 
                             <div className='flex flex-col gap-9 p-[20px]'>
 
                                 <div className='flex flex-col sm:flex-row gap-6 sm:gap-2'>
-                                    <span className='flex items-center gap-4'>
-                                        <label htmlFor="" className='formLabel min-w-auto md:min-w-[150px] text-right'>Name:</label>
-
-                                        <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
-                                            <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
-                                                <input type="text" name="" id="" className='w-full px-2 py-3' />
-                                            </div>
-                                        </div>
-
-                                    </span>
-                                    <span className='flex items-center gap-4 md:gap-6'>
-                                        <label htmlFor="" className='formLabel min-w-auto md:min-w-[150px] text-right'>Ticker:</label>
-
-                                        <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
-                                            <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
-                                                <input type="text" name="" id="" className='w-full px-2 py-3' />
-                                            </div>
-                                        </div>
-
-                                    </span>
+                                    <InputField label="Name:" value={name} onChange={(e) => setName(e.target.value)} />
+                                    <InputField label="Ticker:" value={ticker} onChange={(e) => setTicker(e.target.value)} />
                                 </div>
 
                                 <div className='flex items-center gap-4'>
-                                    <label htmlFor="" className='formLabel min-w-auto md:min-w-[150px] text-right'>Image:</label>
-
-                                    <img src={folder} alt="" />
-
+                                    <label htmlFor="imageUpload" className='formLabel min-w-auto md:min-w-[150px] text-right'>Image:</label>
+                                    <input
+                                        type="file"
+                                        id="imageUpload"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden" // Hide the default file input
+                                    />
+                                    <label htmlFor="imageUpload" className="cursor-pointer">
+                                        <img src={folder} alt="Folder icon" />
+                                    </label>
+                                    {/* {imageUrl && <img src={imageUrl} alt="Uploaded" className="w-20 h-20 object-cover" />} */}
+                                    {fileName && <span className="ml-2 text-gray-700">{fileName}</span>} {/* Display file name */}
                                 </div>
 
-                                <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
-                                    <label htmlFor="" className='formLabel min-w-auto md:min-w-[150px] text-left sm:text-right'>Description:</label>
+                                <TextArea value={description} onChange={(e) => setDescription(e.target.value)} />
 
-                                    <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
-                                        <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
-                                            <textarea type="text" name="" id="" className='w-full px-2 py-3' rows="5" cols="50"></textarea>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                                <div className='flex items-center gap-4'>
-                                    <label htmlFor="" className='formLabel min-w-auto md:min-w-[150px] text-right'>Supply:</label>
-
-                                    <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
-                                        <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
-                                            <input type="text" name="" id="" className='w-full px-2 py-3' />
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                                <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
-                                    <label htmlFor="" className='formLabel min-w-auto md:min-w-[150px] text-left sm:text-right'>Website<br />(Optional):</label>
-
-                                    <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
-                                        <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
-                                            <input type="text" name="" id="" className='w-full px-2 py-3' />
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                                <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
-                                    <label htmlFor="" className='formLabel min-w-auto md:min-w-[150px] text-left sm:text-right'>Telegram<br />(Optional):</label>
-
-                                    <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
-                                        <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
-                                            <input type="text" name="" id="" className='w-full px-2 py-3' />
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                                <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
-                                    <label htmlFor="" className='formLabel min-w-auto md:min-w-[150px] text-left sm:text-right'>Twitter<br />(Optional):</label>
-
-                                    <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
-                                        <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
-                                            <input type="text" name="" id="" className='w-full px-2 py-3' />
-                                        </div>
-                                    </div>
-
-                                </div>
+                                <InputField label="Supply:" value={maxSupply} onChange={(e) => setMaxSupply(e.target.value)} type='number' />
+                                <InputField label="Website (Optional):" />
+                                <InputField label="Telegram (Optional):" />
+                                <InputField label="Twitter (Optional):" />
 
                                 <div className='flex flex-col sm:flex-row gap-6 sm:gap-2'>
-                                    <span className='flex items-center gap-4'>
-                                        <label htmlFor="" className='formLabel min-w-auto md:min-w-[150px] text-right'>Initial Buy:</label>
 
+                                    <div className="flex flex-col sm:flex-row sm:items-center items-start gap-4">
+                                        <label className='formLabel min-w-auto md:min-w-[150px] text-right'>Reveal Time:</label>
                                         <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
                                             <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
-                                                <input type="text" name="" id="" className='w-full px-2 py-3' />
+                                                <input
+                                                    type="datetime-local"
+                                                    value={revealTime}
+                                                    onChange={(e) => setRevealTime(e.target.value)}
+                                                    className="inputClassName SegoeUi px-2 py-3 w-full"
+                                                    min={currentDateTime}
+                                                />
                                             </div>
                                         </div>
+                                    </div>
+                                    <InputField label="Initial Buy:" />
 
-                                    </span>
-                                    <span className='flex items-center gap-6'>
-                                        <label htmlFor="" className='formLabel min-w-auto md:min-w-[150px] text-right'>RevealTime:</label>
-
-                                        <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
-                                            <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
-                                                <input type="text" name="" id="" className='w-full px-2 py-3' />
-                                            </div>
-                                        </div>
-
-                                    </span>
                                 </div>
 
                                 <div className='sm:pl-[166px]'>
-                                    <button className='themeBtn SegoeUi w-fit'><span>Launch Token</span></button>
+                                    <button className='themeBtn SegoeUi w-fit' onClick={handleSubmit}><span>Launch Token</span></button>
                                 </div>
 
                             </div>
@@ -151,7 +152,7 @@ const LaunchTokens = () => {
 
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default LaunchTokens
+export default LaunchTokens;

@@ -1,60 +1,37 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import rocket from '../assets/icons/rocket.png';
 import InputField from '../components/Global/InputField';
-import { editProfile, viewProfile } from '../utils/api';
+import { fetchProfile, updateProfile, setProfile } from '../features/profileSlice'; // Ensure this path is correct
 import { toast } from 'react-toastify';
 import BoxHeader from '../components/Global/BoxHeader';
 import ToggleButton from '../components/Global/ToggleButton';
 import { useLoading } from '../context/LoadingContext';
 
 const Profile = () => {
+    const dispatch = useDispatch();
     const { isButtonDisabled, disableButtonTemporarily } = useLoading();
-    const [profileData, setProfileData] = useState(null);
+    const profile = useSelector((state) => state.profile);
     const [isEditing, setIsEditing] = useState(false);
-    const [profile, setProfile] = useState({
-        username: '',
-        profilePhoto: '',
-        trustScore: '',
-        bio: ''
-    });
 
     useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const data = await viewProfile();
-                const { user_name, profile_photo, bio, trust_score, member_since } = data.data;
-                setProfileData(data.data);
-                setProfile({
-                    username: user_name,
-                    profilePhoto: profile_photo,
-                    bio,
-                    trustScore: trust_score
-                });
-                console.log("viewProfile data:", data.data);
-            } catch (error) {
-                console.error("Error fetching profile data:", error);
-            }
-        };
-
-        fetchProfile();
-    }, []);
+        dispatch(fetchProfile());
+    }, [dispatch]);
 
     const handleEditProfile = async () => {
-        // Disable the button when saving changes
         disableButtonTemporarily();
-
         try {
-            const data = await editProfile({
+            const data = await dispatch(updateProfile({
                 user_name: profile.username,
                 bio: profile.bio,
-                profile_photo: profile.profilePhoto
-            });
-            console.log('Profile updated successfully:', data);
+                profile_photo: profile.profilePhoto,
+            })).unwrap();
+
             toast.success(data?.message, { autoClose: 1000 });
+            console.log('Profile updated successfully:', data);
             setIsEditing(false);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Error updating profile', { autoClose: 1000 });
-            console.error('Error updating profile:', error);
         }
     };
 
@@ -67,10 +44,8 @@ const Profile = () => {
     };
 
     const handleChange = (field, value) => {
-        setProfile(prevProfile => ({
-            ...prevProfile,
-            [field]: value
-        }));
+        // Update the profile state directly.
+        dispatch(setProfile({ ...profile, [field]: value }));
     };
 
     return (
@@ -86,14 +61,15 @@ const Profile = () => {
                                     label="Username:"
                                     value={profile.username}
                                     onChange={(e) => handleChange('username', e.target.value)}
-                                    disabled={!isEditing}
+                                    disabled={!isEditing} // Only disable when not editing
                                 />
                                 <InputField
                                     label="Bio:"
                                     value={profile.bio}
                                     onChange={(e) => handleChange('bio', e.target.value)}
-                                    disabled={!isEditing}
+                                    disabled={!isEditing} // Only disable when not editing
                                 />
+                                
                                 <ToggleButton label="Hide Followers:" />
                                 <ToggleButton label="Hide Following:" />
                                 <ToggleButton label="Hide Coins Purchases:" />
@@ -110,7 +86,8 @@ const Profile = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <InputField label="Member Since:" value={profileData?.member_since || ""} disabled={true} />
+                                {/* Use the correct profile object */}
+                                <InputField label="Member Since:" value={profile.member_since || ""} disabled={true} />
                                 <div className='pl-0 md:pl-[165px]'>
                                     {isEditing ? (
                                         <button
@@ -125,10 +102,13 @@ const Profile = () => {
                                             onClick={handleEditClick}
                                             className='themeBtn SegoeUi w-fit'
                                         >
-                                            <span>Edit</span>
+                                            <span>Edit Profile</span>
                                         </button>
                                     )}
                                 </div>
+                            </div>
+                            <div className='flex items-center justify-center w-[200px]'>
+                                <img src={rocket} alt="rocket" className='w-full h-auto object-cover' />
                             </div>
                         </div>
                     </div>
@@ -136,6 +116,6 @@ const Profile = () => {
             </div>
         </div>
     );
-}
+};
 
 export default Profile;

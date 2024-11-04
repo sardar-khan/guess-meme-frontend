@@ -1,10 +1,13 @@
 import React from 'react'
 import CardImg from '../assets/images/card 1.png'
+import { Link } from 'react-router-dom'
 
 const LaunchCard = ({ key, setSpace, coinData }) => {
     console.log("coinData", coinData)
+    console.log("CoinID", coinData?.coin?._id)
     return (
-        <div className='relative mt-2'>
+        // <Link to='' className='relative mt-2'>
+        <Link to={`/threads/${coinData?.coin?._id}`} className='relative mt-2'>
             <div className='absolute top-0 left-0 h-[5px] w-full bg-white'></div>
             <div className='absolute top-0 left-0 h-full w-[5px] bg-white'></div>
             <div className='absolute bottom-[1px] right-[1px] z-10 h-[98%] w-[8px] bg-[#7D73BF]'></div>
@@ -65,7 +68,7 @@ const LaunchCard = ({ key, setSpace, coinData }) => {
                 </div>
 
             </div>
-        </div >
+        </Link >
     )
 }
 

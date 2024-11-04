@@ -1,23 +1,27 @@
-import React from 'react'
-import Arrowback from '../assets/icons/Arrowback.svg'
-import { Link } from 'react-router-dom'
-import ChatRoom from '../components/ChatRoom/ChatRoom'
-import TradesTable from '../components/Tables/TradesTable'
-import HoldersTable from '../components/Tables/HoldersTable'
-import CandlestickComboChart from '../components/Charts/CandlestickComboChart'
-import PlaceTrade from '../components/PlaceTrade/PlaceTrade'
-import logoSmall from '../assets/icons/logoSmall.png'
+import React, { useEffect, useState } from 'react';
+import Arrowback from '../assets/icons/Arrowback.svg';
+import { Link, useParams } from 'react-router-dom';
+import ChatRoom from '../components/ChatRoom/ChatRoom';
+import TradesTable from '../components/Tables/TradesTable';
+import HoldersTable from '../components/Tables/HoldersTable';
+import CandlestickComboChart from '../components/Charts/CandlestickComboChart';
+import PlaceTrade from '../components/PlaceTrade/PlaceTrade';
+import logoSmall from '../assets/icons/logoSmall.png';
 
 const Threads = () => {
-    return (
-        <div className='py-10 px-4 md:p-10'>
 
-            <Link to='' className='flex items-center gap-2'>
+
+    return (
+        <div className='py-10 px-4 !pb-[100px] md:p-10'>
+
+            <Link to='/' className='flex items-center gap-2'>
                 <img src={Arrowback} alt="" />
                 <span className='Inter text-[#515151] font-normal text-xs'>GO BACK</span>
             </Link>
 
-
+            {/* {error ? (
+                <div className='text-red-500 text-2xl mt-5 SegoeUi'>{error}</div>
+            ) : ( */}
             <div className='flex justify-between flex-col lg:flex-row gap-3'>
                 <div className='w-full lg:w-[70%] mt-5'>
                     <div className='flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between mb-[20px]'>
@@ -44,7 +48,7 @@ const Threads = () => {
                             </div>
                         </div>
                     </div>
-                    <CandlestickComboChart />
+                    <CandlestickComboChart  />
                     <ChatRoom />
                 </div>
                 <div className='flex flex-col gap-6 w-full lg:w-[30%]'>
@@ -53,9 +57,9 @@ const Threads = () => {
                     <HoldersTable />
                 </div>
             </div>
-
+            {/* )} */}
         </div>
-    )
-}
+    );
+};
 
-export default Threads
+export default Threads;

@@ -1,29 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import WindowDropdown from './WindowDropdown/WindowDropdown';
 import LaunchCard from './LaunchCard';
-import { viewCoins } from '../utils/api';
+import { fetchCoins } from '../features/coinSlice';
 
 const AllLaunchs = () => {
-    const [activeTab, setActiveTab] = useState('Revealed');
-    const [coins, setCoins] = useState([]);
+    const dispatch = useDispatch();
+    const { coins, status, error } = useSelector((state) => state.coins);
+    const [activeTab, setActiveTab] = React.useState('Revealed');
+    console.log("Allcoins", coins)
+    console.log("coins_id", coins?.coin?._id)
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
     };
 
     useEffect(() => {
-        const fetchCoins = async () => {
-            try {
-                const data = await viewCoins();
-                console.log('Fetched coins:', data.data);
-                setCoins(data.data);
-            } catch (error) {
-                console.error('Error fetching coins:', error);
-            }
-        };
-
-        fetchCoins();
-    }, []);
+        if (status === 'idle') {
+            dispatch(fetchCoins());
+        }
+    }, [status, dispatch]);
 
     return (
         <div className='p-2 md:p-4 !pb-[150px]'>
@@ -68,9 +64,11 @@ const AllLaunchs = () => {
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2'>
                 {activeTab === 'Revealed' && (
                     <>
-                        {coins.map((coin, index) => (
+                        {status === 'loading' && <div>Loading...</div>}
+                        {status === 'succeeded' && coins.map((coin, index) => (
                             <LaunchCard key={index} setSpace="medium" coinData={coin} />
                         ))}
+                        {status === 'failed' && <div>Error: {error}</div>}
                     </>
                 )}
 

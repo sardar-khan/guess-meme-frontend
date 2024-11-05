@@ -14,7 +14,7 @@ const Threads = () => {
     return (
         <div className='py-10 px-4 !pb-[100px] md:p-10'>
 
-            <Link to='/' className='flex items-center gap-2'>
+            <Link to='/' className='flex items-center gap-2 w-fit'>
                 <img src={Arrowback} alt="" />
                 <span className='Inter text-[#515151] font-normal text-xs'>GO BACK</span>
             </Link>
@@ -48,7 +48,7 @@ const Threads = () => {
                             </div>
                         </div>
                     </div>
-                    <CandlestickComboChart  />
+                    <CandlestickComboChart />
                     <ChatRoom />
                 </div>
                 <div className='flex flex-col gap-6 w-full lg:w-[30%]'>

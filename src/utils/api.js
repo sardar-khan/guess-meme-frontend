@@ -123,3 +123,19 @@ export const uploadImage = async (formData) => {
         throw new Error(error.response?.data?.message || 'Image upload failed');
     }
 };
+
+
+// Submit comment function using Axios instance
+export const submitComment = async ({ text, token_id, image }) => {
+    try {
+        const response = await apiInstance.post('thread/post', {
+            text,
+            token_id,
+            image,
+        });
+        console.log('submitComment', response.data);
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Failed to post comment');
+    }
+};

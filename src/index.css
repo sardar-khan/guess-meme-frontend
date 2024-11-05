@@ -77,6 +77,10 @@ h5 {
 input,
 textarea {
   font-family: 'Segoe UI';
+  resize: none;
+}
+textarea:focus{
+  outline: none;
 }
 
 .formLabel {

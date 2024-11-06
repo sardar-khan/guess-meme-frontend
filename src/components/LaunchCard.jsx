@@ -58,7 +58,7 @@ const LaunchCard = ({ key, setSpace, coinData }) => {
                                         <h5 className='PixelOperatorbold text-[12px] md:text-[13px] mt-1'>{coinData?.trust_score}/100</h5>
                                     </div>
 
-                                    <p className='text-black PixelOperator mt-3 capitalize truncate text-[12px] leading-[10px] md:text-[16px] md:leading-[13px]'>{coinData?.coin?.ticker} (ticker: {coinData?.coin?.ticker}): {coinData?.coin?.description} </p>
+                                    <div className='text-black PixelOperator mt-3 capitalize truncate text-[12px] leading-[10px] md:text-[16px] md:leading-[13px] tracking-[-1px]'><strong className='PixelOperatorbold'>{coinData?.coin?.name}</strong> (ticker: {coinData?.coin?.ticker}): {coinData?.coin?.description} </div>
                                 </div>
 
                             </div>

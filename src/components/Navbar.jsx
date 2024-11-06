@@ -21,7 +21,7 @@ const Navbar = () => {
             <div className='flex items-center justify-between px-0 pr-2 py-2 sm:p-2'>
                 {/* Logo Section */}
                 <Link to='/' className='flex items-center'>
-                    <img src={logo} className='w-[40px] sm:w-auto mb-[-8px]' alt="Logo" />
+                    <img src={logo} className='w-[40px] sm:w-[45px] mb-[-12px]' alt="Logo" />
                     <h2 className='PixelOperatorbold text-white font-extrabold text-[28px] mt-[10px]'>Guess.Meme</h2>
                 </Link>
 
@@ -38,7 +38,6 @@ const Navbar = () => {
                 {/* Desktop Menu */}
                 <div className='hidden lg:flex gap-2 relative z-[999]'>
                     <WindowDropdown />
-                    <button className='themeBtn uppercase'><span>Mega</span></button>
                     <Link to='/launchToken' className='themeBtn text-xs uppercase'>
                         <span className='PixelOperatorbold'>Launch Token</span>
                     </Link>

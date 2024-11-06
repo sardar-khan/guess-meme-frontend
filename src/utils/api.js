@@ -71,17 +71,20 @@ export const editProfile = async ({ user_name, bio, profile_photo }) => {
     }
 };
 
-//viewCoins function
-export const viewCoins = async () => {
+// viewCoins function
+export const viewCoins = async (sortBy = '') => {
     try {
-        const response = await apiInstance.get('user/view-coins');
+        const url = sortBy ? `user/view-coins?sortBy=${sortBy}` : 'user/view-coins';
+        const response = await apiInstance.get(url);
         console.log('ViewCoins', response.data);
         return response.data;
     } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching coins:', error);
         throw error;
     }
 };
+
+
 
 //createCoin function
 export const createCoin = async ({ name, ticker, description, image, max_supply, twitter_link, telegram_link, website, bonding_curve, max_buy_percentage, fee, timer }) => {

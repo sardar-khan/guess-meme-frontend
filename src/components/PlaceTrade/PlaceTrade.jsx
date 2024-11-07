@@ -36,7 +36,7 @@ const PlaceTrade = () => {
                                             className='SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer'
                                             onClick={handleSwitchClick}
                                         >
-                                            {showSOGs ? 'switch to SOGs' : 'switch to GODPE'}
+                                            {showSOGs ? 'switch to 646464' : 'switch to SOL'}
                                         </span>
                                         <span className='SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer'>
                                             Set max slippage
@@ -48,13 +48,13 @@ const PlaceTrade = () => {
                                             <div className='w-full Inter'>
                                                 <div className='w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
                                                     <div className=' flex w-full justify-between border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
-                                                        <input type="text" name="" id="" className='w-full px-2 py-3 pr-4' />
+                                                        <input type="number" name="" id="" className='w-full px-2 py-3 pr-4' />
                                                         <div className='w-fit flex items-center gap-1 bg-white'>
                                                             <span className='text-black font-semibold text-sm SegoeUi'>
-                                                                ETH
+                                                                SOL
                                                             </span>
                                                             <img
-                                                                src={ethImg}
+                                                                src={solImg}
                                                                 className='w-[30px] mr-5'
                                                                 alt=''
                                                             />
@@ -67,16 +67,16 @@ const PlaceTrade = () => {
                                                         reset
                                                     </span>
                                                     <span className='whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
-                                                        0.1 ETH
+                                                        0.1 SOL
                                                     </span>
                                                     <span className='whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
-                                                        0.5 ETH
+                                                        0.5 SOL
                                                     </span>
                                                     <span className='whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
-                                                        1 ETH
+                                                        1 SOL
                                                     </span>
                                                     <span className='whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
-                                                        5 ETH
+                                                        5 SOL
                                                     </span>
                                                 </div>
                                             </div>
@@ -87,10 +87,10 @@ const PlaceTrade = () => {
                                                     <input type="text" name="" id="" className='w-full px-2 py-3 pr-4' />
                                                     <div className='w-fit flex items-center gap-1 bg-white'>
                                                         <span className='text-black font-semibold text-sm SegoeUi'>
-                                                            SOL
+                                                            ETH
                                                         </span>
                                                         <img
-                                                            src={solImg}
+                                                            src={ethImg}
                                                             className='w-[30px] mr-5'
                                                             alt=''
                                                         />

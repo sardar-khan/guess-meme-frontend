@@ -1,15 +1,18 @@
 // ReferralModal.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { submitComment, uploadImage } from '../../utils/api';
 import { useParams } from 'react-router-dom';
 
-const ReferralModal = ({ isOpen, onClose, onSubmit }) => {
-    const [comment, setComment] = useState('');
+const ReferralModal = ({ isOpen, onClose, onSubmit, threadID, fetchThreadData }) => {
+    const [comment, setComment] = useState();
     const [image, setImage] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
     const fileInputRef = useRef(null);
     const { id } = useParams();
+    console.log("threadID", comment)
+    useEffect(() => {
+    }, [threadID, comment])
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -49,10 +52,13 @@ const ReferralModal = ({ isOpen, onClose, onSubmit }) => {
             const data = await submitComment({
                 text: comment,
                 token_id: id,
+                reply_id: threadID,
                 image: imageUrl
             });
             console.log("Comment data", data)
             toast.success(data?.message);
+            fetchThreadData();
+            setComment('')
             onClose();
         } catch (error) {
             toast.error(`Failed to post reply: ${error.message}`);
@@ -68,6 +74,8 @@ const ReferralModal = ({ isOpen, onClose, onSubmit }) => {
     const handleUploadAreaClick = () => {
         fileInputRef.current.click();
     };
+
+
 
     if (!isOpen) return null;
 
@@ -85,7 +93,7 @@ const ReferralModal = ({ isOpen, onClose, onSubmit }) => {
                 <textarea
                     className='w-full p-2 border-2 border-gray-300 rounded-md bg-transparent placeholder:text-black'
                     rows="4"
-                    placeholder="Add a comment..."
+                    placeholder={threadID ? `Replying to ${threadID}` : `Add a comment...`}
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                 ></textarea>

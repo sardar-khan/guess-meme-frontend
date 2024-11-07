@@ -22,12 +22,12 @@ const HowItWorks = () => {
 
                             <div className='w-full flex flex-col justify-center p-2 sm:p-8'>
 
-                                <p className='PixelOperatorbold text-base md:text-[21px]'>Guess is all about pure speculation—no prior knowledge, just a complete guess with each token. There’s no presale, and no team allocations.</p>
-
+                                <p className='PixelOperatorbold text-base md:text-[21px]'>Guess is all about pure speculation—no prior knowledge, just a complete guess with each token.</p>
+                                <p className='PixelOperatorbold text-base md:text-[21px]'>There’s no presale and no team allocations.</p>
                                 <ul>
                                     <li className='PixelOperatorbold text-base md:text-[21px] text-bold mt-5'>Step1: <br />Take a lucky guess.</li>
                                     <li className='PixelOperatorbold text-base md:text-[21px] text-bold mt-5'>Step2: <br />Buy the coin you think it might be.</li>
-                                    <li className='PixelOperatorbold text-base md:text-[21px] text-bold mt-5'>Step3: <br />Sell your guess whenever you want—if you see profits, cash out!</li>
+                                    <li className='PixelOperatorbold text-base md:text-[21px] text-bold mt-5'>Step3: <br />Sell your guess whenever you want!</li>
                                     <li className='PixelOperatorbold text-base md:text-[21px] text-bold mt-5'>Step4: <br />If enough people make the same guess and the market cap hits $70k, the coin gets listed on Raydium, Uniswap, or whichever chain you’re on.</li>
                                 </ul>
                                 <p className='PixelOperatorbold text-base md:text-[21px] text-bold mt-5'>All liquidity is burned and locked in for everyone to trade.</p>

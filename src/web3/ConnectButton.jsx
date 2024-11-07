@@ -53,8 +53,8 @@ const ConnectButton = () => {
     };
 
     return (
-        <div className='connectBtn flex items-center w-[275px] cursor-pointer' onClick={handleConnectClick}>
-            <img src={logo} className='w-[55px] h-[55px]' alt="Logo" />
+        <div className='connectBtn flex items-center w-[190px] cursor-pointer' onClick={handleConnectClick}>
+            <img src={logo} className='w-[40px] h-[40px]' alt="Logo" />
             <h2 className='SegoeUi'>
                 {connectedAddress ? (
                     <span>{`${connectedAddress.slice(0, 6)}...${connectedAddress.slice(-4)}`}</span>

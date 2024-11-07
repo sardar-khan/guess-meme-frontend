@@ -129,16 +129,34 @@ export const uploadImage = async (formData) => {
 
 
 // Submit comment function using Axios instance
-export const submitComment = async ({ text, token_id, image }) => {
+export const submitComment = async ({ text, token_id, reply_id, image }) => {
     try {
         const response = await apiInstance.post('thread/post', {
             text,
             token_id,
+            reply_id,
             image,
         });
         console.log('submitComment', response.data);
         return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.message || 'Failed to post comment');
+    }
+};
+
+// Submit comment function using Axios instance
+export const BuyToken = async ({ account_type, amount, token_amount, token_id, type }) => {
+    try {
+        const response = await apiInstance.post('trade/initiate', {
+            account_type,
+            amount,
+            token_amount,
+            token_id,
+            type,
+        });
+        console.log('BuyToken', response.data);
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Failed to Buy Token');
     }
 };

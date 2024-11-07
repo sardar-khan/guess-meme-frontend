@@ -22,10 +22,8 @@ const coinSlice = createSlice({
                 coin.coin?.name.toLowerCase().includes(query)
             );
         },
-        // New action for sorting coins
         sortCoins: (state, action) => {
             state.status = 'loading';
-            // Trigger the fetchCoins async action with the new sort parameter
             fetchCoins(action.payload);
         }
     },
@@ -37,7 +35,7 @@ const coinSlice = createSlice({
             .addCase(fetchCoins.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.coins = action.payload;
-                state.filteredCoins = action.payload; // Initialize filteredCoins with all coins
+                state.filteredCoins = action.payload;
             })
             .addCase(fetchCoins.rejected, (state, action) => {
                 state.status = 'failed';

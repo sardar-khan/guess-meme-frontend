@@ -1,32 +1,41 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { fetchCoins } from '../features/coinSlice'; // Import fetchCoins action
 import folder from '../assets/icons/Group 110.png';
 import BoxHeader from '../components/Global/BoxHeader';
 import InputField from '../components/Global/InputField';
 import TextArea from '../components/Global/TextArea';
-import { createCoin, uploadImage } from '../utils/api'; // Import the new uploadImage function
+import { createCoin, uploadImage } from '../utils/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const LaunchTokens = () => {
+    const dispatch = useDispatch();
     const [name, setName] = useState('');
     const [ticker, setTicker] = useState('');
     const [revealTime, setRevealTime] = useState('');
     const [description, setDescription] = useState('');
     const [maxSupply, setMaxSupply] = useState('');
-    const [imageFile, setImageFile] = useState(null); // State for image file
-    const [imageUrl, setImageUrl] = useState(''); // State for image URL
-    const [fileName, setFileName] = useState(''); // State for file name
+    const [imageFile, setImageFile] = useState(null);
+    const [imageUrl, setImageUrl] = useState('');
+    const [fileName, setFileName] = useState('');
+    const [currentDateTime, setCurrentDateTime] = useState(new Date().toISOString().slice(0, 16));
+    const [sortOption, setSortOption] = useState('');
+
+    useEffect(() => {
+        const interval = setInterval(() => setCurrentDateTime(new Date().toISOString().slice(0, 16)), 60000);
+        return () => clearInterval(interval);
+    }, []);
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
             const formData = new FormData();
             formData.append('profile_photo', file);
-            setFileName(file.name); // Set the file name
+            setFileName(file.name);
 
             try {
                 const data = await uploadImage(formData);
-                console.log("imageUrl", data.imageUrl);
                 setImageUrl(data.imageUrl);
                 toast.success('Image uploaded successfully!');
             } catch (error) {
@@ -36,14 +45,18 @@ const LaunchTokens = () => {
     };
 
     const handleSubmit = async () => {
-        try {
-            const formattedRevealTime = revealTime ? new Date(revealTime).toISOString() : null;
+        if (!name || !ticker || !imageUrl || !description || !revealTime) {
+            toast.error('Please fill in all required fields: Name, Ticker, Image, Description, and Reveal Time.');
+            return;
+        }
 
+        try {
+            const formattedRevealTime = new Date(revealTime).toISOString();
             const response = await createCoin({
                 name,
                 ticker,
                 description,
-                image: imageUrl || 'upload',
+                image: imageUrl,
                 max_supply: maxSupply,
                 twitter_link: 'https://twitter.com',
                 telegram_link: 'https://telegram.com',
@@ -54,21 +67,12 @@ const LaunchTokens = () => {
                 timer: formattedRevealTime,
             });
 
-            // Check if the response status is 200
             if (response.status === 200) {
-                toast.success(response.message); // Display the response message in the toast
-
-                // Clear the input fields and textarea
-                setName('');
-                setTicker('');
-                setDescription('');
-                setMaxSupply('');
-                setRevealTime('');
-                setImageFile(null); // Reset the image file
-                setImageUrl(''); // Reset the image URL
-                setFileName(''); // Reset the file name
+                toast.success(response.message);
+                resetForm();
+                dispatch(fetchCoins(sortOption)); // Trigger fetchCoins with sortOption to update coin list
             } else {
-                toast.error('Failed to create coin. Please try again.'); // Handle other statuses
+                toast.error('Failed to create coin. Please try again.');
             }
         } catch (error) {
             toast.error('Error creating coin. Please try again.');
@@ -76,8 +80,16 @@ const LaunchTokens = () => {
         }
     };
 
-
-    const currentDateTime = new Date().toISOString().slice(0, 16);
+    const resetForm = () => {
+        setName('');
+        setTicker('');
+        setDescription('');
+        setMaxSupply('');
+        setRevealTime('');
+        setImageFile(null);
+        setImageUrl('');
+        setFileName('');
+    };
 
     return (
         <div className='border flex justify-center items-center py-[55px] px-4 w-full pb-[100px]'>
@@ -115,11 +127,6 @@ const LaunchTokens = () => {
 
                                 <TextArea value={description} onChange={(e) => setDescription(e.target.value)} />
 
-                                <InputField label="Supply:" value={maxSupply} onChange={(e) => setMaxSupply(e.target.value)} type='number' />
-                                <InputField label="Website (Optional):" />
-                                <InputField label="Telegram (Optional):" />
-                                <InputField label="Twitter (Optional):" />
-
                                 <div className='flex flex-col sm:flex-row gap-6 sm:gap-2'>
 
                                     <div className="flex flex-col sm:flex-row sm:items-center items-start gap-4">
@@ -136,9 +143,16 @@ const LaunchTokens = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <InputField label="Initial Buy:" />
+                                    {/* <InputField label="Initial Buy:" /> */}
 
                                 </div>
+
+                                <InputField label="Supply:" value={maxSupply} onChange={(e) => setMaxSupply(e.target.value)} type='number' />
+                                <InputField label="Website (Optional):" />
+                                <InputField label="Telegram (Optional):" />
+                                <InputField label="Twitter (Optional):" />
+
+
 
                                 <div className='sm:pl-[166px]'>
                                     <button className='themeBtn SegoeUi w-fit' onClick={handleSubmit}><span>Launch Token</span></button>

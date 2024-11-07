@@ -11,7 +11,7 @@ const HoldersTable = () => {
     const coin = useSelector((state) => selectCoinById(state, id));
     const [holders, setHolders] = useState([]);
     const dispatch = useDispatch();
-
+    console.log("coinssssss", coin)
     useEffect(() => {
         dispatch(fetchCoins());
     }, [dispatch]);
@@ -20,7 +20,7 @@ const HoldersTable = () => {
         if (coin) {
             // Call the top holders API
             axios.post(`${import.meta.env.VITE_API_URL}user/top-holders`, {
-                token_address: "CqCBN6PkYu6wZ1bZczVU14wwW2XZCZ3jNhdMymy7uifA"
+                token_address: coin?.coin?.token_address
             })
                 .then((response) => {
                     console.log("Top holders data:", response.data);
@@ -47,7 +47,7 @@ const HoldersTable = () => {
                 <thead className='Inter text-left text-[#121212] text-sm'>
                     <tr className="border border-[#FFF]">
                         <th className="px-4 py-4">Address</th>
-                        <th className="px-4 py-4">Amount</th>
+                        <th className="px-4 py-4">Supply</th>
                         {/* <th className="px-4 py-4">Value</th> */}
                     </tr>
                 </thead>

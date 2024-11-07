@@ -7,7 +7,7 @@ const LaunchCard = ({ key, setSpace, coinData }) => {
     console.log("CoinID", coinData?.coin?._id)
     return (
         // <Link to='' className='relative mt-2'>
-        <Link to={`/threads/${coinData?.coin?._id}`} className='relative mt-2'>
+        <Link to={`/trade/${coinData?.coin?._id}`} className='relative mt-2'>
             <div className='absolute top-0 left-0 h-[5px] w-full bg-white'></div>
             <div className='absolute top-0 left-0 h-full w-[5px] bg-white'></div>
             <div className='absolute bottom-[1px] right-[1px] z-10 h-[98%] w-[8px] bg-[#7D73BF]'></div>

@@ -13,6 +13,14 @@ const Hero = () => {
         dispatch(searchCoins(searchQuery));
     };
 
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+        if (value === '') {
+            dispatch(searchCoins(''));
+        }
+    };
+
     const progress = 71;
     const radius = 50;
     const stroke = 10;
@@ -30,13 +38,8 @@ const Hero = () => {
             </h1>
 
             <div className='relative flex flex-col justify-center items-center w-full max-w-[516px] mt-[10px] p-4 pb-2 rounded-2xl' style={{ backgroundImage: `url(${group160})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-
                 <div className="absolute top-0 right-0">
-                    <svg
-                        height={100}
-                        width={100}
-                        className="transform -rotate-90"
-                    >
+                    <svg height={100} width={100} className="transform -rotate-90">
                         <circle
                             stroke="#39393980"
                             fill="transparent"
@@ -79,7 +82,7 @@ const Hero = () => {
                 <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={handleInputChange}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             handleSearch();
@@ -95,7 +98,6 @@ const Hero = () => {
                     <span className='!text-[12px]'>Search</span>
                 </button>
             </div>
-
         </div>
     );
 }

@@ -5,7 +5,7 @@ import solImg from '../../assets/icons/sol.svg';
 
 const WindowDropdown = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedOption, setSelectedOption] = useState('Solana');
+    const [selectedOption, setSelectedOption] = useState('SOL');
     const dropdownRef = useRef(null);
 
     const toggleDropdown = () => setIsOpen(!isOpen);
@@ -32,7 +32,7 @@ const WindowDropdown = () => {
         <div className="win2000-select-container" ref={dropdownRef}>
             <div className="win2000-select" onClick={toggleDropdown}>
                 <img
-                    src={selectedOption === 'Solana' ? solImg : ethImg}
+                    src={selectedOption === 'SOL' ? solImg : ethImg}
                     alt={selectedOption}
                     className="dropdown-icon"
                 />
@@ -42,17 +42,17 @@ const WindowDropdown = () => {
                 <div className="win2000-dropdown-options">
                     <div
                         className="win2000-option"
-                        onClick={() => selectOption('Solana')}
+                        onClick={() => selectOption('SOL')}
                     >
-                        <img src={solImg} alt="Solana" className="dropdown-icon" />
-                        Solana
+                        <img src={solImg} alt="SOL" className="dropdown-icon" />
+                        SOL
                     </div>
                     <div
                         className="win2000-option"
-                        onClick={() => selectOption('Ethereum')}
+                        onClick={() => selectOption('ETH')}
                     >
-                        <img src={ethImg} alt="Ethereum" className="dropdown-icon" />
-                        Ethereum
+                        <img src={ethImg} alt="ETH" className="dropdown-icon" />
+                        ETH
                     </div>
                 </div>
             )}

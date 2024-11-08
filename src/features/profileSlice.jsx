@@ -1,9 +1,10 @@
 // src/store/profileSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { viewProfile, editProfile } from '../utils/api'; 
+import { viewProfile, editProfile } from '../utils/api';
 
 export const fetchProfile = createAsyncThunk('profile/fetchProfile', async () => {
     const response = await viewProfile();
+    console.log("fetchProfile", response)
     return response.data;
 });
 
@@ -20,16 +21,18 @@ const profileSlice = createSlice({
         profilePhoto: '',
         bio: '',
         trustScore: '',
+        createdAt: '',
         loading: false,
         error: null,
     },
     reducers: {
         setProfile: (state, action) => {
-            const { username, bio, profilePhoto, trustScore } = action.payload;
+            const { username, bio, profilePhoto, trustScore,createdAt } = action.payload;
             state.username = username;
             state.bio = bio;
             state.profilePhoto = profilePhoto;
             state.trustScore = trustScore;
+            state.createdAt = createdAt;
         },
     },
     extraReducers: (builder) => {
@@ -43,6 +46,7 @@ const profileSlice = createSlice({
                 state.bio = action.payload.bio;
                 state.profilePhoto = action.payload.profile_photo;
                 state.trustScore = action.payload.trust_score;
+                state.createdAt = action.payload.createdAt;
             })
             .addCase(fetchProfile.rejected, (state, action) => {
                 state.loading = false;
@@ -53,6 +57,7 @@ const profileSlice = createSlice({
                 state.bio = action.payload.bio;
                 state.profilePhoto = action.payload.profile_photo;
                 state.trustScore = action.payload.trust_score;
+                state.createdAt = action.payload.createdAt;
             });
     },
 });

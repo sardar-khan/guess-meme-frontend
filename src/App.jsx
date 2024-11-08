@@ -7,6 +7,7 @@ import Profile from './Pages/Profile';
 import ComingSoon from './Pages/ComingSoon';
 import HowItWorks from './Pages/HowItWorks';
 import RevealsBestPerformers from './Pages/RevealsBestPerformers';
+import UserProfile from './Pages/userProfile';
 import Threads from './Pages/Threads';
 import TaskBar from './components/TaskBar/TaskBar';
 import { ToastContainer } from 'react-toastify';
@@ -21,7 +22,8 @@ function App() {
         <Routes>
           <Route index path='/' element={<Home />} />
           <Route path='/launchToken' element={<LaunchTokens />} />
-          <Route path='/profile' element={<Profile />} />
+          <Route path='/editprofile' element={<Profile />} />
+          <Route path='/userprofile' element={<UserProfile />} />
           <Route path='/comingSoon' element={<ComingSoon />} />
           <Route path='/howitworks' element={<HowItWorks />} />
           <Route path='/revealsBestPerformers' element={<RevealsBestPerformers />} />

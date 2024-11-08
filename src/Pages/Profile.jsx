@@ -44,9 +44,10 @@ const Profile = () => {
     };
 
     const handleChange = (field, value) => {
-        // Update the profile state directly.
         dispatch(setProfile({ ...profile, [field]: value }));
     };
+
+    const formattedDate = profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : '';
 
     return (
         <div className='border flex justify-center items-center py-[55px] px-2 sm:px-4 w-full'>
@@ -69,7 +70,7 @@ const Profile = () => {
                                     onChange={(e) => handleChange('bio', e.target.value)}
                                     disabled={!isEditing} // Only disable when not editing
                                 />
-                                
+
                                 <ToggleButton label="Hide Followers:" />
                                 <ToggleButton label="Hide Following:" />
                                 <ToggleButton label="Hide Coins Purchases:" />
@@ -87,7 +88,7 @@ const Profile = () => {
                                     </div>
                                 </div>
                                 {/* Use the correct profile object */}
-                                <InputField label="Member Since:" value={profile.member_since || ""} disabled={true} />
+                                <InputField label="Member Since:" value={formattedDate} disabled={true} />
                                 <div className='pl-0 md:pl-[165px]'>
                                     {isEditing ? (
                                         <button

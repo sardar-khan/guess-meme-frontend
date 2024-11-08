@@ -17,12 +17,12 @@ const InputField = ({ label, placeholder = "", value, onChange, disabled = false
             <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
                 <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
                     <input
-                        type={type} // Use the type prop here
+                        type={type} 
                         value={value}
                         placeholder={placeholder}
-                        onChange={handleChange} // Use the new handleChange function
+                        onChange={handleChange}
                         disabled={disabled}
-                        className={`w-full px-2 py-3 ${disabled ? 'bg-gray-200' : ''}`} // Optional styling for disabled state
+                        className={`w-full px-2 py-1 ${disabled ? 'bg-gray-200' : ''}`} 
                     />
                 </div>
             </div>

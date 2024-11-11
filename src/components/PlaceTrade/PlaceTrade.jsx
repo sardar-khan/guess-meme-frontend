@@ -4,13 +4,17 @@ import ethImg from '../../assets/icons/eth.png';
 import solImg from '../../assets/icons/sol.webp';
 import { BuyToken } from '../../utils/api';
 import { toast } from 'react-toastify';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchTrades } from '../../features/tradesSlice';
+import { fetchTopHolders } from '../../features/tradesSlice';
+import { selectCoinById } from '../../features/coinSlice';
 
 
 const PlaceTrade = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
+    const coin = useSelector((state) => selectCoinById(state, id));
+
     const [showSOGs, setShowSOGs] = useState(false);
     const [amount, setAmount] = useState('');
 
@@ -29,7 +33,9 @@ const PlaceTrade = () => {
             });
             if (response.status === 201) {
                 toast.success('Buy Successful');
-                dispatch(fetchTrades(id)); 
+                dispatch(fetchTrades(id));
+                dispatch(fetchTopHolders(coin.coin.token_address));
+
             }
         } catch (error) {
             toast.error(error.message);

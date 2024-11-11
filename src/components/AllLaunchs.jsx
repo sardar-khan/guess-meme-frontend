@@ -27,12 +27,6 @@ const AllLaunchs = () => {
         dispatch(fetchCoins(e.target.value));
     };
 
-
-    // const isOn = useSelector((state) => state.animation.isOn);
-    // const handleToggle = () => {
-    //     dispatch(toggleAnimation());
-    // };
-
     return (
         <div className='p-2 md:p-4 !pb-[150px]'>
             <div className="w-full flex flex-col md:flex-row md:justify-between md:items-center mb-4">

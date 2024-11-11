@@ -1,54 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import logoSmall from '../../assets/icons/logoSmall.png';
-import copy from '../../assets/icons/copy.png';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCoins, selectCoinById } from '../../features/coinSlice';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import { fetchTopHolders } from '../../features/tradesSlice';  // Adjust path if necessary
+import { selectCoinById } from '../../features/coinSlice';  // Adjust path if necessary
+import copy from '../../assets/icons/copy.png';
 
 const HoldersTable = () => {
     const { id } = useParams();
     const coin = useSelector((state) => selectCoinById(state, id));
-    const [holders, setHolders] = useState([]);
     const dispatch = useDispatch();
-    console.log("coinssssss", coin)
-    useEffect(() => {
-        dispatch(fetchCoins());
-    }, [dispatch]);
+
+    const { holders, holdersLoading, holdersError } = useSelector((state) => state.trades);
 
     useEffect(() => {
-        if (coin) {
-            // Call the top holders API
-            axios.post(`${import.meta.env.VITE_API_URL}user/top-holders`, {
-                token_address: coin?.coin?.token_address
-            })
-                .then((response) => {
-                    console.log("Top holders data:", response.data);
-                    if (response.data.status === 200) {
-                        setHolders(response.data.data);
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error fetching top holders:", error);
-                });
+        if (coin?.coin?.token_address) {
+            dispatch(fetchTopHolders(coin.coin.token_address));
         }
-    }, [coin]);
+    }, [coin, dispatch]);
 
+    if (holders.length <= 0) return <div>No data Found</div>;
 
-    // if (!coin) {
-    //     return <div>No coin found with that ID.</div>;
-    // }
+    if (holdersLoading) return <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>;
+
+    if (holdersError) return <div>Error: {holdersError}</div>;
+
 
     return (
         <div>
             <h2 className='mb-[8px]'>Holders</h2>
-
             <table className="min-w-full border-collapse secondary-bg">
                 <thead className='Inter text-left text-[#121212] text-sm'>
                     <tr className="border border-[#FFF]">
                         <th className="px-4 py-4">Address</th>
                         <th className="px-4 py-4">Supply</th>
-                        {/* <th className="px-4 py-4">Value</th> */}
                     </tr>
                 </thead>
                 <tbody className='Inter text-left'>
@@ -61,13 +45,12 @@ const HoldersTable = () => {
                                 </div>
                             </td>
                             <td className="px-4 py-4">{holder.amount}</td>
-                            {/* <td className="px-4 py-4">Value Placeholder</td>  */}
                         </tr>
                     ))}
                 </tbody>
             </table>
         </div>
     );
-}
+};
 
 export default HoldersTable;

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import LaunchCard from './LaunchCard';
 import { fetchCoins, selectDeployedCoins, selectCreatedCoins, selectFilteredCoins } from '../features/coinSlice';
+// import { toggleAnimation } from '../features/animationSlice';
+import AnimationToggle from './AnimationToggle';
 
 const AllLaunchs = () => {
     const dispatch = useDispatch();
@@ -25,28 +27,39 @@ const AllLaunchs = () => {
         dispatch(fetchCoins(e.target.value));
     };
 
+
+    // const isOn = useSelector((state) => state.animation.isOn);
+    // const handleToggle = () => {
+    //     dispatch(toggleAnimation());
+    // };
+
     return (
         <div className='p-2 md:p-4 !pb-[150px]'>
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-                <div className="win2000-sort-select-container">
-                    <select
-                        className="win2000-sort-select"
-                        value={activeTab}
-                        onChange={(e) => handleTabClick(e.target.value)}
-                    >
-                        <option value="AllLaunches">All Launches</option>
-                        <option value="Revealed">Revealed</option>
-                        <option value="Hidden">Hidden</option>
-                    </select>
+            <div className="w-full flex flex-col md:flex-row md:justify-between md:items-center mb-4">
+                <div className='flex items-center gap-3'>
+                    <div className="win2000-sort-select-container">
+                        <select
+                            className="win2000-sort-select"
+                            value={activeTab}
+                            onChange={(e) => handleTabClick(e.target.value)}
+                        >
+                            <option value="AllLaunches">All Launches</option>
+                            <option value="Revealed">Revealed</option>
+                            <option value="Hidden">Hidden</option>
+                        </select>
+                    </div>
+
+                    <AnimationToggle />
+
                 </div>
 
 
-                <div className='flex justify-between items-center gap-2 w-full md:w-[55%] mt-4 md:mt-0'>
-                    <div>
+                <div className='flex items-end gap-2 mt-4 md:mt-0'>
+                    {/* <div>
                         <button onClick={() => handleTabClick('AllLaunches')} className="themeBtn PixelOperatorbold">
                             <span>All Launches</span>
                         </button>
-                    </div>
+                    </div> */}
 
                     <div className="win2000-sort-select-container">
                         <select className="win2000-sort-select" value={sortOption} onChange={handleSortChange}>
@@ -61,10 +74,11 @@ const AllLaunchs = () => {
             </div>
 
             {/* Content based on active tab */}
+            {status === 'loading' && <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>}
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2'>
                 {activeTab === 'AllLaunches' && (
                     <>
-                        {status === 'loading' && <div>Loading...</div>}
+                        {/* {status === 'loading' && <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>} */}
                         {status === 'succeeded' && (
                             filteredCoins.length === 0 ? (
                                 <div>No data found</div>
@@ -79,7 +93,7 @@ const AllLaunchs = () => {
                 )}
                 {activeTab === 'Revealed' && (
                     <>
-                        {status === 'loading' && <div>Loading...</div>}
+                        {/* {status === 'loading' && <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>} */}
                         {status === 'succeeded' && deployedCoins.map((coin, index) => (
                             <LaunchCard key={index} setSpace="medium" coinData={coin} />
                         ))}
@@ -88,7 +102,7 @@ const AllLaunchs = () => {
                 )}
                 {activeTab === 'Hidden' && (
                     <>
-                        {status === 'loading' && <div>Loading...</div>}
+                        {/* {status === 'loading' && <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>} */}
                         {status === 'succeeded' && createdCoins.map((coin, index) => (
                             <LaunchCard key={index} setSpace="medium" coinData={coin} />
                         ))}

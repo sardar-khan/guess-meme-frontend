@@ -4,9 +4,13 @@ import ethImg from '../../assets/icons/eth.png';
 import solImg from '../../assets/icons/sol.webp';
 import { BuyToken } from '../../utils/api';
 import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux';
+import { fetchTrades } from '../../features/tradesSlice';
+
 
 const PlaceTrade = () => {
     const { id } = useParams();
+    const dispatch = useDispatch();
     const [showSOGs, setShowSOGs] = useState(false);
     const [amount, setAmount] = useState('');
 
@@ -17,20 +21,19 @@ const PlaceTrade = () => {
     const handlePlaceTrade = async () => {
         try {
             const response = await BuyToken({
-                account_type: 'solana', // static as required
+                account_type: 'solana',
                 amount: parseFloat(amount),
-                token_amount: 1, // static as required
-                token_id: id, // from params
-                type: 'buy' // static as required
+                token_amount: 1,
+                token_id: id,
+                type: 'buy'
             });
             if (response.status === 201) {
-                toast.success('Buy Success Full')
-                console.log('Trade Response:', response);
-            }// Handle success (e.g., display a success message or toast)
+                toast.success('Buy Successful');
+                dispatch(fetchTrades(id)); 
+            }
         } catch (error) {
-            toast.error(error.message)
+            toast.error(error.message);
             console.error(error.message);
-            // Handle error (e.g., display error message or toast)
         }
     };
 

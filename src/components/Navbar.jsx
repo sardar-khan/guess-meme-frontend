@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import WindowDropdown from './WindowDropdown/WindowDropdown';
 import logo from '../assets/logo.png';
 import burger from '../assets/icons/burger.png';
+import userprofile from '../assets/images/userprofile.png';
 
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const Navbar = () => {
+    const isOn = useSelector((state) => state.animation.isOn);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const toggleMenu = () => {
@@ -20,10 +23,34 @@ const Navbar = () => {
         <div className='px-1 sm:px-5 primary-bg'>
             <div className='flex items-center justify-between px-0 pr-2 py-2 sm:p-2'>
                 {/* Logo Section */}
-                <Link to='/' className='flex items-center'>
-                    <img src={logo} className='w-[40px] sm:w-[45px] mb-[-12px]' alt="Logo" />
-                    <h2 className='PixelOperatorbold text-white font-extrabold text-[28px] mt-[10px]'>Guess.Meme</h2>
-                </Link>
+                <div className='flex items-end gap-3'>
+                    <Link to='/' className='flex items-center'>
+                        <img src={logo} className='w-[40px] sm:w-[45px] mb-[-12px]' alt="Logo" />
+                        <h2 className='PixelOperatorbold text-white font-extrabold text-[28px] mt-[10px]'>Guess.Meme</h2>
+                    </Link>
+
+                    <div className='flex items-center gap-1'>
+
+                        <div class={`${isOn ? 'element-to-shake' : ''} PixelOperatorbold flex items-center gap-1 p-2 text-sm font-semibold rounded bg-white max-[930px]:hidden`}>
+                            <img src={userprofile} class="w-[12px] h-[12px] rounded-full" alt="" />
+                            <Link class="hover:underline" href="/view/undefined">+mnO</Link>
+                            Buy
+                            <Link class="hover:underline" href="/">23 SOl</Link>
+                            of climber
+                            <img src={userprofile} class="w-[12px] h-[12px] rounded-full" alt="" />
+                        </div>
+                        <div class={`${isOn ? 'element-to-shake' : ''} PixelOperatorbold flex items-center gap-1 p-2 text-sm font-semibold rounded text-white bg-[#5F16BC] max-[930px]:hidden`}>
+                            <img src={userprofile} class="w-[12px] h-[12px] rounded-full" alt="" />
+                            <Link class="hover:underline" href="/view/undefined">GhSAMy</Link>
+
+                            <Link class="hover:underline" href="/">created Melony</Link>
+                            on 07/03/24
+                            <img src={userprofile} class="w-[12px] h-[12px] rounded-full" alt="" />
+                        </div>
+
+                    </div>
+
+                </div>
 
                 {/* Hamburger Icon for Mobile */}
                 <div className='lg:hidden'>

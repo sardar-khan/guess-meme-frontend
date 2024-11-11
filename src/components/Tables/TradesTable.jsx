@@ -1,36 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTrades } from '../../features/tradesSlice';
 import logoSmall from '../../assets/icons/logoSmall.png';
-import axios from 'axios';
 
 const TradesTable = () => {
     const { id } = useParams();
-    const [trades, setTrades] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const dispatch = useDispatch();
+    const { trades, loading, error } = useSelector((state) => state.trades);
 
     useEffect(() => {
-        const fetchTrades = async () => {
-            try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}trade/view/${id}`);
-                if (response.data.status === 200) {
-                    setTrades(response.data.data);
-                    console.log("Trades data:", response.data.data);
-                } else {
-                    throw new Error("Failed to fetch trades");
-                }
-            } catch (error) {
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
+        dispatch(fetchTrades(id));
+    }, [dispatch, id]);
 
-        fetchTrades();
-    }, [id]);
-
-    // if (loading) return <div>Loading...</div>;
-    // if (error) return <div>Error: {error}</div>;
+    if (loading) return <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>;
+    if (error) return <div>No Data Found</div>;
 
     return (
         <div>

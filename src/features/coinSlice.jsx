@@ -50,10 +50,10 @@ export const selectCoinById = (state, id) =>
     state.coins.coins.find((coin) => coin.coin?._id === id);
 
 export const selectDeployedCoins = (state) =>
-    state.coins.coins.filter((coin) => coin.coin?.status === 'deployed');
+    state.coins.coins.filter((coin) => coin?.status === 'deployed');
 
 export const selectCreatedCoins = (state) =>
-    state.coins.coins.filter((coin) => coin.coin?.status === 'created');
+    state.coins.coins.filter((coin) => coin?.status === 'created');
 
 export const selectFilteredCoins = (state) => state.coins.filteredCoins;
 

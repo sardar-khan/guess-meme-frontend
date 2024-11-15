@@ -160,3 +160,16 @@ export const BuyToken = async ({ account_type, amount, token_amount, token_id, t
         throw new Error(error.response?.data?.message || 'Failed to Buy Token');
     }
 };
+
+
+
+// KingOfTheHill function
+export const KingOfTheHill = async () => {
+    try {
+        const response = await apiInstance.get('trade/coin_of_hill');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+    }
+};

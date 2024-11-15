@@ -7,17 +7,20 @@ import Wallet3Provider from './web3/Wallet3Provider.jsx';
 import { WalletApi } from './context/WalletContext.jsx';
 import { Provider } from 'react-redux';
 import store from './app/store.jsx';
+import PusherProvider from './context/PusherContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
       <LoadingProvider>
-        <Wallet3Provider>
-          <WalletApi>
-            <App />
-          </WalletApi>
-        </Wallet3Provider>
+        <PusherProvider>
+          <Wallet3Provider>
+            <WalletApi>
+              <App />
+            </WalletApi>
+          </Wallet3Provider>
+        </PusherProvider>
       </LoadingProvider>
     </Provider>
-  </StrictMode>
+  </StrictMode >
 );

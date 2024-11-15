@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Navbar from './components/Navbar';
+import Test from './components/test';
 import Home from './Pages/Home';
 import LaunchTokens from './Pages/LaunchTokens';
 import Profile from './Pages/Profile';
@@ -21,6 +22,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route index path='/' element={<Home />} />
+          <Route index path='/Test' element={<Test />} />
           <Route path='/launchToken' element={<LaunchTokens />} />
           <Route path='/editprofile' element={<Profile />} />
           <Route path='/userprofile' element={<UserProfile />} />

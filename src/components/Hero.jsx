@@ -1,13 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { searchCoins } from '../features/coinSlice';
 
 import group160 from '../assets/images/group160.webp';
 import herologo from '../assets/images/Group 159.png';
+import { KingOfTheHill } from '../utils/api';
 
 const Hero = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const dispatch = useDispatch();
+    const [kingOfHill, setKingOfHill] = useState();
+    // Fetch KingOfTheHill data on component mount
+    useEffect(() => {
+        const fetchKingOfTheHill = async () => {
+            try {
+                const data = await KingOfTheHill();
+                console.log('KingOfTheHill Data:', data);
+                setKingOfHill(data?.data)
+            } catch (error) {
+                console.error('Error fetching KingOfTheHill data:', error);
+            }
+        };
+
+        fetchKingOfTheHill();
+    }, []);
+    
+    useEffect(() => {
+        console.log('Updated kingOfHill:', kingOfHill);
+    }, [kingOfHill]);
 
     const handleSearch = () => {
         dispatch(searchCoins(searchQuery));
@@ -64,14 +84,14 @@ const Hero = () => {
                     </div>
                 </div>
 
-                <div className='w-[55px] h-[55px] bg-[#D680FF] rounded-2xl'>
-                    <img src={herologo} alt="" />
+                <div className='flex justify-center items-center p-1 w-[55px] h-[55px] bg-[#D680FF] rounded-2xl'>
+                    <img src={`http://localhost:5000${kingOfHill?.kingOfTheHill?.metadata?.image}`} alt="" />
                 </div>
 
                 <div className='flex items-center gap-4'>
                     <span className='PixelOperator lightWhite text-[18px]'>Guess</span>
                     <span className='PixelOperator bg-[#FFF9F9] w-[4px] h-[4px] rounded-full'></span>
-                    <span className='PixelOperator lightWhite text-[18px]'>$GUESS</span>
+                    <span className='PixelOperator lightWhite text-[18px]'>$ {kingOfHill?.kingOfTheHill?.metadata?.name}</span>
                 </div>
 
                 <span className='PixelOperator lightWhite text-[18px]'>Marketcap</span>
@@ -100,6 +120,6 @@ const Hero = () => {
             </div>
         </div>
     );
-}
+};
 
 export default Hero;

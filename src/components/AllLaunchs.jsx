@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import LaunchCard from './LaunchCard';
 import { fetchCoins, selectDeployedCoins, selectCreatedCoins, selectFilteredCoins } from '../features/coinSlice';
-// import { toggleAnimation } from '../features/animationSlice';
 import AnimationToggle from './AnimationToggle';
 
 const AllLaunchs = () => {

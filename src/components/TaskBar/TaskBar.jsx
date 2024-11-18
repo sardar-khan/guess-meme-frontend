@@ -41,6 +41,11 @@ const TaskBar = () => {
                 <NavLink to='/revealsBestPerformers' className={({ isActive }) => navLinkClass(isActive)}>
                     👁️ Reveals
                 </NavLink>
+
+                <NavLink to='/userprofile' className={({ isActive }) => navLinkClass(isActive)}>
+                    User profile
+                </NavLink>
+
             </div>
 
             <div className='h-full flex items-center gap-1 sm:gap-[10px] w-[90px] sm:w-[130px]'>

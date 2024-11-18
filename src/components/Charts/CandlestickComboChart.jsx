@@ -8,11 +8,12 @@ const CandlestickComboChart = () => {
     const { id } = useParams();
     const [coinData, setCoinData] = useState(null);
     const [error, setError] = useState(null);
+    const apiUrl = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         const fetchCoinData = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/trade/graph-data?token_id=${id}`);
+                const response = await axios.get(`http://16.171.150.41:5000/trade/graph-data?token_id=${id}`);
                 setCoinData(response.data);
                 setError(null);  // Clear any previous errors
                 console.log("Coin Data:", response.data);

@@ -25,7 +25,7 @@ function App() {
           <Route index path='/Test' element={<Test />} />
           <Route path='/launchToken' element={<LaunchTokens />} />
           <Route path='/editprofile' element={<Profile />} />
-          <Route path='/userprofile' element={<UserProfile />} />
+          <Route path='/userprofile/:id' element={<UserProfile />} />
           <Route path='/comingSoon' element={<ComingSoon />} />
           <Route path='/howitworks' element={<HowItWorks />} />
           <Route path='/revealsBestPerformers' element={<RevealsBestPerformers />} />

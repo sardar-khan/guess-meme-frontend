@@ -6,7 +6,6 @@ import { BuyToken } from '../../utils/api';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTrades } from '../../features/tradesSlice';
-import { fetchTopHolders } from '../../features/tradesSlice';
 import { selectCoinById } from '../../features/coinSlice';
 
 
@@ -34,8 +33,6 @@ const PlaceTrade = () => {
             if (response.status === 201) {
                 toast.success('Buy Successful');
                 dispatch(fetchTrades(id));
-                dispatch(fetchTopHolders(coin.coin.token_address));
-
             }
         } catch (error) {
             toast.error(error.message);

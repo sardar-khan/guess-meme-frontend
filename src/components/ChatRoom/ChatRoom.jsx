@@ -53,8 +53,12 @@ const ChatRoom = () => {
         <>
             <h2>ChatRoom</h2>
             <div className='flex flex-col gap-1 mt-3'>
-                {coin ?
+
+
+
+                {threads ?
                     <div>
+
                         <div className='secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]'>
                             <div className='flex items-center gap-1'>
                                 <img src={logoSmall} alt="" />
@@ -67,7 +71,7 @@ const ChatRoom = () => {
                             <div className='flex gap-1'>
                                 {coin?.coin?.image !== null && (
                                     <div className='w-[128px] h-full max-h-[128px]'>
-                                        <img src={`http://localhost:5000${coin?.coin?.image}`} className='w-full h-full' alt="" />
+                                        <img src={`http://16.171.150.41:5000${coin?.coin?.image}`} className='w-full h-full' alt="" />
                                     </div>
                                 )}
                                 <div className="pl-3 w-[calc(100%-128px)]">
@@ -96,7 +100,7 @@ const ChatRoom = () => {
                                 <div className='flex gap-1'>
                                     {item?.image !== null && item?.image !== '' && (
                                         <div className='w-[128px] h-full max-h-[128px]'>
-                                            <img src={`http://localhost:5000${item?.image}`} className='w-full h-full' alt="" />
+                                            <img src={`http://16.171.150.41:5000${item?.image}`} className='w-full h-full' alt="" />
                                         </div>
                                     )}
 

@@ -33,7 +33,7 @@ const TradesTable = () => {
                         <tr key={trade._id} className='border border-[#FFF] text-xs'>
                             <td className="px-4 py-4">
                                 <div className='flex items-center gap-1 ml-[-8px]'>
-                                    <img src={`http://localhost:5000${trade?.token_id?.image}`} alt="" className="w-6 h-6 rounded-full" />
+                                    <img src={`http://16.171.150.41:5000${trade?.token_id?.image}`} alt="" className="w-6 h-6 rounded-full" />
                                     <span className='Inter text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8E8DC7]'>
                                         {trade.account.user_name}
                                     </span>

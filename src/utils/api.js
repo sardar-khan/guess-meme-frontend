@@ -173,3 +173,31 @@ export const KingOfTheHill = async () => {
         throw error;
     }
 };
+
+
+// ViewUser
+export const ViewUser = async (userId) => {
+    try {
+        const response = await apiInstance.get(`/user/user-profile`, {
+            params: { user_id: userId },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error in ViewUser:', error);
+        throw error;
+    }
+};
+
+
+
+// Fetch top holders data by token address
+export const getTopHolders = async (tokenAddress) => {
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}user/top-holders`, {
+        token_address: tokenAddress,
+    });
+    if (response.data.status === 200) {
+        return response.data.data;
+    } else {
+        throw new Error("Failed to fetch top holders");
+    }
+};

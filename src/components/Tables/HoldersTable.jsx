@@ -1,29 +1,49 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fetchTopHolders } from '../../features/tradesSlice';  // Adjust path if necessary
-import { selectCoinById } from '../../features/coinSlice';  // Adjust path if necessary
+import { getTopHolders, viewCoins } from '../../utils/api';
 import copy from '../../assets/icons/copy.png';
+import Loader from '../Loader';
 
 const HoldersTable = () => {
-    const { id } = useParams();
-    const coin = useSelector((state) => selectCoinById(state, id));
-    const dispatch = useDispatch();
-
-    const { holders, holdersLoading, holdersError } = useSelector((state) => state.trades);
+    const { id } = useParams(); 
+    const [holders, setHolders] = useState([]); 
+    const [coins, setCoins] = useState(); 
+    const [loading, setLoading] = useState(true); 
+    const [error, setError] = useState(null); 
 
     useEffect(() => {
-        if (coin?.coin?.token_address) {
-            dispatch(fetchTopHolders(coin.coin.token_address));
-        }
-    }, [coin, dispatch]);
+        const fetchHolders = async () => {
+            try {
+                const data = await viewCoins(''); 
+                setCoins(data);
 
-    if (holders.length <= 0) return <div>No data Found</div>;
+                const filteredCoin = data?.data?.find(coin => coin.coin?._id === id);
 
-    if (holdersLoading) return <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>;
+                if (filteredCoin) {
+                    const tokenAddress = filteredCoin.coin?.token_address;
 
-    if (holdersError) return <div>Error: {holdersError}</div>;
+                    const topholderdata = await getTopHolders(tokenAddress);
+                    setHolders(topholderdata);
+                } else {
+                    setError("Coin not found");
+                }
+            } catch (err) {
+                setError(err.message); 
+            } finally {
+                setLoading(false);
+            }
+        };
 
+        fetchHolders();
+    }, [id]);
+    
+    if (loading) {
+        return <Loader />;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
 
     return (
         <div>

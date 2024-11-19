@@ -46,7 +46,7 @@ const Hero = () => {
     const stroke = 10;
     const normalizedRadius = radius - stroke * 2;
     const circumference = normalizedRadius * 2 * Math.PI;
-    const strokeDashoffset = circumference - (progress / 100) * circumference;
+    const strokeDashoffset = circumference - (kingOfHill?.kingOfTheHill?.bonding_curve_progress / 100) * circumference;
 
     return (
         <div className='py-8 px-2 pb-0 md:px-4 flex flex-col items-center'>
@@ -80,12 +80,12 @@ const Hero = () => {
                         />
                     </svg>
                     <div className="PixelOperatorbold absolute inset-0 flex items-center justify-center text-[#FFF9F9] text-xl font-bold">
-                        {progress}
+                        {kingOfHill?.kingOfTheHill?.bonding_curve_progress}
                     </div>
                 </div>
 
                 <div className='flex justify-center items-center p-1 w-[55px] h-[55px] bg-[#D680FF] rounded-2xl'>
-                    <img src={`http://localhost:5000${kingOfHill?.kingOfTheHill?.metadata?.image}`} alt="" />
+                    <img src={`http://16.171.150.41:5000${kingOfHill?.kingOfTheHill?.metadata?.image}`} alt="" />
                 </div>
 
                 <div className='flex items-center gap-4'>
@@ -94,8 +94,8 @@ const Hero = () => {
                     <span className='PixelOperator lightWhite text-[18px]'>$ {kingOfHill?.kingOfTheHill?.metadata?.name}</span>
                 </div>
 
-                <span className='PixelOperator lightWhite text-[18px]'>Marketcap</span>
-                <span className='PixelOperator text-[#FDA6FF] text-[22px]'>$16,221.07</span>
+                <span className='PixelOperator lightWhite text-[18px] text-center'>Marketcap</span>
+                <span className='PixelOperator text-[#FDA6FF] text-[22px]'>$ {kingOfHill?.kingOfTheHill?.market_cap}</span>
             </div>
 
             <div className='flex items-center justify-center gap-1 w-full max-w-[516px]'>

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTrades } from '../../features/tradesSlice';
 import logoSmall from '../../assets/icons/logoSmall.png';
@@ -8,6 +8,7 @@ const TradesTable = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const { trades, loading, error } = useSelector((state) => state.trades);
+    console.log("trades",trades)
 
     useEffect(() => {
         dispatch(fetchTrades(id));
@@ -32,12 +33,12 @@ const TradesTable = () => {
                     {trades.slice(0, 3).map((trade) => (
                         <tr key={trade._id} className='border border-[#FFF] text-xs'>
                             <td className="px-4 py-4">
-                                <div className='flex items-center gap-1 ml-[-8px]'>
+                                <Link to={`/userprofile/${trade?.account?._id}`} className='flex items-center gap-1 ml-[-8px]'>
                                     <img src={`http://16.171.150.41:5000${trade?.token_id?.image}`} alt="" className="w-6 h-6 rounded-full" />
-                                    <span className='Inter text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8E8DC7]'>
+                                    <span className='Inter text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8E8DC7] hover:underline'>
                                         {trade.account.user_name}
                                     </span>
-                                </div>
+                                </Link>
                             </td>
                             <td className="px-4 py-4">{trade.type}</td>
                             <td className="px-4 py-4">{new Date(trade.created_at).toLocaleString()}</td>

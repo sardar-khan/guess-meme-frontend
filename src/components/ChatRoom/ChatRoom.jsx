@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import logoSmall from '../../assets/icons/logoSmall.png'
 import cmtImg from '../../assets/images/cmtImg.png'
 import cmtImg2 from '../../assets/images/cmtImg2.png'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import axios from 'axios'
 import ReferralModal from '../Modals/ReferralModal'
 import { selectCoinById } from '../../features/coinSlice'
@@ -52,44 +52,40 @@ const ChatRoom = () => {
     return (
         <>
             <h2>ChatRoom</h2>
-            <div className='flex flex-col gap-1 mt-3'>
+            <div className='flex flex-col mt-3'>
 
+                <div className='secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]'>
+                    <div className='flex items-center gap-1'>
+                        <img src={logoSmall} alt="" />
+                        <span className='Inter text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8281c9]'>{coin?.coin?.name}</span>
+                        <p className='Inter text-black text-[10px] font-medium'>
+                            {new Date(coin?.latestThread?.createdAt).toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}
+                        </p>
 
+                    </div>
+                    <div className='flex gap-1'>
+                        {coin?.coin?.image !== null && (
+                            <div className='w-[128px] h-full max-h-[128px]'>
+                                <img src={`http://16.171.150.41:5000${coin?.coin?.image}`} className='w-full h-full' alt="" />
+                            </div>
+                        )}
+                        <div className="pl-3 w-[calc(100%-128px)]">
+                            <h5 className='Inter text-[#121212] text-sm font-bold'>GOD PEPE (ticker: {coin?.coin?.ticker})</h5>
+                            <p className='Inter text-sm font-medium'>
+                                {coin?.coin?.description}
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
                 {threads ?
                     <div>
-
-                        <div className='secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]'>
-                            <div className='flex items-center gap-1'>
-                                <img src={logoSmall} alt="" />
-                                <span className='Inter text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8281c9]'>{coin?.coin?.name}</span>
-                                <p className='Inter text-black text-[10px] font-medium'>
-                                    {new Date(coin?.latestThread?.createdAt).toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}
-                                </p>
-
-                            </div>
-                            <div className='flex gap-1'>
-                                {coin?.coin?.image !== null && (
-                                    <div className='w-[128px] h-full max-h-[128px]'>
-                                        <img src={`http://16.171.150.41:5000${coin?.coin?.image}`} className='w-full h-full' alt="" />
-                                    </div>
-                                )}
-                                <div className="pl-3 w-[calc(100%-128px)]">
-                                    <h5 className='Inter text-[#121212] text-sm font-bold'>GOD PEPE (ticker: {coin?.coin?.ticker})</h5>
-                                    <p className='Inter text-sm font-medium'>
-                                        {coin?.coin?.description}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-
                         {/* Referral */}
                         {threads?.data?.map((item, index) => (
                             <div key={index} className='secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]'>
                                 <div className='flex items-center gap-2'>
                                     <img src={logoSmall} alt="" />
-                                    <span className='Inter text-black text-[10px] font-semibold p-[2px] rounded-md bg-[#8E8DC7] cursor-pointer hover:underline'>FoykzN (dev)</span>
+                                    <Link to={`/userprofile/${item?._id}`} className='Inter text-black text-[10px] font-semibold p-[2px] rounded-md bg-[#8E8DC7] cursor-pointer hover:underline'>FoykzN (dev)</Link>
                                     <p className='Inter text-[#343434] text-[10px] font-semibold'>
                                         {new Date(item?.createdAt).toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}
                                     </p>

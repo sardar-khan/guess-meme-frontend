@@ -3,18 +3,20 @@ import { useParams } from 'react-router-dom';
 import { getTopHolders, viewCoins } from '../../utils/api';
 import copy from '../../assets/icons/copy.png';
 import Loader from '../Loader';
+import { toast } from 'react-toastify';
 
 const HoldersTable = () => {
-    const { id } = useParams(); 
-    const [holders, setHolders] = useState([]); 
-    const [coins, setCoins] = useState(); 
-    const [loading, setLoading] = useState(true); 
-    const [error, setError] = useState(null); 
+    const { id } = useParams();
+    const [holders, setHolders] = useState([]);
+    const [coins, setCoins] = useState();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [disabledCopy, setDisabledCopy] = useState({});
 
     useEffect(() => {
         const fetchHolders = async () => {
             try {
-                const data = await viewCoins(''); 
+                const data = await viewCoins('');
                 setCoins(data);
 
                 const filteredCoin = data?.data?.find(coin => coin.coin?._id === id);
@@ -28,7 +30,7 @@ const HoldersTable = () => {
                     setError("Coin not found");
                 }
             } catch (err) {
-                setError(err.message); 
+                setError(err.message);
             } finally {
                 setLoading(false);
             }
@@ -36,7 +38,20 @@ const HoldersTable = () => {
 
         fetchHolders();
     }, [id]);
-    
+
+    const handleCopy = (address) => {
+        navigator.clipboard.writeText(address).then(() => {
+            toast.success('Address copied!');
+            setDisabledCopy((prev) => ({ ...prev, [address]: true }));
+
+            setTimeout(() => {
+                setDisabledCopy((prev) => ({ ...prev, [address]: false }));
+            }, 3000);
+        }).catch(() => {
+            toast.error('Failed to copy address!');
+        });
+    };
+
     if (loading) {
         return <Loader />;
     }
@@ -60,8 +75,16 @@ const HoldersTable = () => {
                         <tr key={index} className='border border-[#FFF] text-xs'>
                             <td className="px-4 py-4">
                                 <div className='flex items-center gap-1'>
-                                    <span className='Inter text-[#671BBC] text-[12px] font-medium p-[2px] rounded-md'>{holder.user_name}</span>
-                                    <img src={copy} alt="copy icon" />
+                                    <span className='Inter text-[#671BBC] text-[12px] font-medium p-[2px] rounded-md'>
+                                        {`${holder.address.slice(0, 6)}...${holder.address.slice(-4)}`}
+                                    </span>
+                                    <img
+                                        src={copy}
+                                        alt="copy icon"
+                                        onClick={() => !disabledCopy[holder.address] && handleCopy(holder.address)}
+                                        className={`cursor-pointer ${disabledCopy[holder.address] ? 'opacity-50' : ''}`}
+                                        title={disabledCopy[holder.address] ? 'Please wait...' : 'Copy address'}
+                                    />
                                 </div>
                             </td>
                             <td className="px-4 py-4">{holder.amount}</td>

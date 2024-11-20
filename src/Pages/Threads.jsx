@@ -7,16 +7,28 @@ import HoldersTable from '../components/Tables/HoldersTable';
 import CandlestickComboChart from '../components/Charts/CandlestickComboChart';
 import PlaceTrade from '../components/PlaceTrade/PlaceTrade';
 import logoSmall from '../assets/icons/logoSmall.png';
-import { useSelector } from 'react-redux';
-import { selectCoinById } from '../features/coinSlice';
 import { toast } from 'react-toastify';
+import { viewCoin } from '../utils/api';
 
 const Threads = () => {
     const { id } = useParams();
-    const coin = useSelector((state) => selectCoinById(state, id));
+    const [coinData, setCoinData] = useState(null);
     const [isDisabled, setIsDisabled] = useState(false);
 
-    console.log("Trade Coin:", coin)
+    useEffect(() => {
+        const fetchCoinData = async () => {
+            try {
+                const response = await viewCoin(id);
+                console.log('Single Coin Data:', response);
+                setCoinData(response?.data);
+            } catch (error) {
+                console.error('Error fetching coin data:', error);
+                toast.error('Failed to fetch coin data.');
+            }
+        };
+
+        fetchCoinData();
+    }, [id]);
 
     const handleCopy = () => {
         navigator.clipboard.writeText(id).then(() => {
@@ -33,22 +45,18 @@ const Threads = () => {
 
     return (
         <div className='py-10 px-4 !pb-[100px] md:p-10'>
-
             <Link to='/' className='flex items-center gap-2 w-fit'>
                 <img src={Arrowback} alt="" />
                 <span className='Inter text-[#515151] font-normal text-xs'>GO BACK</span>
             </Link>
 
-            {/* {error ? (
-                <div className='text-red-500 text-2xl mt-5 SegoeUi'>{error}</div>
-            ) : ( */}
             <div className='flex justify-between flex-col lg:flex-row gap-3'>
                 <div className='w-full lg:w-[70%] mt-5'>
                     <div className='flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between mb-[20px]'>
                         <div className='flex items-end gap-[15px] flex-wrap lg:flex-nowrap'>
-                            <span className='Inter text-[#515151] font-normal text-xs'>{coin?.coin?.name}</span>
-                            <span className='Inter text-[#515151] font-normal text-xs'>Ticker: {coin?.coin?.ticker}</span>
-                            <span className='Inter text-[#662286] font-normal text-xs'>Market cap: ${coin?.market_cap}</span>
+                            <span className='Inter text-[#515151] font-normal text-xs'>{coinData?.name}</span>
+                            <span className='Inter text-[#515151] font-normal text-xs'>Ticker: {coinData?.ticker}</span>
+                            <span className='Inter text-[#662286] font-normal text-xs'>Market cap: ${coinData?.market_cap}</span>
                             <div className='flex items-end gap-2'>
                                 <span className='Inter text-[#515151] font-normal text-xs'>CA:</span>
                                 <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
@@ -76,8 +84,8 @@ const Threads = () => {
                         <div className='Inter flex text-xs items-end text-[#662286] whitespace-nowrap'>
                             created by:
                             <div className='flex items-end gap-1'>
-                                <img src={logoSmall} alt="" />
-                                <span className='Inter text-black text-[12px] font-medium p-[2px] rounded-md bg-[#8E8DC7] whitespace-nowrap'>{coin?.coin?.name}</span>
+                                <img src={`http://16.171.150.41:5000${coinData?.metadata?.image}`} alt="" />
+                                <Link to={`/userprofile/${coinData?.creator?._id}`} className='Inter text-black text-[12px] font-medium p-[2px] rounded-md bg-[#8E8DC7] whitespace-nowrap hover:underline'>{coinData?.creator?.user_name}</Link>
                             </div>
                         </div>
                     </div>
@@ -90,7 +98,6 @@ const Threads = () => {
                     <HoldersTable />
                 </div>
             </div>
-            {/* )} */}
         </div>
     );
 };

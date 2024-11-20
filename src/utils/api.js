@@ -201,3 +201,18 @@ export const getTopHolders = async (tokenAddress) => {
         throw new Error("Failed to fetch top holders");
     }
 };
+
+
+
+// ViewCoin
+export const viewCoin = async (coinId) => {
+    try {
+        const response = await apiInstance.post(`/user/view-token`, {
+            params: { id: coinId },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error in View Coin:', error);
+        throw error;
+    }
+};

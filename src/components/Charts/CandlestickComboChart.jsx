@@ -13,7 +13,7 @@ const CandlestickComboChart = () => {
     useEffect(() => {
         const fetchCoinData = async () => {
             try {
-                const response = await axios.get(`http://16.171.150.41:5000/trade/graph-data?token_id=${id}`);
+                const response = await axios.get(`${apiUrl}trade/graph-data?token_id=${id}`);
                 setCoinData(response.data);
                 setError(null);  // Clear any previous errors
                 console.log("Coin Data:", response.data);

@@ -11,6 +11,7 @@ const ConnectButton = () => {
     const { setVisible } = useWalletModal();
     const [connectedAddress, setConnectedAddress] = useState('');
 
+    // console.log("token", localStorage.getItem('token'))
     // Handle the wallet sign-up and authentication
     const handleSignin = useCallback(async () => {
         try {

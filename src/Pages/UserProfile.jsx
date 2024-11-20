@@ -76,15 +76,23 @@ const UserProfile = () => {
                     <div className={`PixelOperator w-fit px-2 py-1 rounded-lg font-semibold border border-[#7539F4] bg-[#7539F4] text-white`}>{activeTab}</div>
 
                     {activeTab === 'coins held' &&
-                        <CardWrapper>
-                            <CoinheldCard />
-                        </CardWrapper>
+                        <>
+                            {profileState?.data?.data?.coins_held?.map((coinHeld, index) => (
+                                <CardWrapper>
+                                    <CoinheldCard coinHeld={coinHeld} />
+                                </CardWrapper>
+                            ))}
+                        </>
                     }
 
                     {activeTab === 'coins created' &&
-                        <CardWrapper>
-                            <CoinsCreatedCard />
-                        </CardWrapper>
+                        <>
+                            {profileState?.data?.data?.user?.coins_created?.map((coinsCreated, index) => (
+                                <CardWrapper>
+                                    <CoinsCreatedCard coinsCreated={coinsCreated} userData={profileState?.data?.data?.user} />
+                                </CardWrapper>
+                            ))}
+                        </>
                     }
                     {activeTab === 'followers' &&
                         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
@@ -119,7 +127,7 @@ const UserProfile = () => {
                     <div className='flex flex-col items-center justify-center'>
                         <div className='bg-[#E9E9E9] p-[5px] text-2xl text-center PixelOperator rounded-lg w-full overflow-hidden'>{profileState?.data?.data?.user?.wallet_address[0]?.address}</div>
                         <div className='w-full'>
-                            <Link to='' className='flex justify-end gap-1 mt-1 PixelOperator'>View on Solscan <img src={Arrow} alt="" /></Link>
+                            <Link to={`https://solscan.io/account/${profileState?.data?.data?.user?.wallet_address[0]?.address}`} target='_blank' className='flex justify-end gap-1 mt-1 PixelOperator'>View on Solscan <img src={Arrow} alt="" /></Link>
                         </div>
                     </div>
                 </CardWrapper>

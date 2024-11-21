@@ -19,7 +19,7 @@ const ConnectButton = () => {
     const handleSignin = useCallback(async () => {
         try {
             if (isConnected && address) {
-                const response = await handleSignUp(address, 'ethereum');
+                const response = await handleSignUp(address, 'solana');
                 if (response?.status === 201 || response?.status === 200) {
                     toast.success(response.message, { autoClose: 1000 });
                     console.log("Authentication:", response.message);

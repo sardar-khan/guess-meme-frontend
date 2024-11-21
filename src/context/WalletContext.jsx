@@ -1,10 +1,12 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const WalletContext = createContext(undefined)
 
 export const WalletApi = ({ children }) => {
+   
+
     return (
-        <WalletContext.Provider value={{}}>
+        <WalletContext.Provider value={{  }}>
             {children}
         </WalletContext.Provider>
     );

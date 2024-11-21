@@ -5,10 +5,13 @@ import solImg from "../../assets/icons/sol.svg";
 
 const WindowDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("SOL");
-  const dropdownRef = useRef(null);
+  const blockChain = localStorage.getItem("blockchain")
 
-  localStorage.setItem("blockchain", selectedOption);
+  const [selectedOption, setSelectedOption] = useState(blockChain === null ? localStorage.setItem("blockchain","SOL") : blockChain);
+
+  const dropdownRef = useRef(null);
+  console.log("selectedOption", selectedOption)
+
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -20,7 +23,9 @@ const WindowDropdown = () => {
 
   const selectOption = (option) => {
     setSelectedOption(option);
+    localStorage.setItem("blockchain", option);
     setIsOpen(false);
+    window.location.reload(); // Refresh the page
   };
 
   useEffect(() => {

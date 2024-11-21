@@ -9,7 +9,7 @@ import { selectCoinById } from '../../features/coinSlice'
 import { useSelector } from 'react-redux'
 // import { fetchCoins, selectCoinById } from '../../features/coinSlice';
 
-const ChatRoom = () => {
+const ChatRoom = ({ coinData }) => {
 
     const { id } = useParams();
     const [threads, setThreads] = useState(null);
@@ -19,6 +19,9 @@ const ChatRoom = () => {
 
     const coin = useSelector((state) => selectCoinById(state, id));
     console.log("trade Coin", coin)
+
+    console.log("coinDatacoinData", coinData)
+
 
     const fetchThreadData = async () => {
         try {
@@ -39,6 +42,8 @@ const ChatRoom = () => {
         fetchThreadData();
     }, [id, threadID]);
 
+
+
     const handleModalSubmit = (data) => {
         console.log("Comment:", data.comment, "Image:", data.image);
     };
@@ -57,22 +62,22 @@ const ChatRoom = () => {
                 <div className='secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]'>
                     <div className='flex items-center gap-1'>
                         <img src={logoSmall} alt="" />
-                        <span className='Inter text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8281c9]'>{coin?.coin?.name}</span>
+                        <span className='Inter text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8281c9]'>{coinData?.metadata?.name}</span>
                         <p className='Inter text-black text-[10px] font-medium'>
-                            {new Date(coin?.latestThread?.createdAt).toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}
+                            {new Date(coinData?.time).toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}
                         </p>
 
                     </div>
                     <div className='flex gap-1'>
                         {coin?.coin?.image !== null && (
                             <div className='w-[128px] h-full max-h-[128px]'>
-                                <img src={`http://16.171.150.41:5000${coin?.coin?.image}`} className='w-full h-full' alt="" />
+                                <img src={`http://16.171.150.41:5000${coinData?.image}`} className='w-full h-full' alt="" />
                             </div>
                         )}
                         <div className="pl-3 w-[calc(100%-128px)]">
-                            <h5 className='Inter text-[#121212] text-sm font-bold'>GOD PEPE (ticker: {coin?.coin?.ticker})</h5>
+                            <h5 className='Inter text-[#121212] text-sm font-bold'>{coinData?.metadata?.name} (ticker: {coinData?.ticker})</h5>
                             <p className='Inter text-sm font-medium'>
-                                {coin?.coin?.description}
+                                {coinData?.metadata?.description}
                             </p>
                         </div>
                     </div>
@@ -84,8 +89,8 @@ const ChatRoom = () => {
                         {threads?.data?.map((item, index) => (
                             <div key={index} className='secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]'>
                                 <div className='flex items-center gap-2'>
-                                    <img src={logoSmall} alt="" />
-                                    <Link to={`/userprofile/${item?._id}`} className='Inter text-black text-[10px] font-semibold p-[2px] rounded-md bg-[#8E8DC7] cursor-pointer hover:underline'>FoykzN (dev)</Link>
+                                    <img src={`${import.meta.env.VITE_API_URL_Img}${item?.user_id?.profile_photo}`} alt="" />
+                                    <Link to={`/userprofile/${item?.user_id?._id}`} className='Inter text-black text-[10px] font-semibold p-[2px] rounded-md bg-[#8E8DC7] cursor-pointer hover:underline'>{item?.user_id?.user_name}</Link>
                                     <p className='Inter text-[#343434] text-[10px] font-semibold'>
                                         {new Date(item?.createdAt).toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}
                                     </p>

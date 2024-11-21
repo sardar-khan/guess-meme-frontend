@@ -207,9 +207,9 @@ export const getTopHolders = async (tokenAddress) => {
 // ViewCoin
 export const viewCoin = async (coinId) => {
     try {
-        const response = await apiInstance.post(`/user/view-token`, {
-            params: { id: coinId },
-        });
+        const response = await apiInstance.post(`user/view-token/${coinId}`);
+        console.log("coinId", coinId)
+        console.log("responseData", response.data)
         return response.data;
     } catch (error) {
         console.error('Error in View Coin:', error);

@@ -90,7 +90,7 @@ const Threads = () => {
                         </div>
                     </div>
                     <CandlestickComboChart />
-                    <ChatRoom />
+                    <ChatRoom coinData={coinData} />
                 </div>
                 <div className='flex flex-col gap-6 w-full lg:w-[30%]'>
                     <PlaceTrade />

@@ -1,9 +1,16 @@
 import { createAppKit } from '@reown/appkit/react'
 
 import { WagmiProvider } from 'wagmi'
-import { arbitrum, mainnet } from '@reown/appkit/networks'
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
+import { SolanaAdapter } from '@reown/appkit-adapter-solana'
+
+import { solana, solanaTestnet, solanaDevnet } from '@reown/appkit/networks'
+import { mainnet, arbitrum, sepolia } from '@reown/appkit/networks'
+
+import { SolflareWalletAdapter, PhantomWalletAdapter } from '@solana/wallet-adapter-wallets'
 
 // 0. Setup queryClient
 const queryClient = new QueryClient()
@@ -20,7 +27,8 @@ const metadata = {
 }
 
 // 3. Set the networks
-const networks = [mainnet, arbitrum]
+const  networks = [mainnet, arbitrum, sepolia, solana, solanaTestnet, solanaDevnet];
+
 
 // 4. Create Wagmi Adapter
 const wagmiAdapter = new WagmiAdapter({
@@ -29,12 +37,19 @@ const wagmiAdapter = new WagmiAdapter({
   ssr: true
 })
 
+// 2. Create Solana adapter
+const solanaWeb3JsAdapter = new SolanaAdapter({
+  wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()]
+})
+
+
 // 5. Create modal
-createAppKit({
-  adapters: [wagmiAdapter],
+const modal = createAppKit({
+  adapters: [wagmiAdapter, solanaWeb3JsAdapter],
   networks,
   projectId,
   metadata,
+  
   allWallets: 'HIDE',
   features: {
     email:false,

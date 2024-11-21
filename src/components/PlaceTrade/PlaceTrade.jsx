@@ -9,11 +9,12 @@ import { fetchTrades } from '../../features/tradesSlice';
 import { selectCoinById } from '../../features/coinSlice';
 
 
-const PlaceTrade = () => {
+const PlaceTrade = ({ coinData }) => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const coin = useSelector((state) => selectCoinById(state, id));
-
+    console.log("PlaceTradeCoinData", coinData)
+    
     const [showSOGs, setShowSOGs] = useState(false);
     const [amount, setAmount] = useState('');
 

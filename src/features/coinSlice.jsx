@@ -39,7 +39,7 @@ const coinSlice = createSlice({
             })
             .addCase(fetchCoins.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.error.message;
+                state.error = action.error?.message;
             });
     },
 });

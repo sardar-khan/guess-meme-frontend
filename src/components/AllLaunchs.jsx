@@ -12,7 +12,9 @@ const AllLaunchs = () => {
     const filteredCoins = useSelector(selectFilteredCoins);
     const [activeTab, setActiveTab] = useState('AllLaunches');
     const [sortOption, setSortOption] = useState('');
-
+    console.log("errorerrorerror", error)
+    console.log("filteredCoins", filteredCoins)
+    
     useEffect(() => {
         if (status === 'idle') {
             dispatch(fetchCoins(sortOption));
@@ -81,7 +83,7 @@ const AllLaunchs = () => {
                                 ))
                             )
                         )}
-                        {status === 'failed' && <div>Error: {error}</div>}
+                        {status === 'failed' && <div>No Coin Found</div>}
                     </>
                 )}
                 {activeTab === 'Revealed' && (

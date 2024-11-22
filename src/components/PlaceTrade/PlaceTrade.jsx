@@ -11,10 +11,11 @@ import { selectCoinById } from '../../features/coinSlice';
 
 const PlaceTrade = ({ coinData }) => {
     const { id } = useParams();
+
     const dispatch = useDispatch();
     const coin = useSelector((state) => selectCoinById(state, id));
     console.log("PlaceTradeCoinData", coinData)
-    
+
     const [showSOGs, setShowSOGs] = useState(false);
     const [amount, setAmount] = useState('');
 
@@ -22,10 +23,11 @@ const PlaceTrade = ({ coinData }) => {
         setShowSOGs(!showSOGs);
     };
 
+    const blockChainType = localStorage.getItem('blockchain') === 'SOL' ? "solana" : "ethereum"
     const handlePlaceTrade = async () => {
         try {
             const response = await BuyToken({
-                account_type: 'solana',
+                account_type: blockChainType,
                 amount: parseFloat(amount),
                 token_amount: 1,
                 token_id: id,

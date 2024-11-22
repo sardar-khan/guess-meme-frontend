@@ -8,18 +8,27 @@ import { handleSignUp } from '../utils/api';
 import { toast } from 'react-toastify';
 
 const ConnectButton = () => {
-  const { address, isConnected } = useAppKitAccount()
-  const { disconnect } = useDisconnect()
-  const { open, close } = useAppKit()
+    const { address, isConnected } = useAppKitAccount()
+    const { disconnect } = useDisconnect()
+    const { open, close } = useAppKit()
 
     const [connectedAddress, setConnectedAddress] = useState('');
 
     // console.log("token", localStorage.getItem('token'))
+    const blockchain = localStorage.getItem('blockchain')
+    const checkBlockChain = blockchain === 'SOL' ? 'solana' : blockchain === 'ETH' ? 'ethereum' : blockchain === null ? 'solana' : 'solana';
+
+    if (checkBlockChain === null) {
+        disconnect();
+    }
+    console.log("signinType", blockchain)
+
+    
     // Handle the wallet sign-up and authentication
     const handleSignin = useCallback(async () => {
         try {
             if (isConnected && address) {
-                const response = await handleSignUp(address, 'solana');
+                const response = await handleSignUp(address, checkBlockChain);
                 if (response?.status === 201 || response?.status === 200) {
                     toast.success(response.message, { autoClose: 1000 });
                     console.log("Authentication:", response.message);
@@ -47,7 +56,7 @@ const ConnectButton = () => {
         if (isConnected) {
             disconnect();
         } else {
-          open();
+            open();
         }
     };
 

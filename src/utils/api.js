@@ -6,7 +6,12 @@ import SecureLS from 'secure-ls';
 // Initialize SecureLS
 const ls = new SecureLS({ encodingType: 'aes' });
 const apiUrl = import.meta.env.VITE_API_URL;
+const blockchain = localStorage.getItem("blockchain")
+// const checkBlockChain = blockchain == "SOL"  ? 'solana' : 'ethereum'
+// const checkBlockChain = blockchain === 'SOL' ? 'solana' : blockchain === 'ETH' ? 'ethereum' : 'solana';
+const checkBlockChain = blockchain === 'SOL' ? 'solana' : blockchain === 'ETH' ? 'ethereum' : blockchain === null ? 'solana' : 'solana';
 
+console.log("blockchainssss", blockchain)
 const apiInstance = axios.create({
     baseURL: apiUrl,
 });
@@ -74,7 +79,7 @@ export const editProfile = async ({ user_name, bio, profile_photo }) => {
 // viewCoins function
 export const viewCoins = async (sortBy = '') => {
     try {
-        const url = sortBy ? `user/view-coins?sortBy=${sortBy}` : 'user/view-coins';
+        const url = sortBy ? `user/view-coins?sortBy=${sortBy}` : `user/view-coins?type=${checkBlockChain}`;
         const response = await apiInstance.get(url);
         console.log('ViewCoins', response.data);
         return response.data;
@@ -207,7 +212,7 @@ export const getTopHolders = async (tokenAddress) => {
 // ViewCoin
 export const viewCoin = async (coinId) => {
     try {
-        const response = await apiInstance.post(`user/view-token/${coinId}`);
+        const response = await apiInstance.post(`user/view-token/${coinId} `);
         console.log("coinId", coinId)
         console.log("responseData", response.data)
         return response.data;

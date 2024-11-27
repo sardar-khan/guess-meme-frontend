@@ -36,7 +36,8 @@ const PlaceTrade = ({ coinData }) => {
 
     try {
       if (blockchainType === "ETH") {
-        const tokenAddress = coinData?.token_address;
+        const tokenAddress = '0x76148Cd0a2e51C54B2950a23Dd18aFDF98239e4F';
+        // const tokenAddress = coinData?.token_address;
 
         if (!tokenAddress) {
           throw new Error("Token address is not available");

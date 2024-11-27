@@ -13,7 +13,7 @@
     white-space: nowrap;
     width: 100%;
     min-width: 167px;
-    z-index: 999;
+    /* z-index: 999; */
 }
 
 .themeBtn span {
@@ -22,7 +22,7 @@
     font-style: normal;
     font-weight: 400;
     line-height: normal;
-    z-index: 999;
+    z-index: 998;
 }
 
 .themeBtn::after {

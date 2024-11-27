@@ -6,10 +6,12 @@ import userprofile from '../assets/images/userprofile.png';
 
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import DirectBuy from './DirectBuy';
 
 const Navbar = () => {
     const isOn = useSelector((state) => state.animation.isOn);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -68,9 +70,21 @@ const Navbar = () => {
                     <Link to='/launchToken' className='themeBtn text-xs uppercase'>
                         <span className='PixelOperatorbold'>Launch Token</span>
                     </Link>
-                    <Link to='/editprofile' className='themeBtn w-[35px] min-w-[50px] uppercase'>
+                    {/* <Link to='/editprofile' className='themeBtn w-[35px] min-w-[50px] uppercase'>
                         <span className='mt-[-8px]'>⚡</span>
-                    </Link>
+                    </Link> */}
+                    <button
+                        className='themeBtn w-[35px] min-w-[50px] uppercase'
+                        onClick={() => setIsModalOpen(true)}
+                    >
+                        <span className='mt-[-8px]'>⚡</span>
+                    </button>
+
+                    {/* DirectBuy Modal */}
+                    <DirectBuy
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                    />
                     <Link to='/howitworks' className='themeBtn w-[35px] min-w-[50px] text-xl uppercase'>
                         <span className='PixelOperatorbold'>?</span>
                     </Link>

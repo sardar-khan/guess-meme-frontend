@@ -8,7 +8,7 @@ import Profile from './Pages/Profile';
 import ComingSoon from './Pages/ComingSoon';
 import HowItWorks from './Pages/HowItWorks';
 import RevealsBestPerformers from './Pages/RevealsBestPerformers';
-import UserProfile from './Pages/userProfile';
+import UserProfile from './Pages/UserProfile';
 import Threads from './Pages/Threads';
 import TaskBar from './components/TaskBar/TaskBar';
 import { ToastContainer } from 'react-toastify';

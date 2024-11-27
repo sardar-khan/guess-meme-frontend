@@ -20,6 +20,7 @@ const HoldersTable = () => {
                 setCoins(data);
 
                 const filteredCoin = data?.data?.find(coin => coin.coin?._id === id);
+                console.log("filteredCoinfilteredCoinfilteredCoin", filteredCoin)
 
                 if (filteredCoin) {
                     const tokenAddress = filteredCoin.coin?.token_address;
@@ -38,7 +39,8 @@ const HoldersTable = () => {
 
         fetchHolders();
     }, [id]);
-
+    console.log("coinscoinscoinscoins", coins)
+    
     const handleCopy = (address) => {
         navigator.clipboard.writeText(address).then(() => {
             toast.success('Address copied!');
@@ -76,7 +78,7 @@ const HoldersTable = () => {
                             <td className="px-4 py-4">
                                 <div className='flex items-center gap-1'>
                                     <span className='Inter text-[#671BBC] text-[12px] font-medium p-[2px] rounded-md'>
-                                        {`${holder.address.slice(0, 6)}...${holder.address.slice(-4)}`}
+                                        {`${holder?.address?.slice(0, 6)}...${holder?.address?.slice(-4)}`}
                                     </span>
                                     <img
                                         src={copy}

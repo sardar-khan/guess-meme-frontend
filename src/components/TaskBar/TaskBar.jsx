@@ -28,23 +28,23 @@ const TaskBar = () => {
             <ConnectButton />
 
             <div className='flex items-center gap-[3px] text-xs h-full w-[calc(100%-200px)] sm:w-[calc(100%-330px)] SegoeUi px-0 sm:px-3'>
-                <NavLink to='/' className={({ isActive }) => navLinkClass(isActive)}>
+                {/* <NavLink to='/' className={({ isActive }) => navLinkClass(isActive)}>
                     <img src={dollarbag} alt="Dollar Bag Icon" />
                     Tokens
-                </NavLink>
+                </NavLink> */}
 
-                <NavLink to='/launchToken' className={({ isActive }) => navLinkClass(isActive)}>
+                {/* <NavLink to='/launchToken' className={({ isActive }) => navLinkClass(isActive)}>
                     <img src={rock} alt="Rock Icon" />
                     Launch Token
-                </NavLink>
+                </NavLink> */}
 
                 <NavLink to='/revealsBestPerformers' className={({ isActive }) => navLinkClass(isActive)}>
                     👁️ Reveals
                 </NavLink>
 
-                <NavLink to='/userprofile' className={({ isActive }) => navLinkClass(isActive)}>
+                {/* <NavLink to='/userprofile' className={({ isActive }) => navLinkClass(isActive)}>
                     User profile
-                </NavLink>
+                </NavLink> */}
 
             </div>
 

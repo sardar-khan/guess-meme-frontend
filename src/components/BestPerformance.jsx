@@ -1,7 +1,24 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import LaunchCard from './LaunchCard'
+import { topThreeCoins } from '../utils/api';
 
 const BestPerformance = () => {
+    const [coins, setCoins] = useState([]);
+
+    useEffect(() => {
+        const fetchTopThreeCoins = async () => {
+            try {
+                const data = await topThreeCoins();
+                console.log('Top Three Coins:', data);
+                setCoins(data);
+            } catch (error) {
+                console.error('Error fetching top three coins:', error);
+            }
+        };
+
+        fetchTopThreeCoins();
+    }, []);
+
     return (
         <div className='p-2 pt-10 md:p-10 pb-0'>
             <h2 className=''>Best Performance</h2>

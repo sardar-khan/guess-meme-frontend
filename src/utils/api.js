@@ -222,3 +222,18 @@ export const viewCoin = async (coinId) => {
         throw error;
     }
 };
+
+
+
+
+// Top Three Coins
+// http://localhost:5000/user/top-three-coins/ethereum
+export const topThreeCoins = async () => {
+    try {
+        const response = await apiInstance.get(`/user/top-three-coins/${checkBlockChain}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error in ViewUser:', error);
+        throw error;
+    }
+};

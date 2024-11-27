@@ -85,7 +85,7 @@ const Hero = () => {
                 </div>
 
                 <div className='flex justify-center items-center p-1 w-[55px] h-[55px] bg-[#D680FF] rounded-2xl'>
-                    <img src={`http://16.171.150.41:5000${kingOfHill?.kingOfTheHill?.metadata?.image}`} alt="" />
+                    <img src={`${import.meta.env.VITE_API_URL_Img}${kingOfHill?.kingOfTheHill?.metadata?.image}`} alt="" />
                 </div>
 
                 <div className='flex items-center gap-4'>

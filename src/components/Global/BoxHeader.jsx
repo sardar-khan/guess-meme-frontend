@@ -8,7 +8,7 @@ const BoxHeader = ({label}) => {
     return (
         <div className='flex items-center justify-between gap-1 px-4 py-1 primary-bg'>
             <div className='flex items-center gap-1'>
-                <span className='PixelOperator text-white text-[31px] !font-normal pl-2'>{label}</span>
+                <span className='PixelOperatorbold text-white text-[31px] !font-normal pl-2'>{label}</span>
             </div>
             <div className='flex items-center gap-1 cursor-pointer'>
                 <img src={minimize} alt="" />

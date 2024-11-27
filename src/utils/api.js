@@ -128,6 +128,7 @@ export const uploadImage = async (formData) => {
         });
         return response.data;
     } catch (error) {
+        console.log("errorerrorerrorerror", error)
         throw new Error(error.response?.data?.message || 'Image upload failed');
     }
 };
@@ -171,7 +172,7 @@ export const BuyToken = async ({ account_type, amount, token_amount, token_id, t
 // KingOfTheHill function
 export const KingOfTheHill = async () => {
     try {
-        const response = await apiInstance.get('trade/coin_of_hill');
+        const response = await apiInstance.get(`trade/coin_of_hill/${checkBlockChain}`);
         return response.data;
     } catch (error) {
         console.error('Error fetching profile:', error);

@@ -8,9 +8,11 @@ import TextArea from '../components/Global/TextArea';
 import { createCoin, uploadImage } from '../utils/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useAppKitAccount } from '@reown/appkit/react';
 
 const LaunchTokens = () => {
     const dispatch = useDispatch();
+    const { address, isConnected } = useAppKitAccount()
     const [name, setName] = useState('');
     const [ticker, setTicker] = useState('');
     const [revealTime, setRevealTime] = useState('');
@@ -29,18 +31,23 @@ const LaunchTokens = () => {
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const formData = new FormData();
-            formData.append('profile_photo', file);
-            setFileName(file.name);
+        if (isConnected) {
+            if (file) {
+                const formData = new FormData();
+                formData.append('profile_photo', file);
+                setFileName(file.name);
 
-            try {
-                const data = await uploadImage(formData);
-                setImageUrl(data.imageUrl);
-                toast.success('Image uploaded successfully!');
-            } catch (error) {
-                toast.error(`Error uploading image: ${error.message}`);
+                try {
+                    const data = await uploadImage(formData);
+                    setImageUrl(data.imageUrl);
+                    toast.success('Image uploaded successfully!');
+                } catch (error) {
+                    console.log("errorerror", error.message)
+                    toast.error(`Error uploading image: ${error.message}`);
+                }
             }
+        } else {
+            toast.error('Connect Wallet First')
         }
     };
 
@@ -105,12 +112,12 @@ const LaunchTokens = () => {
                             <div className='flex flex-col gap-9 p-[20px]'>
 
                                 <div className='flex flex-col sm:flex-row gap-6 sm:gap-2'>
-                                    <InputField label="Name:" value={name} onChange={(e) => setName(e.target.value)} />
-                                    <InputField label="Ticker:" value={ticker} onChange={(e) => setTicker(e.target.value)} />
+                                    <InputField label="Name:" value={name} onChange={(e) => setName(e.target.value)} checkRequired={true} />
+                                    <InputField label="Ticker:" value={ticker} onChange={(e) => setTicker(e.target.value)} checkRequired={true} />
                                 </div>
 
                                 <div className='flex items-center gap-4'>
-                                    <label htmlFor="imageUpload" className='formLabel min-w-auto md:min-w-[150px] text-right'>Image:</label>
+                                    <label htmlFor="imageUpload" className='formLabel min-w-auto md:min-w-[150px] text-right'>*Image:</label>
                                     <input
                                         type="file"
                                         id="imageUpload"
@@ -125,12 +132,12 @@ const LaunchTokens = () => {
                                     {fileName && <span className="ml-2 text-gray-700">{fileName}</span>} {/* Display file name */}
                                 </div>
 
-                                <TextArea value={description} onChange={(e) => setDescription(e.target.value)} />
+                                <TextArea value={description} onChange={(e) => setDescription(e.target.value)} checkRequired={true} />
 
                                 <div className='flex flex-col sm:flex-row gap-6 sm:gap-2'>
 
                                     <div className="flex flex-col sm:flex-row sm:items-center items-start gap-4">
-                                        <label className='formLabel min-w-auto md:min-w-[150px] text-right'>Reveal Time:</label>
+                                        <label className='formLabel min-w-auto md:min-w-[150px] text-right'><>*</>Reveal Time:</label>
                                         <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
                                             <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
                                                 <input
@@ -147,7 +154,7 @@ const LaunchTokens = () => {
 
                                 </div>
 
-                                <InputField label="Supply:" value={maxSupply} onChange={(e) => setMaxSupply(e.target.value)} type='number' />
+                                {/* <InputField label="Supply:" value={maxSupply} onChange={(e) => setMaxSupply(e.target.value)} type='number' /> */}
                                 <InputField label="Website (Optional):" />
                                 <InputField label="Telegram (Optional):" />
                                 <InputField label="Twitter (Optional):" />

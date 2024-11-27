@@ -22,8 +22,8 @@ const UserProfile = () => {
     const tabs = [
         { id: 'coins held', label: 'Coins Held' },
         { id: 'coins created', label: 'Coins Created' },
-        { id: 'followers', label: 'Followers' },
-        { id: 'following', label: 'Following' },
+        // { id: 'followers', label: 'Followers' },
+        // { id: 'following', label: 'Following' },
     ];
 
     const [profileState, setProfileState] = useState({
@@ -65,11 +65,11 @@ const UserProfile = () => {
                         <img src={userprofileImg} className='w-[80px] h-[80px]' alt="" />
                         <div className='text-center'>
                             <h5 className='PixelOperatorbold text-xl'>{profileState?.data?.data?.user?.user_name}</h5>
-                            <p className='text-base'>5 followers</p>
+                            {/* <p className='text-base'>5 followers</p> */}
                             <p className='text-base'>{profileState?.data?.data?.user?.bio}</p>
                         </div>
                     </div>
-                    <button className='themeBtn w-fit mx-auto mt-4'><span className='!text-xs'>follow</span></button>
+                    {/* <button className='themeBtn w-fit mx-auto mt-4'><span className='!text-xs'>follow</span></button> */}
                 </CardWrapper>
                 {/* tabs start */}
                 <div className='mt-7'>
@@ -94,7 +94,7 @@ const UserProfile = () => {
                             ))}
                         </>
                     }
-                    {activeTab === 'followers' &&
+                    {/* {activeTab === 'followers' &&
                         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                             <SmallCardWrapper>
                                 <Followers img={cmtImg} />
@@ -113,7 +113,7 @@ const UserProfile = () => {
                                 <Follwoing img={cmtImg} />
                             </SmallCardWrapper>
                         </div>
-                    }
+                    } */}
 
                 </div>
                 {/* tabs End */}
@@ -132,14 +132,14 @@ const UserProfile = () => {
                     </div>
                 </CardWrapper>
 
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                {/* <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                     <CardWrapper>
                         <p className='text-base text-center flex justify-center items-center gap-1'>Mentions received: 12 <img src={commet} alt="" /></p>
                     </CardWrapper>
                     <CardWrapper>
                         <p className='text-base text-center flex justify-center items-center gap-1 text-[#D9223E]'>Likes Received: 817 <img src={heart} alt="" /></p>
                     </CardWrapper>
-                </div>
+                </div> */}
 
                 <CardWrapper>
                     <div className='flex flex-col gap-1'>

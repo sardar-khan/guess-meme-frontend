@@ -71,7 +71,7 @@ const ChatRoom = ({ coinData }) => {
                     <div className='flex gap-1'>
                         {coin?.coin?.image !== null && (
                             <div className='w-[128px] h-full max-h-[128px]'>
-                                <img src={`http://16.171.150.41:5000${coinData?.image}`} className='w-full h-full' alt="" />
+                                <img src={`${import.meta.env.VITE_API_URL_Img}${coinData?.image}`} className='w-full h-full' alt="" />
                             </div>
                         )}
                         <div className="pl-3 w-[calc(100%-128px)]">
@@ -101,7 +101,7 @@ const ChatRoom = ({ coinData }) => {
                                 <div className='flex gap-1'>
                                     {item?.image !== null && item?.image !== '' && (
                                         <div className='w-[128px] h-full max-h-[128px]'>
-                                            <img src={`http://16.171.150.41:5000${item?.image}`} className='w-full h-full' alt="" />
+                                            <img src={`${import.meta.env.VITE_API_URL_Img}${item?.image}`} className='w-full h-full' alt="" />
                                         </div>
                                     )}
 

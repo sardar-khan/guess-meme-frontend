@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getTopHolders, viewCoins } from '../../utils/api';
 import copy from '../../assets/icons/copy.png';
@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 const HoldersTable = () => {
     const { id } = useParams();
     const [holders, setHolders] = useState([]);
+    // eslint-disable-next-line no-unused-vars
     const [coins, setCoins] = useState();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -83,13 +84,13 @@ const HoldersTable = () => {
                                     <img
                                         src={copy}
                                         alt="copy icon"
-                                        onClick={() => !disabledCopy[holder.address] && handleCopy(holder.address)}
-                                        className={`cursor-pointer ${disabledCopy[holder.address] ? 'opacity-50' : ''}`}
-                                        title={disabledCopy[holder.address] ? 'Please wait...' : 'Copy address'}
+                                        onClick={() => !disabledCopy[holder?.address] && handleCopy(holder?.address)}
+                                        className={`cursor-pointer ${disabledCopy[holder?.address] ? 'opacity-50' : ''}`}
+                                        title={disabledCopy[holder?.address] ? 'Please wait...' : 'Copy address'}
                                     />
                                 </div>
                             </td>
-                            <td className="px-4 py-4">{holder.amount}</td>
+                            <td className="px-4 py-4">{holder?.amount}</td>
                         </tr>
                     ))}
                 </tbody>

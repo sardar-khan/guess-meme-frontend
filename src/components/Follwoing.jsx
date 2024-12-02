@@ -1,6 +1,7 @@
 import React from 'react'
+import img from '../assets/images/Group 159.png'
 
-const Follwoing = ({ img }) => {
+const Follwoing = ({ Follwoing, FollwoingLength }) => {
     return (
         <div className='flex flex-col items-center justify-center'>
             <div className='w-[60px] h-[60px] border rounded-full flex justify-center items-center object-cover overflow-hidden'>

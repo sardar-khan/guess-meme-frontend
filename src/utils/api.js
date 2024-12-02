@@ -79,7 +79,7 @@ export const editProfile = async ({ user_name, bio, profile_photo }) => {
 // viewCoins function
 export const viewCoins = async (sortBy = '') => {
     try {
-        const url = sortBy ? `user/view-coins?sortBy=${sortBy}` : `user/view-coins?type=${checkBlockChain}`;
+        const url = sortBy ? `user/view-coins?sortBy=${sortBy}&type=${checkBlockChain}` : `user/view-coins?type=${checkBlockChain}`;
         const response = await apiInstance.get(url);
         console.log('ViewCoins', response.data);
         return response.data;
@@ -235,5 +235,58 @@ export const topThreeCoins = async () => {
     } catch (error) {
         console.error('Error in ViewUser:', error);
         throw error;
+    }
+};
+
+
+// http://localhost:5000/admin/admin-addresses/ethereum
+export const adminTokenAddress = async () => {
+    try {
+        const response = await apiInstance.get(`/admin/admin-addresses/${checkBlockChain}`);
+        console.log("adminTokenAddress", response.data)
+        return response.data;
+    } catch (error) {
+        console.error('Error in ViewUser:', error);
+        throw error;
+    }
+};
+
+
+// http://localhost:5000/user/view-profile
+export const viewUserprofile = async () => {
+    try {
+        const response = await apiInstance.get(`/user/view-profile`);
+        console.log("viewUserprofile", response.data)
+        return response.data;
+    } catch (error) {
+        console.error('Error in ViewUser:', error);
+        throw error;
+    }
+};
+
+
+export const CheckFollow = async (id) => {
+    try {
+        const response = await apiInstance.post('user/check-follow', {
+            user_id: id
+        });
+        console.log('CheckFollow', response.data);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+
+
+export const toggleFollow = async (id) => {
+    try {
+        const response = await apiInstance.post('user/toggle-follow', {
+            user_id: id
+        });
+        console.log('toggleFollow', response.data);
+        return response.data;
+    } catch (error) {
+        console.log(error);
     }
 };

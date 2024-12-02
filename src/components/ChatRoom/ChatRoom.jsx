@@ -7,6 +7,8 @@ import axios from 'axios'
 import ReferralModal from '../Modals/ReferralModal'
 import { selectCoinById } from '../../features/coinSlice'
 import { useSelector } from 'react-redux'
+import { Web3ModalProvider } from '../../web3/Web3Provider'
+import { useAppKitAccount } from '@reown/appkit/react'
 // import { fetchCoins, selectCoinById } from '../../features/coinSlice';
 
 const ChatRoom = ({ coinData }) => {
@@ -14,7 +16,10 @@ const ChatRoom = ({ coinData }) => {
     const { id } = useParams();
     const [threads, setThreads] = useState(null);
     const [threadID, setThreadID] = useState('');
+    const [refferalError, setRefferalError] = useState(null);
     const [error, setError] = useState(null);
+    const { isConnected } = useAppKitAccount()
+
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const coin = useSelector((state) => selectCoinById(state, id));
@@ -40,7 +45,7 @@ const ChatRoom = ({ coinData }) => {
     };
     useEffect(() => {
         fetchThreadData();
-    }, [id, threadID]);
+    }, [id, threadID, refferalError, isConnected]);
 
 
 
@@ -52,6 +57,17 @@ const ChatRoom = ({ coinData }) => {
     const handleReplyId = (threadid) => {
         setIsModalOpen(true)
         setThreadID(threadid)
+    }
+
+    const openModalReferral = () => {
+        if (isConnected) {
+            setIsModalOpen(true);
+            setThreadID('');
+            setRefferalError('')
+        }
+        else {
+            setRefferalError('Connect Wallet First')
+        }
     }
 
     return (
@@ -71,7 +87,7 @@ const ChatRoom = ({ coinData }) => {
                     <div className='flex gap-1'>
                         {coin?.coin?.image !== null && (
                             <div className='w-[128px] h-full max-h-[128px]'>
-                                <img src={`${import.meta.env.VITE_API_URL_Img}${coinData?.image}`} className='w-full h-full' alt="" />
+                                <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`} className='w-full h-full' alt="" />
                             </div>
                         )}
                         <div className="pl-3 w-[calc(100%-128px)]">
@@ -89,7 +105,7 @@ const ChatRoom = ({ coinData }) => {
                         {threads?.data?.map((item, index) => (
                             <div key={index} className='secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]'>
                                 <div className='flex items-center gap-2'>
-                                    <img src={`${import.meta.env.VITE_API_URL_Img}${item?.user_id?.profile_photo}`} alt="" />
+                                    <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${item?.user_id?.profile_photo}`} alt="" />
                                     <Link to={`/userprofile/${item?.user_id?._id}`} className='Inter text-black text-[10px] font-semibold p-[2px] rounded-md bg-[#8E8DC7] cursor-pointer hover:underline'>{item?.user_id?.user_name}</Link>
                                     <p className='Inter text-[#343434] text-[10px] font-semibold'>
                                         {new Date(item?.createdAt).toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}
@@ -101,7 +117,7 @@ const ChatRoom = ({ coinData }) => {
                                 <div className='flex gap-1'>
                                     {item?.image !== null && item?.image !== '' && (
                                         <div className='w-[128px] h-full max-h-[128px]'>
-                                            <img src={`${import.meta.env.VITE_API_URL_Img}${item?.image}`} className='w-full h-full' alt="" />
+                                            <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${item?.image}`} className='w-full h-full' alt="" />
                                         </div>
                                     )}
 
@@ -121,8 +137,9 @@ const ChatRoom = ({ coinData }) => {
                     </div>
                 }
 
+                {refferalError && <div className='text-red-600 Inter'>{refferalError}</div>}
                 <button
-                    onClick={() => { setIsModalOpen(true), setThreadID('') }}
+                    onClick={() => { openModalReferral() }}
                     className='themeBtn w-fit px-5 py-4 SegoeUi mt-5'>
                     <span>Referral</span>
                 </button>

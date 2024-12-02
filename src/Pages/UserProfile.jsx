@@ -10,20 +10,28 @@ import CoinsCreatedCard from '../components/CoinsCreatedCard'
 import Followers from '../components/Followers'
 import SmallCardWrapper from '../components/CardWrapper/SmallCardWrapper'
 import cmtImg from '../assets/images/cmtImg.png'
+import editIcon from '../assets/icons/edit.png'
+import img from '../assets/images/Group 159.png'
+
 import userprofileImg from '../assets/images/userprofile.png'
 import Follwoing from '../components/Follwoing'
-import { ViewUser } from '../utils/api'
+import { CheckFollow, toggleFollow, ViewUser, viewUserprofile } from '../utils/api'
+import { useAppKitAccount } from '@reown/appkit/react'
 
 const UserProfile = () => {
     const { id } = useParams();
 
-    const [activeTab, setActiveTab] = useState('coins held');
+    const [activeTab, setActiveTab] = useState('coins created');
+    const [showUserData, setShowUserData] = useState(false);
+    const [checkFollow, setCheckFollow] = useState();
+    const [userID, setUserID] = useState();
+    const { isConnected } = useAppKitAccount()
 
     const tabs = [
-        { id: 'coins held', label: 'Coins Held' },
         { id: 'coins created', label: 'Coins Created' },
-        // { id: 'followers', label: 'Followers' },
-        // { id: 'following', label: 'Following' },
+        { id: 'coins held', label: 'Coins Held' },
+        { id: 'followers', label: 'Followers' },
+        { id: 'following', label: 'Following' },
     ];
 
     const [profileState, setProfileState] = useState({
@@ -35,9 +43,14 @@ const UserProfile = () => {
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
+                // First, fetch user profile data
                 const data = await ViewUser(id);
+
+                // Call viewUserprofile function as well
+
                 setProfileState({ data, loading: false, error: null });
             } catch (err) {
+                // Handle errors in case of failure
                 setProfileState({
                     data: null,
                     loading: false,
@@ -48,10 +61,64 @@ const UserProfile = () => {
 
         fetchUserProfile();
     }, []);
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const viewUserprofileData = await viewUserprofile();
+
+                console.log("viewUserprofileData", viewUserprofileData?.data?._id)
+
+                viewUserprofileData?.data?._id === id ? setShowUserData(true) : setShowUserData(false)
+                setUserID(viewUserprofileData?.data?._id)
+            } catch (error) {
+                console.log("viewUserprofileData error", error)
+            }
+        }
+
+        fetchUserProfile();
+    }, [showUserData, userID]);
+
+    useEffect(() => {
+        const FetchCheckFollowData = async () => {
+            try {
+                const CheckFollowData = await CheckFollow(id);
+                setCheckFollow(CheckFollowData.follow_status);
+                console.log("CheckFollowData", CheckFollowData.follow_status);
+
+            } catch (error) {
+                console.log("CheckFollowData error", error)
+            }
+        }
+
+        FetchCheckFollowData();
+    }, [checkFollow]);
+
+    const handleToggleFollow = async () => {
+        try {
+            const response = await toggleFollow(id);
+            if (response) {
+                console.log("Follow status toggled successfully:", response);
+                const refetchFollowData = await CheckFollow(id);
+                setCheckFollow(refetchFollowData.follow_status);
+                console.log("refetchFollowData", refetchFollowData.follow_status);
+            } else {
+                console.log("Failed to toggle follow");
+            }
+        } catch (error) {
+            console.error("Error while toggling follow:", error);
+        }
+    };
+
     console.log("profileState", profileState)
+    console.log("showUserData", showUserData)
+    console.log("userID", userID)
 
     if (profileState.loading) return <div className='mt-4'><Loader /></div>;
     if (profileState.error) return <p>Error: {profileState.error}</p>;
+
+
+
 
 
     return (
@@ -61,15 +128,20 @@ const UserProfile = () => {
             <div className='w-full max-w-[100%] lg:max-w-[35%]'>
 
                 <CardWrapper>
-                    <div className='flex flex-col items-center justify-center'>
-                        <img src={userprofileImg} className='w-[80px] h-[80px]' alt="" />
+                    <div className='flex flex-col items-center justify-center relative'>
+                        {showUserData && isConnected && <Link to='/editprofile'><img src={editIcon} className='w-[20px] absolute top-0 right-1 cursor-pointer' alt="" /></Link>}
+                        <img src={img} className='w-[80px] h-[80px]' alt="" />
                         <div className='text-center'>
                             <h5 className='PixelOperatorbold text-xl'>{profileState?.data?.data?.user?.user_name}</h5>
                             {/* <p className='text-base'>5 followers</p> */}
                             <p className='text-base'>{profileState?.data?.data?.user?.bio}</p>
                         </div>
                     </div>
-                    {/* <button className='themeBtn w-fit mx-auto mt-4'><span className='!text-xs'>follow</span></button> */}
+                    <button className="themeBtn w-fit mx-auto mt-4" onClick={handleToggleFollow}>
+                        <span className="!text-xs">
+                            {checkFollow ? "Following" : "Follow"}
+                        </span>
+                    </button>
                 </CardWrapper>
                 {/* tabs start */}
                 <div className='mt-7'>
@@ -77,43 +149,76 @@ const UserProfile = () => {
 
                     {activeTab === 'coins held' &&
                         <>
-                            {profileState?.data?.data?.coins_held?.map((coinHeld, index) => (
-                                <CardWrapper>
-                                    <CoinheldCard coinHeld={coinHeld} />
-                                </CardWrapper>
-                            ))}
+                            {profileState?.data?.data?.coins_held.length === 0 ?
+                                <div className='PixelOperator text-2xl'>
+                                    No Holding Coin
+                                </div>
+                                :
+                                <>
+                                    {profileState?.data?.data?.coins_held?.map((coinHeld, index) => (
+                                        <CardWrapper>
+                                            <CoinheldCard coinHeld={coinHeld} />
+                                        </CardWrapper>
+                                    ))}
+                                </>
+                            }
+
                         </>
                     }
 
                     {activeTab === 'coins created' &&
                         <>
-                            {profileState?.data?.data?.user?.coins_created?.map((coinsCreated, index) => (
-                                <CardWrapper>
-                                    <CoinsCreatedCard coinsCreated={coinsCreated} userData={profileState?.data?.data?.user} />
-                                </CardWrapper>
-                            ))}
+                            {profileState?.data?.data?.user?.coins_created.length === 0 ?
+                                <div className='PixelOperator text-2xl'>
+                                    No Created Coins
+                                </div>
+                                :
+                                <>
+                                    {profileState?.data?.data?.user?.coins_created?.map((coinsCreated, index) => (
+                                        <CardWrapper>
+                                            <CoinsCreatedCard coinsCreated={coinsCreated} userData={profileState?.data?.data?.user} />
+                                        </CardWrapper>
+                                    ))}
+                                </>
+                            }
+
                         </>
                     }
-                    {/* {activeTab === 'followers' &&
+                    {activeTab === 'followers' &&
                         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                            <SmallCardWrapper>
-                                <Followers img={cmtImg} />
-                            </SmallCardWrapper>
-                            <SmallCardWrapper>
-                                <Followers img={userprofileImg} />
-                            </SmallCardWrapper>
+
+                            {profileState?.data?.data?.followers.length === 0 ?
+                                <div className='PixelOperator text-2xl'>
+                                    No Followers
+                                </div>
+                                :
+                                <>
+                                    {profileState?.data?.data?.followers?.map((followers, index) => (
+                                        <SmallCardWrapper>
+                                            <Followers followers={followers} followerLength={profileState?.data?.data?.followers.length} />
+                                        </SmallCardWrapper>
+                                    ))}
+                                </>
+                            }
                         </div>
                     }
                     {activeTab === 'following' &&
                         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                            <SmallCardWrapper>
-                                <Follwoing img={userprofileImg} />
-                            </SmallCardWrapper>
-                            <SmallCardWrapper>
-                                <Follwoing img={cmtImg} />
-                            </SmallCardWrapper>
+                            {profileState?.data?.data?.following.length === 1 ?
+                                <div className='PixelOperator text-2xl'>
+                                    No Following
+                                </div>
+                                :
+                                <>
+                                    {profileState?.data?.data?.followers?.map((followers, index) => (
+                                        <SmallCardWrapper>
+                                            <Follwoing Follwoing={followers} FollwoingLength={profileState?.data?.data?.following.length} />
+                                        </SmallCardWrapper>
+                                    ))}
+                                </>
+                            }
                         </div>
-                    } */}
+                    }
 
                 </div>
                 {/* tabs End */}
@@ -132,17 +237,17 @@ const UserProfile = () => {
                     </div>
                 </CardWrapper>
 
-                {/* <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                     <CardWrapper>
                         <p className='text-base text-center flex justify-center items-center gap-1'>Mentions received: 12 <img src={commet} alt="" /></p>
                     </CardWrapper>
                     <CardWrapper>
                         <p className='text-base text-center flex justify-center items-center gap-1 text-[#D9223E]'>Likes Received: 817 <img src={heart} alt="" /></p>
                     </CardWrapper>
-                </div> */}
+                </div>
 
                 <CardWrapper>
-                    <div className='flex flex-col gap-1'>
+                    <div className='flex flex-row gap-1'>
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}

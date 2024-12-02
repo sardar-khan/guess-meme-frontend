@@ -10,7 +10,7 @@ const AnimationToggle = () => {
     };
 
     return (
-        <div>
+        <div className='hidden lg:block'>
             <div className='Inter flex items-end gap-2'>
                 <div className='flex'>Show animations:</div>
                 <span

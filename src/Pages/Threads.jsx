@@ -84,7 +84,7 @@ const Threads = () => {
                         <div className='Inter flex text-xs items-end text-[#662286] whitespace-nowrap'>
                             created by:
                             <div className='flex items-end gap-1'>
-                                <img className='w-4 h-4 rounded-md' src={`${import.meta.env.VITE_API_URL_Img}${coinData?.metadata?.image}`} alt="" />
+                                <img className='w-4 h-4 rounded-md' src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.metadata?.image}`} alt="" />
                                 <Link to={`/userprofile/${coinData?.creator?._id}`} className='Inter text-black text-[12px] font-medium p-[2px] rounded-md bg-[#8E8DC7] whitespace-nowrap hover:underline'>{coinData?.creator?.user_name}</Link>
                             </div>
                         </div>

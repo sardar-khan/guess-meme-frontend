@@ -7,7 +7,7 @@ const CoinheldCard = ({ coinHeld }) => {
     return (
         <div className='flex flex-col items-center justify-center'>
             <div className='w-[80px] h-[80px] border rounded-full flex object-cover overflow-hidden'>
-                <img src={`${import.meta.env.VITE_API_URL_Img}${coinHeld?.image}`} className='' alt="" />
+                <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinHeld?.image}`} className='' alt="" />
             </div>
             <div className='text-center'>
                 <h5 className='PixelOperatorbold text-xl'>{coinHeld?.name}</h5>

@@ -10,6 +10,9 @@ import {
   buyTokensOnBlockchain,
   sellTokensOnBlockchain,
 } from "./ether-trade-utils";
+import { wallet, mintaddy } from "./config";
+import { buyWithAddress, initializeUserATA } from "./solanaBuySellFunction";
+
 
 // eslint-disable-next-line react/prop-types
 const PlaceTrade = ({ coinData }) => {
@@ -20,7 +23,8 @@ const PlaceTrade = ({ coinData }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [tradeType, setTradeType] = useState("buy"); // Default trade type is "buy"
 
-  const blockchainType = localStorage.getItem("blockchain") || "ETH"; // Default to ETH if not set
+  const blockchainType = localStorage.getItem("blockchain") || "SOL";
+  console.log("coinDataPlaceTrade", coinData?.token_address)
 
   const handleSwitchClick = () => {
     setShowSOGs(!showSOGs);
@@ -35,7 +39,8 @@ const PlaceTrade = ({ coinData }) => {
     setIsLoading(true);
 
     try {
-      if (blockchainType === "ETH") {
+      if (blockchainType === "ETH" && coinData?.status === 'deployed') {
+
         const tokenAddress = '0x76148Cd0a2e51C54B2950a23Dd18aFDF98239e4F';
         // const tokenAddress = coinData?.token_address;
 
@@ -53,7 +58,7 @@ const PlaceTrade = ({ coinData }) => {
 
         if (response?.success) {
           toast.success(
-            `${tradeType === "buy" ? "Buy" : "Sell"} transaction successful`
+            `${tradeType === "buy" ? "buy" : "sell"} transaction successful`
           );
 
           // Update backend after successful blockchain transaction
@@ -67,7 +72,7 @@ const PlaceTrade = ({ coinData }) => {
 
           if (apiResponse?.status === 201) {
             toast.success(
-              `${tradeType === "buy" ? "Buy" : "Sell"} saved successfully`
+              `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
             );
             dispatch(fetchTrades(id)); // Fetch updated trades
           } else {
@@ -80,7 +85,29 @@ const PlaceTrade = ({ coinData }) => {
             response?.error || `Failed to ${tradeType} tokens on blockchain`
           );
         }
-      } else {
+      }
+
+      else if (blockchainType === "SOL" && coinData?.status === 'created') {
+
+
+
+
+        // const apiResponse = await BuyToken({
+        //   account_type: blockchainType.toLowerCase(),
+        //   amount: parseFloat(amount),
+        //   token_amount: 1,
+        //   token_id: id,
+        //   type: tradeType,
+        // });
+
+        // if (apiResponse?.status === 201) {
+        //   toast.success(`${tradeType === "buy" ? "buy" : "sell"} successful`);
+        //   dispatch(fetchTrades(id));
+        // } else {
+        //   throw new Error(`Failed to ${tradeType} tokens`);
+        // }
+      }
+      else {
         // Non-ETH blockchain logic
         const apiResponse = await BuyToken({
           account_type: blockchainType.toLowerCase(),
@@ -91,7 +118,7 @@ const PlaceTrade = ({ coinData }) => {
         });
 
         if (apiResponse?.status === 201) {
-          toast.success(`${tradeType === "buy" ? "Buy" : "Sell"} successful`);
+          toast.success(`${tradeType === "buy" ? "buy" : "sell"} successful`);
           dispatch(fetchTrades(id));
         } else {
           throw new Error(`Failed to ${tradeType} tokens`);
@@ -105,6 +132,17 @@ const PlaceTrade = ({ coinData }) => {
     }
   };
 
+  const handleBuySOl = async () => {
+
+    const SolAtaAddress = await initializeUserATA(wallet.payer, coinData.token_address, mintaddy);
+    console.log("SolAtaAddress", SolAtaAddress)
+    if (SolAtaAddress) {
+      const BuySolToken = await buyWithAddress(SolAtaAddress);
+      console.log("BuySolToken",BuySolToken)
+    }
+  }
+
+
   return (
     <div className="border flex justify-center items-center w-full ">
       <div className="relative w-full border-t-[1px] border-t-[#fff] border-l-[5px] border-l-[#fff] border-r-[2px] border-r-[#353535] border-b-[2px] border-b-[#353535]">
@@ -116,21 +154,19 @@ const PlaceTrade = ({ coinData }) => {
                 <div className="rounded">
                   <div className="flex gap-1 px-3">
                     <button
-                      className={`text-[16px] SegoeUi font-normal text-left w-full px-3 py-2 rounded ${
-                        tradeType === "buy"
-                          ? "bg-[#7539F4] text-white border-2 border-[#ffffff]"
-                          : "bg-[#5F16BC] text-white"
-                      }`}
+                      className={`text-[16px] SegoeUi font-semibold text-center w-full px-3 py-2 rounded ${tradeType === "buy"
+                        ? "bg-[#4ADE80] text-[#202020]"
+                        : "bg-[#1F2937] text-[gray]"
+                        }`}
                       onClick={() => setTradeType("buy")}
                     >
                       Buy
                     </button>
                     <button
-                      className={`text-[16px] SegoeUi font-normal text-left w-full px-3 py-2 rounded ${
-                        tradeType === "sell"
-                          ? "bg-[#7539F4] text-white border-2 border-[#ffffff]"
-                          : "bg-[#5F16BC] text-white"
-                      }`}
+                      className={`text-[16px] SegoeUi font-semibold text-center w-full px-3 py-2 rounded ${tradeType === "sell"
+                        ? "bg-[#F87171] text-white"
+                        : "bg-[#1F2937] text-[gray]"
+                        }`}
                       onClick={() => setTradeType("sell")}
                     >
                       Sell
@@ -180,7 +216,7 @@ const PlaceTrade = ({ coinData }) => {
 
                 <button
                   className="themeBtn Inter w-fit mt-5 mx-auto"
-                  onClick={handleTrade}
+                  onClick={handleBuySOl}
                   disabled={isLoading}
                 >
                   <span>{isLoading ? "Processing..." : "Trade"}</span>

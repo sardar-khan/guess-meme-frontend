@@ -7,6 +7,7 @@ import ConnectButton from '../../web3/ConnectButton';
 
 const TaskBar = () => {
     const [currentTime, setCurrentTime] = useState('');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const updateTime = () => {
         const now = new Date();
@@ -20,32 +21,63 @@ const TaskBar = () => {
     }, []);
 
     const navLinkClass = (isActive) =>
-        `overflow-hidden whitespace-nowrap text-ellipsis text-white flex items-center gap-2 w-full max-w-[150px] ${isActive ? 'taskActive' : 'taskActiveNot'}`;
+        `SegoeUi text-xs overflow-hidden whitespace-nowrap text-ellipsis text-white flex items-center gap-2 w-full min-w-[120px] ${isActive ? 'taskActive' : 'taskActiveNot'}`;
+
+    const dropdownClass = (isDropdownOpen) =>
+        `ml-2 SegoeUi text-xs overflow-hidden whitespace-nowrap text-ellipsis text-white flex items-center justify-between gap-2 w-full min-w-[120px] ${
+            isDropdownOpen ? 'taskActive' : 'taskActiveNot'
+        }`;
 
     return (
         <div className='fixed bottom-0 left-0 right-0 flex justify-between items-center h-[40px] w-full bg-[#6F48A1] shadow1 z-[1000]'>
+            {/* <ConnectButton /> */}
 
-            <ConnectButton />
+            <div className='relative'>
+                <button
+                    className={dropdownClass(isDropdownOpen)}
+                    onClick={() => setIsDropdownOpen((prev) => !prev)}
+                >
+                    Menu <span>▼</span>
+                </button>
+                {isDropdownOpen && (
+                    <div className='ml-2 absolute bottom-full mb-[6px] p-1 left-0 bg-[#6F48A1] text-white rounded shadow-lg'>
+                        <div className='flex flex-col gap-1'>
+                            <NavLink
+                                to='/'
+                                className={({ isActive }) => navLinkClass(isActive)}
+                                onClick={() => setIsDropdownOpen(false)}
+                            >
+                                <img src={dollarbag} alt="Dollar Bag Icon" />
+                                Tokens
+                            </NavLink>
 
-            <div className='flex items-center gap-[3px] text-xs h-full w-[calc(100%-200px)] sm:w-[calc(100%-330px)] SegoeUi px-0 sm:px-3'>
-                {/* <NavLink to='/' className={({ isActive }) => navLinkClass(isActive)}>
-                    <img src={dollarbag} alt="Dollar Bag Icon" />
-                    Tokens
-                </NavLink> */}
+                            <NavLink
+                                to='/launchToken'
+                                className={({ isActive }) => navLinkClass(isActive)}
+                                onClick={() => setIsDropdownOpen(false)}
+                            >
+                                <img src={rock} alt="Rock Icon" />
+                                Launch Token
+                            </NavLink>
 
-                {/* <NavLink to='/launchToken' className={({ isActive }) => navLinkClass(isActive)}>
-                    <img src={rock} alt="Rock Icon" />
-                    Launch Token
-                </NavLink> */}
+                            <NavLink
+                                to='/revealsBestPerformers'
+                                className={({ isActive }) => navLinkClass(isActive)}
+                                onClick={() => setIsDropdownOpen(false)}
+                            >
+                                👁️ Reveals
+                            </NavLink>
 
-                <NavLink to='/revealsBestPerformers' className={({ isActive }) => navLinkClass(isActive)}>
-                    👁️ Reveals
-                </NavLink>
-
-                {/* <NavLink to='/userprofile' className={({ isActive }) => navLinkClass(isActive)}>
-                    User profile
-                </NavLink> */}
-
+                            <NavLink
+                                to='/userprofile'
+                                className={({ isActive }) => navLinkClass(isActive)}
+                                onClick={() => setIsDropdownOpen(false)}
+                            >
+                                User profile
+                            </NavLink>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className='h-full flex items-center gap-1 sm:gap-[10px] w-[90px] sm:w-[130px]'>
@@ -55,9 +87,8 @@ const TaskBar = () => {
                     <span className='SegoeUi font-normal text-white text-[12px] sm:text-[14px]'>{currentTime}</span>
                 </div>
             </div>
-
         </div>
     );
-}
+};
 
 export default TaskBar;

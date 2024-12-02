@@ -23,7 +23,7 @@ const ConnectButton = () => {
     }
     console.log("signinType", blockchain)
 
-    
+
     // Handle the wallet sign-up and authentication
     const handleSignin = useCallback(async () => {
         try {
@@ -61,16 +61,30 @@ const ConnectButton = () => {
     };
 
     return (
-        <div className='connectBtn flex items-center w-[190px] cursor-pointer' onClick={handleConnectClick}>
-            <img src={logo} className='w-[40px] h-[40px]' alt="Logo" />
-            <h2 className='SegoeUi'>
-                {address ? (
-                    <span>{`${address.slice(0, 6)}...${address.slice(-4)}`}</span>
-                ) : (
-                    'Connect Wallet'
-                )}
-            </h2>
+        <div className='themeBtn2 flex items-center cursor-pointer' onClick={handleConnectClick}>
+            <span className=''>
+                {/* <img src={logo} className='w-[40px] h-[40px]' alt="Logo" /> */}
+                <h2 className='!text-[18px] font-bold PixelOperatorbold'>
+                    {address ? (
+                        <span className='!text-[18px]'>{`${address.slice(0, 6)}...${address.slice(-4)}`}</span>
+                    ) : (
+                        'Connect Wallet'
+                    )}
+                </h2>
+            </span>
         </div>
+        //     <div className='connectBtn flex items-center w-[190px] cursor-pointer' onClick={handleConnectClick}>
+        //     <img src={logo} className='w-[40px] h-[40px]' alt="Logo" />
+        //     <h2 className='SegoeUi'>
+        //         {address ? (
+        //             <span>{`${address.slice(0, 6)}...${address.slice(-4)}`}</span>
+        //         ) : (
+        //             'Connect Wallet'
+        //         )}
+        //     </h2>
+        // </div>
+
+
     );
 };
 

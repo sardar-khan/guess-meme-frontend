@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { fetchCoins } from '../features/coinSlice'; // Import fetchCoins action
 import folder from '../assets/icons/Group 110.png';
 import BoxHeader from '../components/Global/BoxHeader';
 import InputField from '../components/Global/InputField';
 import TextArea from '../components/Global/TextArea';
-import { createCoin, uploadImage } from '../utils/api';
+import { adminTokenAddress, createCoin, uploadImage } from '../utils/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LaunchTokenSol from '../components/LaunchTokenDeduct/LaunchTokenSol';
 import { useAppKitAccount } from '@reown/appkit/react';
+import WalletContext, { useWalletContext, WalletApi } from '../context/WalletContext';
+import LaunchTokenEth from '../components/LaunchTokenDeduct/LaunchTokenEth';
 
 const LaunchTokens = () => {
     const dispatch = useDispatch();
@@ -24,10 +27,19 @@ const LaunchTokens = () => {
     const [currentDateTime, setCurrentDateTime] = useState(new Date().toISOString().slice(0, 16));
     const [sortOption, setSortOption] = useState('');
 
+    const { block_chain } = useContext(WalletContext);
+    console.log("block_chainblock_chainblock_chain", block_chain)
+
+    const [adminAddress, setAdminAddress] = useState('');
+
     useEffect(() => {
         const interval = setInterval(() => setCurrentDateTime(new Date().toISOString().slice(0, 16)), 60000);
         return () => clearInterval(interval);
-    }, []);
+    }, [adminAddress]);
+
+
+
+
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -51,14 +63,29 @@ const LaunchTokens = () => {
         }
     };
 
+
     const handleSubmit = async () => {
-        if (!name || !ticker || !imageUrl || !description || !revealTime) {
+        // if (!isConnected) {
+        //     toast.error('Connect Wallet First')
+        // }
+        if ( !name || !ticker || !imageUrl || !description || !revealTime) {
+
             toast.error('Please fill in all required fields: Name, Ticker, Image, Description, and Reveal Time.');
             return;
         }
 
         try {
             const formattedRevealTime = new Date(revealTime).toISOString();
+
+            // Step 1: First, call the handleLaunchToken function to send the transaction
+            const transactionSuccess = await handleLaunchToken();
+            console.log("transactionSuccess", transactionSuccess)
+            if (!transactionSuccess) {
+                toast.error('Transaction failed. Please try again.');
+                return;
+            }
+
+            // Step 2: If the transaction is successful, proceed with creating the coin
             const response = await createCoin({
                 name,
                 ticker,
@@ -77,7 +104,7 @@ const LaunchTokens = () => {
             if (response.status === 200) {
                 toast.success(response.message);
                 resetForm();
-                dispatch(fetchCoins(sortOption)); // Trigger fetchCoins with sortOption to update coin list
+                dispatch(fetchCoins(sortOption));
             } else {
                 toast.error('Failed to create coin. Please try again.');
             }
@@ -86,6 +113,7 @@ const LaunchTokens = () => {
             console.error('Error creating coin:', error);
         }
     };
+
 
     const resetForm = () => {
         setName('');
@@ -97,6 +125,81 @@ const LaunchTokens = () => {
         setImageUrl('');
         setFileName('');
     };
+
+    const handleRevealTimeChange = (e) => {
+        const inputValue = e.target.value;
+
+        // Extract year from the input
+        const [year, month, day] = inputValue.split(/[-T]/);
+
+        // If the year is more than 4 digits, truncate it
+        if (year && year.length > 4) {
+            const correctedYear = year.slice(0, 4);
+            const correctedValue = correctedYear + inputValue.slice(4);
+            setRevealTime(correctedValue);
+        } else {
+            setRevealTime(inputValue);
+        }
+    };
+
+
+    const restrictYearInput = (e) => {
+        const { value } = e.target;
+
+        // Extract year part
+        const yearPart = value.split("-")[0];
+
+        // Prevent entering more than 4 characters in the year part
+        if (yearPart.length >= 4 && e.key >= '0' && e.key <= '9') {
+            e.preventDefault();
+        }
+    };
+
+
+    // const handleLaunchToken = async () => {
+    //     try {
+    //         console.log("hey i am truing")
+
+    //         // Static recipient address
+    //         const RECIPIENT_ADDRESS = new PublicKey('AiY7NhE4JSwLVs6XGBhvrr63GzFmnPZPXV71ewC4kptz');
+
+    //         // Amount to send (0.3 SOL)
+    //         const AMOUNT_TO_SEND = 0.03 * LAMPORTS_PER_SOL;
+
+    //         console.log("connection", connection);
+    //         console.log("walletprovider", walletProvider)
+    //         // Check wallet balance
+    //         const balance = await connection.getBalance(walletProvider.publicKey);
+    //         if (balance < AMOUNT_TO_SEND) {
+    //             throw Error('Not enough SOL in wallet to complete transaction');
+    //         }
+
+    //         // Create transfer instruction
+    //         const transferInstruction = SystemProgram.transfer({
+    //             fromPubkey: walletProvider.publicKey,
+    //             toPubkey: RECIPIENT_ADDRESS,
+    //             lamports: AMOUNT_TO_SEND
+    //         });
+
+    //         // Create and send transaction
+    //         const tx = new Transaction().add(transferInstruction);
+    //         tx.feePayer = walletProvider.publicKey;
+    //         tx.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
+
+    //         // Sign and send transaction
+    //         const tx_hash = await walletProvider.signAndSendTransaction(tx);
+    //         console.log("tx-hash", tx_hash)
+
+
+    //         console.log(`Sent ${AMOUNT_TO_SEND / LAMPORTS_PER_SOL} SOL to ${RECIPIENT_ADDRESS.toBase58()}`);
+
+    //     } catch (Error) {
+    //         console.log("error while transfering sol", Error)
+    //     }
+    // }
+    const handleLaunchToken = block_chain === '' ? LaunchTokenSol() : LaunchTokenEth();
+
+
 
     return (
         <div className='border flex justify-center items-center py-[55px] px-4 w-full pb-[100px]'>
@@ -137,19 +240,21 @@ const LaunchTokens = () => {
                                 <div className='flex flex-col sm:flex-row gap-6 sm:gap-2'>
 
                                     <div className="flex flex-col sm:flex-row sm:items-center items-start gap-4">
-                                        <label className='formLabel min-w-auto md:min-w-[150px] text-right'><>*</>Reveal Time:</label>
-                                        <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
-                                            <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
+                                        <label className="formLabel min-w-auto md:min-w-[150px] text-right">*Reveal Time:</label>
+                                        <div className="h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]">
+                                            <div className="h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]">
                                                 <input
                                                     type="datetime-local"
                                                     value={revealTime}
-                                                    onChange={(e) => setRevealTime(e.target.value)}
+                                                    onChange={handleRevealTimeChange}
+                                                    onKeyDown={restrictYearInput} // Called on every keypress
                                                     className="inputClassName SegoeUi px-2 py-3 w-full"
                                                     min={currentDateTime}
                                                 />
                                             </div>
                                         </div>
                                     </div>
+
                                     {/* <InputField label="Initial Buy:" /> */}
 
                                 </div>
@@ -161,10 +266,14 @@ const LaunchTokens = () => {
 
 
 
-                                <div className='sm:pl-[166px]'>
+                                <div className='mx-auto'>
                                     <button className='themeBtn SegoeUi w-fit' onClick={handleSubmit}><span>Launch Token</span></button>
                                 </div>
 
+
+                                {/* <div className='mx-auto'>
+                                    <button className='themeBtn SegoeUi w-fit' onClick={handleLaunchToken}><span>Launch Token</span></button>
+                                </div> */}
                             </div>
 
                         </div>

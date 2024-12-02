@@ -1,6 +1,8 @@
 import React from 'react';
 import userprofileImg from '../assets/images/userprofile.png';
 import { Link } from 'react-router-dom';
+import img from '../assets/images/Group 159.png'
+
 
 const timeAgo = (timestamp) => {
     const now = new Date();
@@ -24,17 +26,18 @@ const CoinsCreatedCard = ({ coinsCreated, userData }) => {
     return (
         <Link to={`/trade/${coinsCreated?._id}`} className='flex flex-col items-center justify-center'>
             <div className='w-[80px] h-[80px] border rounded-full flex object-cover overflow-hidden'>
-                <img src={`${import.meta.env.VITE_API_URL_Img}${coinsCreated?.image}`} alt="" />
+                <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinsCreated?.image}`} alt="" />
             </div>
             <div className='text-center'>
                 <h5 className='PixelOperatorbold text-base flex items-center justify-center gap-2 mt-2'>
-                    Created by <img src={userData?.profile_photo} className='w-4 h-4' alt="" /> {userData?.user_name}
+                    {/* Created by <img src={userData?.profile_photo} className='w-4 h-4' alt="" /> {userData?.user_name} */}
+                    Created by <img src={img} className='w-4 h-4' alt="" /> {userData?.user_name}
                 </h5>
-                <p className='text-base'>Market cap: {coinsCreated?.market_cap}k</p>
-                <div className='flex justify-between items-center w-full mt-2'>
+                <p className='text-base'>Market cap: ${coinsCreated?.market_cap}</p>
+                {/* <div className='flex justify-between items-center w-full mt-2'>
                     <p className='text-sm'>Replies: 669</p>
                     <p className='text-sm'>{timeAgo(coinsCreated?.time)}</p>
-                </div>
+                </div> */}
                 <h5 className='PixelOperatorbold text-base flex items-center justify-center gap-2 mt-2'>
                     {coinsCreated?.name} (ticker: {coinsCreated?.ticker})
                 </h5>

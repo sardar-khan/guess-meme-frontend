@@ -4,7 +4,7 @@ import BestPerformance from '../components/BestPerformance'
 
 const RevealsBestPerformers = () => {
     return (
-        <div>
+        <div className='pb-[50px]'>
             <BestPerformance />
             <Reveal />
         </div>

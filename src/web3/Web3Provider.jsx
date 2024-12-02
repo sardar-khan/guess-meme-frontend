@@ -43,11 +43,7 @@ export function Web3ModalProvider({ children }) {
 
   // 3. Set the networks
   const networks = [
-    mainnet,
-    arbitrum,
     sepolia,
-    solana,
-    solanaTestnet,
     solanaDevnet,
   ];
 

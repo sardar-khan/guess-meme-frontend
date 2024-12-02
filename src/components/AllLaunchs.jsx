@@ -14,7 +14,8 @@ const AllLaunchs = () => {
     const [sortOption, setSortOption] = useState('');
     console.log("errorerrorerror", error)
     console.log("filteredCoins", filteredCoins)
-    
+    console.log("deployedCoins", deployedCoins)
+
     useEffect(() => {
         if (status === 'idle') {
             dispatch(fetchCoins(sortOption));
@@ -89,18 +90,32 @@ const AllLaunchs = () => {
                 {activeTab === 'Revealed' && (
                     <>
                         {/* {status === 'loading' && <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>} */}
-                        {status === 'succeeded' && deployedCoins.map((coin, index) => (
-                            <LaunchCard key={index} setSpace="medium" coinData={coin} />
-                        ))}
+                        {status === 'succeeded' &&
+                            (
+                                deployedCoins.length === 0 ? (
+                                    <div>No data found</div>
+                                ) : (
+                                    deployedCoins.map((coin, index) => (
+                                        <LaunchCard key={index} setSpace="medium" coinData={coin} />
+                                    ))
+                                )
+                            )}
                         {status === 'failed' && <div>Error: {error}</div>}
                     </>
                 )}
                 {activeTab === 'Hidden' && (
                     <>
                         {/* {status === 'loading' && <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>} */}
-                        {status === 'succeeded' && createdCoins.map((coin, index) => (
-                            <LaunchCard key={index} setSpace="medium" coinData={coin} />
-                        ))}
+                        {status === 'succeeded' &&
+                            (
+                                createdCoins.length === 0 ? (
+                                    <div>No data found</div>
+                                ) : (
+                                    createdCoins.map((coin, index) => (
+                                        <LaunchCard key={index} setSpace="medium" coinData={coin} />
+                                    ))
+                                )
+                            )}
                         {status === 'failed' && <div>Error: {error}</div>}
                     </>
                 )}

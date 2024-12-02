@@ -11,6 +11,7 @@ const Hero = () => {
     const dispatch = useDispatch();
     const [kingOfHill, setKingOfHill] = useState();
     // Fetch KingOfTheHill data on component mount
+
     useEffect(() => {
         const fetchKingOfTheHill = async () => {
             try {
@@ -85,7 +86,7 @@ const Hero = () => {
                 </div>
 
                 <div className='flex justify-center items-center p-1 w-[55px] h-[55px] bg-[#D680FF] rounded-2xl'>
-                    <img src={`${import.meta.env.VITE_API_URL_Img}${kingOfHill?.kingOfTheHill?.metadata?.image}`} alt="" />
+                    <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${kingOfHill?.kingOfTheHill?.metadata?.image}`} alt="" />
                 </div>
 
                 <div className='flex items-center gap-4'>

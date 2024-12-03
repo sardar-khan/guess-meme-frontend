@@ -53,17 +53,18 @@ const LaunchTokenSol = () => {
 
             while (!txSuccess) {
                 const { value: statuses } = await connection.getSignatureStatuses([txHash]);
-                if (!statuses || !statuses[0]) {
-                    console.error("No valid signature status found.");
-                    throw new Error('Failed to retrieve transaction signature status.');
-                }
+                console.log("statusesstatusesstatuses", statuses)
+                // if (!statuses || !statuses[0]) {
+                //     console.error("No valid signature status found.");
+                //     throw new Error('Failed to retrieve transaction signature status.');
+                // }
 
                 const status = statuses[0];
 
-                if (status.err) {
-                    console.error("Transaction error:", status.err);
-                    throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`);
-                }
+                // if (status.err) {
+                //     console.error("Transaction error:", status.err);
+                //     throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`);
+                // }
 
                 if (status.confirmationStatus === 'confirmed' || status.confirmationStatus === 'finalized') {
                     txSuccess = true;

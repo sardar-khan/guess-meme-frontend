@@ -1,92 +1,207 @@
-// handleLaunchToken.js
-import { SystemProgram, PublicKey, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { useAppKitConnection } from '@reown/appkit-adapter-solana/react';
-import { useAppKitProvider } from '@reown/appkit/react';
-import { adminSolAddress } from '../../services/config';
-import { toast } from 'react-toastify';
+// // handleLaunchToken.js
+// import { SystemProgram, PublicKey, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js';
+// import { useAppKitConnection } from '@reown/appkit-adapter-solana/react';
+// import { useAppKitProvider,useAppKitAccount } from '@reown/appkit/react';
+// import { adminSolAddress } from '../../services/config';
+// import { toast } from 'react-toastify';
+// import { adminTokenAddress } from '../../utils/api';
+// import { useBalance, useWriteContract } from 'wagmi';
+// import { useSendTransaction,useWaitForTransactionReceipt } from 'wagmi';
+// import { parseEther } from 'viem';
 
-// Helper function to sleep
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+
+// const LaunchTokenEth = () => {
+//     const { address, isConnected } = useAppKitAccount()
+//     const { data: hash, sendTransaction } = useSendTransaction()
+//     // const { isLoading: isConfirming, isSuccess: isConfirmed } =
+//     // useWaitForTransactionReceipt({
+//     //   hash,
+//     // })
+//     const result = useBalance({
+//         address: address,
+//     })
+    
+//     console.log("user ethereum balanace", result?.data?.formatted);
+//     const handleLaunchToken = async () => {
+//         try {
+//             const adminAddress = await adminTokenAddress();
+//             console.log("admin-Address",adminAddress?.ad)
+//             if(!adminAddress?.address){return toast.error("somehting went wrong please try again!")}
+//             console.log("Initiating Pol transfer...");
+//             const userBalance = result?.data?.formatted ? parseFloat(result?.data?.formatted) : 0
+//             console.log("userbalane",userBalance);
+//             if (userBalance < 0.003) { return toast.error("Insufficent balance in wallet!")}
+//             const toAddress = adminAddress?.address;
+//             const txResponse = await sendTransaction({toAddress,  value: parseEther("0.003"),})
+
+//            // console.log("transaction hash",txResponse.hash)
+            
+//         } catch (error) {
+//             console.error("Error while transferring eth:", error);
+//             toast.error(`Transaction Error: ${error.message}`);
+//             return false; // Return failure
+//         }
+//     };
+
+
+//     return handleLaunchToken
+
+// };
+
+// export default LaunchTokenEth;
+
+
+
+// import { useAppKitAccount } from '@reown/appkit/react';
+// import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+// import { parseEther } from 'viem';
+// import { toast } from 'react-toastify';
+// import { adminTokenAddress } from '../../utils/api';
+
+// const LaunchTokenEth = () => {
+//     const { address, isConnected } = useAppKitAccount();
+//     const { data: hash, sendTransaction } = useSendTransaction();
+
+//     const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+//         hash: hash,
+//     });
+
+    
+//     const result = useBalance({
+//         address: address,
+//     });
+
+//     console.log("user ethereum balance", result?.data?.formatted);
+
+//     const handleLaunchToken = async () => {
+//         return new Promise(async (resolve, reject) => {
+//             try {
+//                 const adminAddress = await adminTokenAddress();
+                
+//                 if (!adminAddress?.address) {
+//                     toast.error("Something went wrong, please try again!");
+//                     return reject(new Error("Invalid admin address"));
+//                 }
+
+//                 const userBalance = result?.data?.formatted ? parseFloat(result?.data?.formatted) : 0;
+
+//                 if (userBalance < 0.003) {
+//                     toast.error("Insufficient balance in wallet!");
+//                     return reject(new Error("Insufficient balance"));
+//                 }
+
+//                 const toAddress = adminAddress?.address;
+//                 const txResponse = await sendTransaction({
+//                     to: toAddress,
+//                     value: parseEther("0.003"),
+//                 });
+
+//                 // Wait for transaction confirmation
+//                 const waitForConfirmation = () => {
+//                     return new Promise((confirmResolve, confirmReject) => {
+//                         const checkConfirmation = () => {
+//                             if (isConfirmed) {
+//                                 toast.success("Transaction Confirmed!");
+//                                 confirmResolve(true);
+//                             } else if (!isConfirming) {
+//                                 confirmReject(new Error("Transaction failed"));
+//                             } else {
+//                                 // Continue checking
+//                                 setTimeout(checkConfirmation, 1000);
+//                             }
+//                         };
+//                         checkConfirmation();
+//                     });
+//                 };
+
+//                 const confirmed = await waitForConfirmation();
+//                 resolve(confirmed);
+
+//             } catch (error) {
+//                 console.error("Error while transferring ETH:", error);
+//                 toast.error(`Transaction Error: ${error.message}`);
+//                 reject(error);
+//             }
+//         });
+//     };
+
+//     return handleLaunchToken
+// };
+
+// export default LaunchTokenEth;
+
+
+import { useAppKitAccount } from '@reown/appkit/react';
+import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { parseEther } from 'viem';
+import { toast } from 'react-toastify';
+import { adminTokenAddress } from '../../utils/api';
 
 const LaunchTokenEth = () => {
-    const { connection } = useAppKitConnection();
-    const { walletProvider } = useAppKitProvider('solana');
+    const { address, isConnected } = useAppKitAccount();
+    const { data: hash, sendTransaction } = useSendTransaction();
+    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+        hash: hash,
+    });
+
+    const result = useBalance({
+        address: address,
+    });
 
     const handleLaunchToken = async () => {
-        try {
-            console.log("Initiating SOL transfer...");
+        return new Promise(async (resolve, reject) => {
+            try {
+                const adminAddress = await adminTokenAddress();
+                
+                if (!adminAddress?.address) {
+                    toast.error("Something went wrong, please try again!");
+                    return reject(new Error("Invalid admin address"));
+                }
 
-            // Static recipient address
-            const RECIPIENT_ADDRESS = new PublicKey(adminSolAddress);
+                const userBalance = result?.data?.formatted ? parseFloat(result?.data?.formatted) : 0;
 
-            // Amount to send (0.03 SOL)
-            const AMOUNT_TO_SEND = 0.03 * LAMPORTS_PER_SOL;
+                if (userBalance < 0.003) {
+                    toast.error("Insufficient balance in wallet!");
+                    return reject(new Error("Insufficient balance"));
+                }
 
-            console.log("Connection:", connection);
-            console.log("Wallet Provider:", walletProvider);
+                const toAddress = adminAddress?.address;
+                const txResponse = await sendTransaction({
+                    to: toAddress,
+                    value: parseEther("0.003"),
+                });
 
-            // Check wallet balance
-            const balance = await connection.getBalance(walletProvider.publicKey);
-            if (balance < AMOUNT_TO_SEND) {
-                toast.error("Insufficient balance in your wallet.");
-                throw new Error('Not enough SOL in wallet to complete the transaction.');
+                // Wait for transaction confirmation
+                const waitForConfirmation = () => {
+                    return new Promise((confirmResolve, confirmReject) => {
+                        const checkConfirmation = () => {
+                            if (isConfirmed) {
+                                toast.success("Transaction Confirmed!");
+                                confirmResolve(true);
+                            } else if (!isConfirming) {
+                                confirmReject(new Error("Transaction failed"));
+                            } else {
+                                // Continue checking
+                                setTimeout(checkConfirmation, 1000);
+                            }
+                        };
+                        checkConfirmation();
+                    });
+                };
+
+                const confirmed = await waitForConfirmation();
+                resolve(confirmed);
+
+            } catch (error) {
+                console.error("Error while transferring ETH:", error);
+                toast.error(`Transaction Error: ${error.message}`);
+                reject(error);
             }
-
-            // Create transfer instruction
-            const transferInstruction = SystemProgram.transfer({
-                fromPubkey: walletProvider.publicKey,
-                toPubkey: RECIPIENT_ADDRESS,
-                lamports: AMOUNT_TO_SEND
-            });
-
-            // Create and send transaction
-            const tx = new Transaction().add(transferInstruction);
-            tx.feePayer = walletProvider.publicKey;
-            tx.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
-
-            const txHash = await walletProvider.signAndSendTransaction(tx);
-            console.log("Transaction Hash:", txHash);
-
-            // Check transaction status
-            let txSuccess = false;
-            const START_TIME = new Date();
-
-            while (!txSuccess) {
-                const { value: statuses } = await connection.getSignatureStatuses([txHash]);
-                if (!statuses || !statuses[0]) {
-                    console.error("No valid signature status found.");
-                    throw new Error('Failed to retrieve transaction signature status.');
-                }
-
-                const status = statuses[0];
-
-                if (status.err) {
-                    console.error("Transaction error:", status.err);
-                    throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`);
-                }
-
-                if (status.confirmationStatus === 'confirmed' || status.confirmationStatus === 'finalized') {
-                    txSuccess = true;
-                    const endTime = new Date();
-                    const elapsed = (endTime.getTime() - START_TIME.getTime()) / 1000;
-                    console.log(`Transaction confirmed in ${elapsed} seconds.`);
-                    console.log(`Explorer Link: https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-                    return true; // Return success
-                }
-
-                // Retry after 2.5 seconds
-                await sleep(2500);
-            }
-        } catch (error) {
-            console.error("Error while transferring SOL:", error);
-            toast.error(`Transaction Error: ${error.message}`);
-            return false; // Return failure
-        }
+        });
     };
 
-
-    return handleLaunchToken
-    
+    return handleLaunchToken;
 };
 
 export default LaunchTokenEth;

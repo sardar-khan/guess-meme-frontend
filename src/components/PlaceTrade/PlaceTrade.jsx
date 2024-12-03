@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ethImg from "../../assets/icons/eth.png";
 import solImg from "../../assets/icons/sol.webp";
@@ -14,6 +14,12 @@ import { useAppKitAccount } from "@reown/appkit/react";
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useAppKitProvider } from '@reown/appkit/react';
 
+import LaunchTokenSol from "../LaunchTokenDeduct/LaunchTokenSol";
+import LaunchTokenPolygon from "../LaunchTokenDeduct/LaunchPolygonToken";
+
+
+import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+
 
 // eslint-disable-next-line react/prop-types
 const PlaceTrade = ({ coinData }) => {
@@ -26,13 +32,39 @@ const PlaceTrade = ({ coinData }) => {
   const { walletProvider } = useAppKitProvider('solana');
   const [tradeType, setTradeType] = useState("buy"); // Default trade type is "buy"
   const { address, isConnected } = useAppKitAccount()
+  const { data: balanceData } = useBalance({ address });
+  const { data: hash, sendTransaction } = useSendTransaction();
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash: hash,
+  });
 
   const blockchainType = localStorage.getItem("blockchain") || "SOL";
   console.log("coinDataPlaceTrade", coinData?.token_address)
 
+  const result = useBalance({
+    address: address,
+  })
+
+  console.log("user ethereum balanace", result?.data?.formatted);
   const handleSwitchClick = () => {
     setShowSOGs(!showSOGs);
   };
+
+
+  const handleLaunchToken = LaunchTokenSol()
+
+  const handleLaunchTokenE = LaunchTokenPolygon(
+    address,
+    sendTransaction,
+    balanceData?.formatted
+  );
+
+  useEffect(() => {
+    if (isConfirmed && hash) { buyCreatedCoin({ hash }) }
+
+  }, [isConfirming, isConfirmed, hash])
+
 
   const handleTrade = async () => {
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
@@ -66,6 +98,7 @@ const PlaceTrade = ({ coinData }) => {
           );
 
           // Update backend after successful blockchain transaction
+
           const apiResponse = await BuyToken({
             account_type: blockchainType.toLowerCase(),
             amount: parseFloat(amount),
@@ -93,23 +126,38 @@ const PlaceTrade = ({ coinData }) => {
 
       else if (blockchainType === "SOL" && coinData?.status === 'created') {
 
+        let deductSOL = await handleLaunchToken();
+
+        if (deductSOL) {
+          const apiResponse = await BuyToken({
+            account_type: blockchainType.toLowerCase(),
+            amount: parseFloat(amount),
+            token_amount: 1,
+            token_id: id,
+            type: tradeType,
+          });
+
+          if (apiResponse?.status === 200) {
+            toast.success(`${tradeType === "buy" ? "buy" : "sell"} successful`);
+            dispatch(fetchTrades(id));
+          } else {
+            throw new Error(`Failed to ${tradeType} tokens`);
+          }
+        } else {
+          toast.error('Transaction failed. Please try again now.');
+        }
+
+
+      }
+
+
+      else if (blockchainType === "ETH" && coinData?.status === 'created') {
+
+        let deductETH = await handleLaunchTokenE();
 
 
 
-        // const apiResponse = await BuyToken({
-        //   account_type: blockchainType.toLowerCase(),
-        //   amount: parseFloat(amount),
-        //   token_amount: 1,
-        //   token_id: id,
-        //   type: tradeType,
-        // });
 
-        // if (apiResponse?.status === 201) {
-        //   toast.success(`${tradeType === "buy" ? "buy" : "sell"} successful`);
-        //   dispatch(fetchTrades(id));
-        // } else {
-        //   throw new Error(`Failed to ${tradeType} tokens`);
-        // }
       }
       else {
         // Non-ETH blockchain logic
@@ -135,6 +183,35 @@ const PlaceTrade = ({ coinData }) => {
       setIsLoading(false);
     }
   };
+
+
+  const buyCreatedCoin = async ({ hash }) => {
+    try {
+      const type = blockchainType.toLowerCase() === 'eth' ? 'ethereum' : ''
+
+      if (hash) {
+        const apiResponse = await BuyToken({
+          account_type: type,
+          amount: parseFloat(amount),
+          token_amount: 1,
+          token_id: id,
+          type: tradeType,
+        });
+
+        if (apiResponse?.status === 200) {
+          toast.success(`${tradeType === "buy" ? "buy" : "sell"} successful`);
+          dispatch(fetchTrades(id));
+        } else {
+          throw new Error(`Failed to ${tradeType} tokens`);
+        }
+      } else {
+        toast.error('Transaction failed. Please try again now.');
+      }
+
+    } catch (error) {
+
+    }
+  }
 
   const handleBuySOl = async () => {
     console.log("halloooooo")
@@ -232,7 +309,7 @@ const PlaceTrade = ({ coinData }) => {
 
                 <button
                   className="themeBtn Inter w-fit mt-5 mx-auto"
-                  onClick={handleBuySOl}
+                  onClick={handleTrade}
                   disabled={isLoading}
                 >
                   <span>{isLoading ? "Processing..." : "Trade"}</span>

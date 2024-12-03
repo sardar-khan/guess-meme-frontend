@@ -12,10 +12,14 @@ import LaunchTokenSol from '../components/LaunchTokenDeduct/LaunchTokenSol';
 import LaunchTokenEth from '../components/LaunchTokenDeduct/LaunchTokenEth';
 import { useAppKitAccount } from '@reown/appkit/react';
 import WalletContext, { useWalletContext, WalletApi } from '../context/WalletContext';
+import LaunchTokenPolygon from "../components/LaunchTokenDeduct/LaunchPolygonToken"
+
+
+import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 
 const LaunchTokens = () => {
     const dispatch = useDispatch();
-    const { address, isConnected } = useAppKitAccount()
+    const { address, isConnected } = useAppKitAccount();
     const [name, setName] = useState('');
     const [ticker, setTicker] = useState('');
     const [revealTime, setRevealTime] = useState('');
@@ -26,9 +30,19 @@ const LaunchTokens = () => {
     const [fileName, setFileName] = useState('');
     const [currentDateTime, setCurrentDateTime] = useState(new Date().toISOString().slice(0, 16));
     const [sortOption, setSortOption] = useState('');
+    const { data: balanceData } = useBalance({ address });
+    const { data: hash, sendTransaction } = useSendTransaction();
+
+    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+        hash: hash,
+    });
+
 
     const { block_chain } = useContext(WalletContext);
     console.log("block_chainblock_chainblock_chain", block_chain)
+
+
+    console.log("statuses", isConfirming, isConfirmed, hash);
 
     const [adminAddress, setAdminAddress] = useState('');
 
@@ -38,8 +52,11 @@ const LaunchTokens = () => {
     }, [adminAddress]);
 
 
-
-
+    const handleLaunchTokenE = LaunchTokenPolygon(
+        address,
+        sendTransaction,
+        balanceData?.formatted
+    );
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -63,12 +80,16 @@ const LaunchTokens = () => {
         }
     };
 
+    useEffect(() => {
+        if (isConfirmed && hash) { createEthCoin({ hash }) }
+
+    }, [isConfirming, isConfirmed, hash])
 
     const handleSubmit = async () => {
         // if (!isConnected) {
         //     toast.error('Connect Wallet First')
         // }
-        if ( !name || !ticker || !imageUrl || !description || !revealTime) {
+        if (!name || !ticker || !imageUrl || !description || !revealTime) {
 
             toast.error('Please fill in all required fields: Name, Ticker, Image, Description, and Reveal Time.');
             return;
@@ -76,44 +97,89 @@ const LaunchTokens = () => {
 
         try {
             const formattedRevealTime = new Date(revealTime).toISOString();
+            let transactionSuccess;
+            if (block_chain === 'SOL') {
+                transactionSuccess = await handleLaunchToken();
 
-            // Step 1: First, call the handleLaunchToken function to send the transaction
-            const transactionSuccess = await handleLaunchToken();
-            console.log("transactionSuccess", transactionSuccess)
-            if (!transactionSuccess) {
-                toast.error('Transaction failed. Please try again.');
-                return;
-            }
+                console.log("transactionSuccess", transactionSuccess)
+                if (!transactionSuccess) {
+                    toast.error('Transaction failed. Please try again now.');
+                    return;
+                }
 
-            // Step 2: If the transaction is successful, proceed with creating the coin
-            const response = await createCoin({
-                name,
-                ticker,
-                description,
-                image: imageUrl,
-                max_supply: maxSupply,
-                twitter_link: 'https://twitter.com',
-                telegram_link: 'https://telegram.com',
-                website: 'https://website.com',
-                bonding_curve: 0,
-                max_buy_percentage: 0,
-                fee: 0,
-                timer: formattedRevealTime,
-            });
+                // Step 2: If the transaction is successful, proceed with creating the coin
+                const response = await createCoin({
+                    name,
+                    ticker,
+                    description,
+                    image: imageUrl,
+                    max_supply: maxSupply,
+                    twitter_link: 'https://twitter.com',
+                    telegram_link: 'https://telegram.com',
+                    website: 'https://website.com',
+                    bonding_curve: 0,
+                    max_buy_percentage: 0,
+                    fee: 0,
+                    timer: formattedRevealTime,
+                });
 
-            if (response.status === 200) {
-                toast.success(response.message);
-                resetForm();
-                dispatch(fetchCoins(sortOption));
+                if (response.status === 200) {
+                    toast.success(response.message);
+                    resetForm();
+                    dispatch(fetchCoins(sortOption));
+                } else {
+                    toast.error('Failed to create coin. Please try again.');
+                }
             } else {
-                toast.error('Failed to create coin. Please try again.');
+                transactionSuccess = await handleLaunchTokenE();
+
+                console.log("transactionSuccess", hash)
+
             }
+            // Step 1: First, call the handleLaunchToken function to send the transaction
+
         } catch (error) {
             toast.error('Error creating coin. Please try again.');
             console.error('Error creating coin:', error);
         }
     };
 
+
+    const createEthCoin = async ({ hash }) => {
+        try {
+            const formattedRevealTime = new Date(revealTime).toISOString();
+            if (hash) {
+
+
+                // Step 2: If the transaction is successful, proceed with creating the coin
+                const response = await createCoin({
+                    name,
+                    ticker,
+                    description,
+                    image: imageUrl,
+                    max_supply: maxSupply,
+                    twitter_link: 'https://twitter.com',
+                    telegram_link: 'https://telegram.com',
+                    website: 'https://website.com',
+                    bonding_curve: 0,
+                    max_buy_percentage: 0,
+                    fee: 0,
+                    timer: formattedRevealTime,
+                });
+
+                if (response.status === 200) {
+                    toast.success(response.message);
+                    resetForm();
+                    dispatch(fetchCoins(sortOption));
+                } else {
+                    toast.error('Failed to create coin. Please try again.');
+                }
+            }
+        } catch (error) {
+            console.log("error while creating token", error)
+
+        }
+    }
 
     const resetForm = () => {
         setName('');
@@ -197,7 +263,8 @@ const LaunchTokens = () => {
     //         console.log("error while transfering sol", Error)
     //     }
     // }
-    const handleLaunchToken = block_chain === '' ? LaunchTokenSol() : LaunchTokenEth();
+    // const handleLaunchToken = block_chain === 'SOL' ? LaunchTokenSol() : LaunchTokenEth();
+    const handleLaunchToken = LaunchTokenSol();
 
 
 

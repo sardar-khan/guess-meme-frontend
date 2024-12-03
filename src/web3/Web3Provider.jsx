@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { SolanaAdapter } from "@reown/appkit-adapter-solana";
 
-import { solana, solanaTestnet, solanaDevnet } from "@reown/appkit/networks";
+import { solana, solanaTestnet, solanaDevnet, polygonAmoy } from "@reown/appkit/networks";
 import { mainnet, arbitrum, sepolia } from "@reown/appkit/networks";
 
 import {
@@ -43,10 +43,13 @@ export function Web3ModalProvider({ children }) {
 
   // 3. Set the networks
   const networks = [
-    sepolia,
+    polygonAmoy,
     solanaDevnet,
   ];
-
+  // const ethnetworks =[
+  //   polygonAmoy
+  // ]
+  //const networks =   block_chain == "ETH" ? networks :ethnetworks;
   // 4. Create Wagmi Adapter
   const wagmiAdapter = new WagmiAdapter({
     networks,

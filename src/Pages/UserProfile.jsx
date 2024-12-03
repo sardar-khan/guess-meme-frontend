@@ -239,10 +239,10 @@ const UserProfile = () => {
 
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                     <CardWrapper>
-                        <p className='text-base text-center flex justify-center items-center gap-1'>Mentions received: 12 <img src={commet} alt="" /></p>
+                        <p className='text-base text-center flex justify-center items-center gap-1'>Mentions received: {profileState?.data?.data?.user?.total_mentions} <img src={commet} alt="" /></p>
                     </CardWrapper>
                     <CardWrapper>
-                        <p className='text-base text-center flex justify-center items-center gap-1 text-[#D9223E]'>Likes Received: 817 <img src={heart} alt="" /></p>
+                        <p className='text-base text-center flex justify-center items-center gap-1 text-[#D9223E]'>Likes Received: {profileState?.data?.data?.user?.total_likes} <img src={heart} alt="" /></p>
                     </CardWrapper>
                 </div>
 

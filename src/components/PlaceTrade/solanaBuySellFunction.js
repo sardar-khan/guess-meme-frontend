@@ -14,7 +14,7 @@ import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 // const bs58 = require("bs58");
 // const userPublickey = new PublicKey("GMjT1392P2XMgMwQJEvQFsjJrrFW6symXjerkUvzinLV");
 
-async function initializeUserATA(payer, user, mint) {
+async function initializeUserATA(walletProvider, user, mint) {
     console.log("minter", user, mint, "associated", TOKEN_PROGRAM_ID,
         ASSOCIATED_TOKEN_PROGRAM_ID)
     user = new PublicKey(user);
@@ -30,30 +30,32 @@ async function initializeUserATA(payer, user, mint) {
 
     console.log("User ATA:", userATA.toBase58());
 
-    // const accountInfo = await connection.getAccountInfo(userATA);
-    // if (accountInfo !== null) {
-    //     console.log("ATA already exists.");
-    //     return userATA;
-    // }
+    const accountInfo = await connection.getAccountInfo(userATA);
+    if (accountInfo !== null) {
+        console.log("ATA already exists.");
+        return userATA;
+    }
 
-    // const transaction = new Transaction().add(
-    //     createAssociatedTokenAccountInstruction(
-    //         payer.publicKey,
-    //         userATA,
-    //         user,
-    //         mint
-    //     )
-    // );
+    const transaction = new Transaction().add(
+        createAssociatedTokenAccountInstruction(
+            walletProvider.publicKey,
+            userATA,
+            user,
+            mint
+        )
+    );
+    transaction.feePayer = walletProvider.publicKey;
+    transaction.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
 
-    // const signature = await sendAndConfirmTransaction(connection, transaction, [payer]);
+    const signature = await walletProvider.signAndSendTransaction(transaction);
 
-    // console.log("Transaction signature", signature);
+    console.log("Transaction signature", signature);
 
     // return userATA;
     return userATA.toBase58();
 }
 
-async function buyWithAddress(address) {
+async function buyWithAddress(address, walletProvider) {
     try {
         console.log("mintaddy", mintaddy);
         const buy_value = "0.1";
@@ -86,14 +88,14 @@ async function buyWithAddress(address) {
 
         let atains;
 
-        const r = b(mintaddy, wallet.publicKey, false);
+        const r = b(mintaddy, walletProvider.publicKey, false);
         try {
             const res = await getAccount(connection, r);
         } catch (error) {
             atains = Buy_createTransactionInstruction(
-                wallet.publicKey,
+                walletProvider.publicKey,
                 r,
-                wallet.publicKey,
+                walletProvider.publicKey,
                 mintaddy
             );
         }
@@ -111,6 +113,7 @@ async function buyWithAddress(address) {
         console.log("initialVirtualSolReserves:", virtual_sol_reserves);
         console.log("initialRealTokenReserves:", real_token_reserves);
         console.log("tokenTotalSupply:", token_total_supply);
+
         console.log("complete:", complete);
 
         const EX = (e) => (k ? e.mul(new BN(0)).div(new BN(1e4)) : new BN(0));
@@ -146,27 +149,65 @@ async function buyWithAddress(address) {
         let o = {
             solAmount: a,
         };
-
-        let buyTx = await program.methods
+        console.log("11111")
+        let buyTx = await program.transaction
             .buy(
                 new BN(tokenamt),
                 o.solAmount.add(a.mul(new BN(Math.floor(10 * 999))).div(new BN(1e3)))
-            )
-            .accounts({
-                global: O,
-                feeRecipient: feeRecipient,
-                mint: mintaddy,
-                bondingCurve: C,
-                associatedBondingCurve: B,
-                associatedUser: address,
-                user: wallet.publicKey,
-                systemProgram: new PublicKey("11111111111111111111111111111111"),
-                tokenProgram: new PublicKey(
-                    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-                ),
-                rent: new PublicKey("SysvarRent111111111111111111111111111111111"),
-            })
-            .rpc();
+                ,{
+                    accounts: {
+                        global: O,
+                        feeRecipient: feeRecipient,
+                        mint: mintaddy,
+                        bondingCurve: C,
+                        associatedBondingCurve: B,
+                        associatedUser: address,
+                        user: walletProvider.publicKey,
+                        systemProgram: new PublicKey("11111111111111111111111111111111"),
+                        tokenProgram: new PublicKey(
+                            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+                        ),
+                        rent: new PublicKey("SysvarRent111111111111111111111111111111111"),
+                    }
+                });
+
+
+        // const tx = program.transaction.deposit(
+        //     new anchor.BN(convertedSolAmnt),
+        //     {
+        //         accounts: {
+        //             master: master1,
+        //             user: pda,
+        //             addresses: addresses,
+        //             addr2: address24,
+        //             addr3: address3,
+        //             addr4: address24,
+        //             buyer: publicKey,
+        //             systemProgram: "11111111111111111111111111111111",
+        //         }
+
+        //     });
+
+
+        const transaction = new web3.Transaction()
+        transaction.add(buyTx)
+        transaction.feePayer = walletProvider.publicKey;
+        transaction.recentBlockhash = latestBlockhash.blockhash
+        console.log('transaction', program);
+        // signed Transaction
+        const signedTx = await walletProvider.signTransaction(transaction)
+        console.log("after tansasctin is signed", true)
+        console.log("22222")
+        const signature = await walletProvider.sendRawTransaction(signedTx.serialize());
+        console.log("after sendRawTransaction is signed", true)
+        // const { signature } = await provider.signAndSendTransaction(transaction);
+
+        console.log('signed transaction >', signature);
+        await walletProvider.confirmTransaction(signature)
+        const data = {
+            'wallet_address': publicKey.toString(),
+            "amount": convertedSolAmnt
+        }
 
         console.log("Buy transaction signature: ", buyTx);
         return {

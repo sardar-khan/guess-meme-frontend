@@ -290,3 +290,28 @@ export const toggleFollow = async (id) => {
         console.log(error);
     }
 };
+
+
+export const toggleLike = async (thread_id) => {
+    try {
+        const response = await apiInstance.post('thread/toggle-like', {
+            thread_id: thread_id,
+        });
+        console.log('toggleLike', response.data);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const checkLikeStatus = async (thread_id) => {
+    try {
+        const response = await apiInstance.post('thread/check-like-status', {
+            thread_id: thread_id,
+        });
+        console.log('toggleLike', response.data);
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
+};

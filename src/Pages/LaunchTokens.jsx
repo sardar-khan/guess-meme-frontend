@@ -9,9 +9,9 @@ import { adminTokenAddress, createCoin, uploadImage } from '../utils/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LaunchTokenSol from '../components/LaunchTokenDeduct/LaunchTokenSol';
+import LaunchTokenEth from '../components/LaunchTokenDeduct/LaunchTokenEth';
 import { useAppKitAccount } from '@reown/appkit/react';
 import WalletContext, { useWalletContext, WalletApi } from '../context/WalletContext';
-import LaunchTokenEth from '../components/LaunchTokenDeduct/LaunchTokenEth';
 
 const LaunchTokens = () => {
     const dispatch = useDispatch();

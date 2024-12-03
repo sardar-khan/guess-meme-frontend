@@ -9,6 +9,8 @@ import { selectCoinById } from '../../features/coinSlice'
 import { useSelector } from 'react-redux'
 import { Web3ModalProvider } from '../../web3/Web3Provider'
 import { useAppKitAccount } from '@reown/appkit/react'
+import { Icon } from '@iconify/react/dist/iconify.js'
+import { checkLikeStatus, toggleLike } from '../../utils/api'
 // import { fetchCoins, selectCoinById } from '../../features/coinSlice';
 
 const ChatRoom = ({ coinData }) => {
@@ -43,8 +45,19 @@ const ChatRoom = ({ coinData }) => {
             console.error("Error fetching coin data:", error);
         }
     };
+
+
+    const handleLikeStatus = async () => {
+        try {
+            const response = await checkLikeStatus('67484296002fa379b41e5b32');
+            console.log("reponse LikeStatus", response)
+        } catch (error) {
+            console.error("Error while LikeStatus:", error);
+        }
+    };
     useEffect(() => {
         fetchThreadData();
+        // handleLikeStatus(); 
     }, [id, threadID, refferalError, isConnected]);
 
 
@@ -69,6 +82,21 @@ const ChatRoom = ({ coinData }) => {
             setRefferalError('Connect Wallet First')
         }
     }
+
+
+    const handletoggleLike = async (thread_id) => {
+        try {
+            const response = await toggleLike(thread_id);
+            console.log("reponse Toggle Like", response)
+        } catch (error) {
+            console.error("Error while toggling follow:", error);
+        }
+    };
+
+
+
+
+
 
     return (
         <>
@@ -109,6 +137,10 @@ const ChatRoom = ({ coinData }) => {
                                     <Link to={`/userprofile/${item?.user_id?._id}`} className='Inter text-black text-[10px] font-semibold p-[2px] rounded-md bg-[#8E8DC7] cursor-pointer hover:underline'>{item?.user_id?.user_name}</Link>
                                     <p className='Inter text-[#343434] text-[10px] font-semibold'>
                                         {new Date(item?.createdAt).toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}
+                                    </p>
+                                    <p className='flex items-center gap-1 Inter text-[#343434] text-[10px] font-semibold cursor-pointer hover:underline' onClick={() => handletoggleLike(item?._id)}>
+                                        <Icon icon='mdi:cards-heart-outline' style={{ fontSize: '15px', color: '#343434' }} />
+                                        <span>{item?.totalLikes}</span>
                                     </p>
                                     <p className='Inter text-[#343434] text-[10px] font-semibold cursor-pointer hover:underline' onClick={() => handleReplyId(item?.thread_id)}>
                                         {item?.thread_id} [reply]

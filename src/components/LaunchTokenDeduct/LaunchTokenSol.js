@@ -86,11 +86,6 @@ const LaunchTokenSol = () => {
 
 
     return handleLaunchToken
-    // (
-    //     <div>
-    //         <button onClick={handleLaunchToken}>Launch Token</button>
-    //     </div>
-    // );
 };
 
 export default LaunchTokenSol;

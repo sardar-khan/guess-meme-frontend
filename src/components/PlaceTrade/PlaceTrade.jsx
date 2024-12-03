@@ -5,23 +5,27 @@ import solImg from "../../assets/icons/sol.webp";
 import { BuyToken } from "../../utils/api";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
+
 import { fetchTrades } from "../../features/tradesSlice";
-import {
-  buyTokensOnBlockchain,
-  sellTokensOnBlockchain,
-} from "./ether-trade-utils";
+import { buyTokensOnBlockchain, sellTokensOnBlockchain } from "./ether-trade-utils";
 import { wallet, mintaddy } from "./config";
 import { buyWithAddress, initializeUserATA } from "./solanaBuySellFunction";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useAppKitProvider } from '@reown/appkit/react';
 
 
 // eslint-disable-next-line react/prop-types
 const PlaceTrade = ({ coinData }) => {
   const { id } = useParams();
   const dispatch = useDispatch();
+  const wallet = useWallet()
   const [showSOGs, setShowSOGs] = useState(false);
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { walletProvider } = useAppKitProvider('solana');
   const [tradeType, setTradeType] = useState("buy"); // Default trade type is "buy"
+  const { address, isConnected } = useAppKitAccount()
 
   const blockchainType = localStorage.getItem("blockchain") || "SOL";
   console.log("coinDataPlaceTrade", coinData?.token_address)
@@ -133,12 +137,24 @@ const PlaceTrade = ({ coinData }) => {
   };
 
   const handleBuySOl = async () => {
-
-    const SolAtaAddress = await initializeUserATA(wallet.payer, coinData.token_address, mintaddy);
+    console.log("halloooooo")
+    console.log("wallet address ", walletProvider);
+    const SolAtaAddress = await initializeUserATA(walletProvider, coinData.token_address, mintaddy);
     console.log("SolAtaAddress", SolAtaAddress)
-    if (SolAtaAddress) {
-      const BuySolToken = await buyWithAddress(SolAtaAddress);
-      console.log("BuySolToken",BuySolToken)
+
+    if (SolAtaAddress !== '') {
+      const BuySolToken = await buyWithAddress(SolAtaAddress, walletProvider);
+      console.log("BuySolToken", BuySolToken)
+
+
+      if (BuySolToken?.success) {
+        toast.success(BuySolToken?.message)
+      } else {
+        toast.error(BuySolToken?.message)
+      }
+
+    } else {
+      toast.error('Error Generating ATA');
     }
   }
 

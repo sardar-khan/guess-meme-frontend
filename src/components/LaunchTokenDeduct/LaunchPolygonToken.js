@@ -14,14 +14,14 @@ const LaunchTokenPolygon = (address, sendTransaction, balance) => {
 
             const userBalance = balance ? parseFloat(balance) : 0;
 
-            if (userBalance < 0.003) {
+            if (userBalance < 0.05) {
                 toast.error("Insufficient balance in wallet!");
                 return false;
             }
 
             const txResponse = await sendTransaction({
                 to: adminAddress.address,
-                value: parseEther("0.003"),
+                value: parseEther("0.05"),
             });
             console.log("txt-respnse",txResponse);
 

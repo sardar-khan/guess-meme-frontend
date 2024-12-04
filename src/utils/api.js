@@ -151,7 +151,7 @@ export const submitComment = async ({ text, token_id, reply_id, image }) => {
 };
 
 // Submit comment function using Axios instance
-export const BuyToken = async ({ account_type, amount, token_amount, token_id, type }) => {
+export const BuyToken = async ({ account_type, amount, token_amount, token_id, type, transaction_hash }) => {
     try {
         const response = await apiInstance.post('trade/initiate', {
             account_type,
@@ -159,6 +159,7 @@ export const BuyToken = async ({ account_type, amount, token_amount, token_id, t
             token_amount,
             token_id,
             type,
+            transaction_hash,
         });
         console.log('BuyToken', response.data);
         return response.data;

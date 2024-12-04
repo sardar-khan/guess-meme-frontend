@@ -89,11 +89,7 @@ const Navbar = () => {
                         <span className='mt-[-8px]'>⚡</span>
                     </button>
 
-                    {/* DirectBuy Modal */}
-                    <DirectBuy
-                        isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
-                    />
+
                     <Link to='/howitworks' className='themeBtn w-[35px] min-w-[50px] text-xl uppercase'>
                         <span className='PixelOperatorbold'>?</span>
                     </Link>
@@ -133,6 +129,7 @@ const Navbar = () => {
                         </Link>
                     </div>
                 </div>
+
             </div>
 
             {/* Background Overlay when Menu is Open */}
@@ -142,6 +139,10 @@ const Navbar = () => {
                     onClick={closeMenu}
                 ></div>
             )}
+            <DirectBuy
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     );
 };

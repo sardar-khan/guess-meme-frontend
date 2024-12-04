@@ -20,19 +20,19 @@ const LaunchCard = ({ key, setSpace, coinData }) => {
             <div className='secondary-bg h-full w-full border-[3px] border-l-[15px] border-t-[8px] border-r-[15px] border-b-[15px] border-[#A49DD2]'>
 
                 <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-b-[#FFFFFF] border-r-[#FFFFFF]'>
-                    <div className={`flex ${setSpace === 'medium' ? 'p-[5px]' : 'p-[10px]'}  h-full w-full justify-between gap-1 border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff0] border-r-[#fff0]`}>
+                    <div className={`flex p-[5px] h-full w-full justify-between gap-1 border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff0] border-r-[#fff0]`}>
 
-                        <div className={`${setSpace === 'medium' ? 'w-[150px] h-full' : 'w-[150px] h-full'}`}>
+                        <div className={`${'w-[150px] h-full'}`}>
                             {coinData?.coin?.image ?
                                 <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.coin?.image}`} className='w-full' alt="" />
                                 :
-                                <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.coin?.image}`} className='w-full' alt="" />
-                                // <img src={CardImg} className='min-h-full w-full' alt="" />
+                                <img src={CardImg} className='w-full' alt="" />
+                                // <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.coin?.image}`} className='w-full' alt="" />
                             }
                         </div>
 
-                        <div className={`relative bg-white ${setSpace === 'medium' ? 'md:w-[calc(100%-150px)]' : 'w-[calc(100%-150px)'} w-[calc(100%-150px) min-h-full border-[3px] border-b-[4px] border-r-[4px] border-[#353535] border-b-[#CBC7E5] border-r-[#CBC7E5] after:absolute after:h-[1px] after:w-full after:top-0 after:left-0 after:bg-[white]`}>
-                            <div className={`${setSpace === 'medium' ? 'md:p-[8px]' : 'md:p-[15px]'} p-[5px] min-h-full border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff] border-r-[#fff]`}>
+                        <div className={`relative bg-white borde w-[calc(100%-100px)] sm:w-[calc(100%-150px)] min-h-full border-[3px] border-b-[4px] border-r-[4px] border-[#353535] border-b-[#CBC7E5] border-r-[#CBC7E5] after:absolute after:h-[1px] after:w-full after:top-0 after:left-0 after:bg-[white]`}>
+                            <div className={`p-[5px] md:p-[8px] min-h-full border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff] border-r-[#fff]`}>
                                 <h5 className='PixelOperatorbold text-[10px] md:text-[14px]'>Created by 💩 <Link to={`/userprofile/${coinData?.coin?.creator?._id}`} className='hover:underline'>{coinData?.coin?.creator.user_name}</Link></h5>
                                 <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: {coinData?.coin?.market_cap}</h5>
                                 <div>

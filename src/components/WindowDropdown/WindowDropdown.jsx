@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import "./WindowDropdown.css";
 import ethImg from "../../assets/icons/eth.svg";
 import solImg from "../../assets/icons/sol.svg";
+import { useNavigate } from "react-router-dom";
 
 const WindowDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const blockChain = localStorage.getItem("blockchain")
-
-  const [selectedOption, setSelectedOption] = useState(blockChain === null ? localStorage.setItem("blockchain","SOL") : blockChain);
+  const navigate = useNavigate()
+  const [selectedOption, setSelectedOption] = useState(blockChain === null ? localStorage.setItem("blockchain", "SOL") : blockChain);
 
   const dropdownRef = useRef(null);
   console.log("selectedOption", selectedOption)
@@ -25,6 +26,7 @@ const WindowDropdown = () => {
     setSelectedOption(option);
     localStorage.setItem("blockchain", option);
     setIsOpen(false);
+    navigate('/')
     window.location.reload(); // Refresh the page
   };
 

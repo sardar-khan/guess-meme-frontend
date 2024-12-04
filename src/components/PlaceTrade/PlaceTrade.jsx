@@ -41,6 +41,7 @@ const PlaceTrade = ({ coinData }) => {
 
   const blockchainType = localStorage.getItem("blockchain") || "SOL";
   console.log("coinDataPlaceTrade", coinData?.token_address)
+  console.log("coinDataPlaceTrade data", coinData)
 
   const result = useBalance({
     address: address,
@@ -77,7 +78,7 @@ const PlaceTrade = ({ coinData }) => {
     try {
       if (blockchainType === "ETH" && coinData?.status === 'deployed') {
 
-        const tokenAddress = '0x76148Cd0a2e51C54B2950a23Dd18aFDF98239e4F';
+        const tokenAddress = coinData?.token_address;
         // const tokenAddress = coinData?.token_address;
 
         if (!tokenAddress) {
@@ -88,26 +89,29 @@ const PlaceTrade = ({ coinData }) => {
 
         if (tradeType === "buy") {
           response = await buyTokensOnBlockchain(tokenAddress, amount);
+          console.log("response buyTokensOnBlockchain", response)
         } else if (tradeType === "sell") {
           response = await sellTokensOnBlockchain(tokenAddress, amount);
         }
-
+        console.log("response buyTokensOnBlockchain", response)
         if (response?.success) {
           toast.success(
             `${tradeType === "buy" ? "buy" : "sell"} transaction successful`
           );
 
           // Update backend after successful blockchain transaction
+          const type = blockchainType.toLowerCase() === 'eth' ? 'ethereum' : ''
 
           const apiResponse = await BuyToken({
-            account_type: blockchainType.toLowerCase(),
+            account_type: type,
             amount: parseFloat(amount),
             token_amount: 1,
             token_id: id,
             type: tradeType,
+            transaction_hash: response?.transactionHash
           });
 
-          if (apiResponse?.status === 201) {
+          if (apiResponse?.status === 200) {
             toast.success(
               `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
             );
@@ -130,7 +134,7 @@ const PlaceTrade = ({ coinData }) => {
 
         if (deductSOL) {
           const apiResponse = await BuyToken({
-            account_type: blockchainType.toLowerCase(),
+            account_type: 'solana',
             amount: parseFloat(amount),
             token_amount: 1,
             token_id: id,
@@ -161,20 +165,20 @@ const PlaceTrade = ({ coinData }) => {
       }
       else {
         // Non-ETH blockchain logic
-        const apiResponse = await BuyToken({
-          account_type: blockchainType.toLowerCase(),
-          amount: parseFloat(amount),
-          token_amount: 1,
-          token_id: id,
-          type: tradeType,
-        });
+        // const apiResponse = await BuyToken({
+        //   account_type: blockchainType.toLowerCase(),
+        //   amount: parseFloat(amount),
+        //   token_amount: 1,
+        //   token_id: id,
+        //   type: tradeType,
+        // });
 
-        if (apiResponse?.status === 201) {
-          toast.success(`${tradeType === "buy" ? "buy" : "sell"} successful`);
-          dispatch(fetchTrades(id));
-        } else {
-          throw new Error(`Failed to ${tradeType} tokens`);
-        }
+        // if (apiResponse?.status === 201) {
+        //   toast.success(`${tradeType === "buy" ? "buy" : "sell"} successful`);
+        //   dispatch(fetchTrades(id));
+        // } else {
+        //   throw new Error(`Failed to ${tradeType} tokens`);
+        // }
       }
     } catch (error) {
       toast.error(error.message || `Error placing ${tradeType} trade`);

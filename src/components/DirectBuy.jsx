@@ -9,6 +9,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
     return (
         <div
             className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'
+            style={{ zIndex: '2000' }}
             onClick={onClose}
         >
             <div
@@ -43,21 +44,21 @@ const DirectBuy = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Buttons */}
-                <div className='flex justify-end mt-4 gap-3'>
+                <div className='flex flex-col sm:flex sm:flex-row justify-end mt-4 gap-1 sm:gap-3'>
                     <button
                         onClick={onClose}
-                        className='px-4 py-2 bg-gray-300 !text-base'
+                        className='w-full sm:w-fit px-4 py-2 bg-gray-300 sm:!text-base text-xs'
                     >
                         Cancel
                     </button>
                     <button
-                        className='themeBtn w-fit'
+                        className='themeBtn w-full sm:w-fit'
                         onClick={() => {
                             console.log({ tokenAddress, amount });
                             onClose();
                         }}
                     >
-                        <span className='!text-base'>Buy</span>
+                        <span className='!text-xs sm:!text-base'>Buy</span>
                     </button>
                 </div>
             </div>

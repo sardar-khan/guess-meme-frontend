@@ -80,7 +80,7 @@ const LaunchTokenSol = () => {
             }
         } catch (error) {
             console.error("Error while transferring SOL:", error);
-            toast.error(`Transaction Error: ${error.message}`);
+            // toast.error(`Transaction Error: ${error.message}`);
             return false; // Return failure
         }
     };

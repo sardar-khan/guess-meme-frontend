@@ -31,9 +31,9 @@
 //             console.log("Initiating Pol transfer...");
 //             const userBalance = result?.data?.formatted ? parseFloat(result?.data?.formatted) : 0
 //             console.log("userbalane",userBalance);
-//             if (userBalance < 0.003) { return toast.error("Insufficent balance in wallet!")}
+//             if (userBalance < 0.05) { return toast.error("Insufficent balance in wallet!")}
 //             const toAddress = adminAddress?.address;
-//             const txResponse = await sendTransaction({toAddress,  value: parseEther("0.003"),})
+//             const txResponse = await sendTransaction({toAddress,  value: parseEther("0.05"),})
 
 //            // console.log("transaction hash",txResponse.hash)
             
@@ -86,7 +86,7 @@
 
 //                 const userBalance = result?.data?.formatted ? parseFloat(result?.data?.formatted) : 0;
 
-//                 if (userBalance < 0.003) {
+//                 if (userBalance < 0.05) {
 //                     toast.error("Insufficient balance in wallet!");
 //                     return reject(new Error("Insufficient balance"));
 //                 }
@@ -94,7 +94,7 @@
 //                 const toAddress = adminAddress?.address;
 //                 const txResponse = await sendTransaction({
 //                     to: toAddress,
-//                     value: parseEther("0.003"),
+//                     value: parseEther("0.05"),
 //                 });
 
 //                 // Wait for transaction confirmation
@@ -161,7 +161,7 @@ const LaunchTokenEth = () => {
 
                 const userBalance = result?.data?.formatted ? parseFloat(result?.data?.formatted) : 0;
 
-                if (userBalance < 0.003) {
+                if (userBalance < 0.05) {
                     toast.error("Insufficient balance in wallet!");
                     return reject(new Error("Insufficient balance"));
                 }
@@ -169,7 +169,7 @@ const LaunchTokenEth = () => {
                 const toAddress = adminAddress?.address;
                 const txResponse = await sendTransaction({
                     to: toAddress,
-                    value: parseEther("0.003"),
+                    value: parseEther("0.05"),
                 });
 
                 // Wait for transaction confirmation

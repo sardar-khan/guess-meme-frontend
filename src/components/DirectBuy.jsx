@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import ethImg from "../assets/icons/eth.png";
+import solImg from "../assets/icons/sol.webp";
+
 
 const DirectBuy = ({ isOpen, onClose }) => {
     const [tokenAddress, setTokenAddress] = useState('');
@@ -32,7 +35,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
                     </div>
 
                     {/* Amount Input */}
-                    <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
+                    {/* <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
                         <input
                             type='number'
                             className='w-full px-2 py-3'
@@ -40,6 +43,29 @@ const DirectBuy = ({ isOpen, onClose }) => {
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
                         />
+                    </div> */}
+                    <div className="w-full Inter">
+                        <div className="w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]">
+                            <div className="flex w-full justify-between border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]">
+                                <input
+                                    type="number"
+                                    name="amount"
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                    className="w-full px-2 py-3 pr-4"
+                                />
+                                <div className="w-fit flex items-center gap-1 bg-white">
+                                    <span className="text-black font-semibold text-sm SegoeUi">
+                                        {blockchainType === "ETH" ? "ETH" : "SOL"}
+                                    </span>
+                                    <img
+                                        src={blockchainType === "ETH" ? ethImg : solImg}
+                                        className="w-[30px] mr-5"
+                                        alt={blockchainType === "ETH" ? "ETH" : "SOL"}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

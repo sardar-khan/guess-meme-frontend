@@ -1,7 +1,7 @@
 import { SystemProgram, PublicKey, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { useAppKitConnection } from '@reown/appkit-adapter-solana/react';
 import { useAppKitProvider } from '@reown/appkit/react';
-import { adminSolAddress } from '../../services/config';
+import { adminSolAddress, LaunchTokenSolValue } from '../../services/config';
 import { toast } from 'react-toastify';
 
 
@@ -9,7 +9,9 @@ const LaunchTokenSol = () => {
     const { connection } = useAppKitConnection();
     const { walletProvider } = useAppKitProvider('solana');
 
-    const handleLaunchToken = async () => {
+
+    const handleLaunchToken = async (amount) => {
+        console.log("amountsol", amount)
         try {
             console.log("Initiating SOL transfer...");
 
@@ -17,10 +19,28 @@ const LaunchTokenSol = () => {
             const RECIPIENT_ADDRESS = new PublicKey(adminSolAddress);
 
             // Amount to send (0.03 SOL)
-            const AMOUNT_TO_SEND = 0.03 * LAMPORTS_PER_SOL;
+            const plusAmount = parseFloat(amount) + 0.03;
+            console.log("LaunchTokenSolValue", LaunchTokenSolValue)
 
+
+            const AMOUNT_TO_SEND = amount === undefined || null ? LaunchTokenSolValue * LAMPORTS_PER_SOL : plusAmount * LAMPORTS_PER_SOL;
+            // const AMOUNT_TO_SEND = LaunchTokenSolValue * LAMPORTS_PER_SOL;
+            console.log("AMOUNT_TO_SEND", AMOUNT_TO_SEND)
             // Check wallet balance
-            const balance = await connection.getBalance(walletProvider.publicKey);
+            const getBalanceWithRetry = async (connection, publicKey, retries = 3) => {
+                for (let attempt = 0; attempt < retries; attempt++) {
+                    try {
+                        return await connection.getBalance(publicKey);
+                    } catch (error) {
+                        console.error(`Failed to fetch balance (Attempt ${attempt + 1}):`, error);
+                        if (attempt === retries - 1) throw new Error("Failed to fetch balance after retries.");
+                        await sleep(1000); // Retry after 1 second
+                    }
+                }
+            };
+            const balance = await getBalanceWithRetry(connection, walletProvider.publicKey);
+
+            // const balance = await connection.getBalance(walletProvider.publicKey);
             if (balance < AMOUNT_TO_SEND) {
                 toast.error("Insufficient balance in your wallet.");
                 return false;
@@ -111,6 +131,7 @@ const LaunchTokenSol = () => {
 // Helper function to sleep
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 export default LaunchTokenSol;
+
 
 // // LaunchTokenSol.js
 // import { SystemProgram, PublicKey, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js';

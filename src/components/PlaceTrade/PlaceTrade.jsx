@@ -19,12 +19,14 @@ import LaunchTokenPolygon from "../LaunchTokenDeduct/LaunchPolygonToken";
 
 
 import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import SetSlipPage from "../Modals/SetSlipPage";
 
 
 // eslint-disable-next-line react/prop-types
 const PlaceTrade = ({ coinData }) => {
   const { id } = useParams();
   const dispatch = useDispatch();
+  const [isSlipPageOpen, setIsSlipPageOpen] = useState(false);
   const wallet = useWallet()
   const [showSOGs, setShowSOGs] = useState(false);
   const [amount, setAmount] = useState("");
@@ -67,9 +69,16 @@ const PlaceTrade = ({ coinData }) => {
   }, [isConfirming, isConfirmed, hash])
 
 
+
   const handleTrade = async () => {
-    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-      toast.error("Please enter a valid amount");
+    if (isConnected) {
+      if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+        toast.error("Please enter a valid amount");
+        return;
+      }
+    }
+    else {
+      toast.error("Connect Wallet First");
       return;
     }
 
@@ -130,7 +139,7 @@ const PlaceTrade = ({ coinData }) => {
 
       else if (blockchainType === "SOL" && coinData?.status === 'created') {
 
-        let deductSOL = await handleLaunchToken();
+        let deductSOL = await handleLaunchToken(amount);
 
         if (deductSOL) {
           const apiResponse = await BuyToken({
@@ -155,11 +164,9 @@ const PlaceTrade = ({ coinData }) => {
       }
 
 
-      else if (blockchainType === "ETH" && coinData?.status === 'created') {
+      else if (blockchainType === "ETH" && coinData?.status === 'created' || 'failed') {
 
         let deductETH = await handleLaunchTokenE();
-
-
 
 
       }
@@ -213,7 +220,6 @@ const PlaceTrade = ({ coinData }) => {
       }
 
     } catch (error) {
-
     }
   }
 
@@ -277,9 +283,20 @@ const PlaceTrade = ({ coinData }) => {
                     >
                       {showSOGs ? "Switch to ETH" : "Switch to SOL"}
                     </span>
-                    <span className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer">
-                      Set max slippage
-                    </span>
+                    <div>
+                      <span
+                        className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
+                        onClick={() => setIsSlipPageOpen(true)}
+                      >
+                        Set max slippage
+                      </span>
+
+                      {/* SetSlipPage Modal */}
+                      <SetSlipPage
+                        isOpen={isSlipPageOpen}
+                        onClose={() => setIsSlipPageOpen(false)}
+                      />
+                    </div>
                   </div>
 
                   <div className="flex justify-between gap-3 px-3 pt-[15px]">
@@ -291,7 +308,12 @@ const PlaceTrade = ({ coinData }) => {
                               type="number"
                               name="amount"
                               value={amount}
-                              onChange={(e) => setAmount(e.target.value)}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (!value || Number(value) >= 0) {
+                                  setAmount(value);
+                                }
+                              }}
                               className="w-full px-2 py-3 pr-4"
                             />
                             <div className="w-fit flex items-center gap-1 bg-white">
@@ -305,6 +327,7 @@ const PlaceTrade = ({ coinData }) => {
                               />
                             </div>
                           </div>
+
                         </div>
                       </div>
                     )}

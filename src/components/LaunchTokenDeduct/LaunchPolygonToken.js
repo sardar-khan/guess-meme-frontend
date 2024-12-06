@@ -6,14 +6,14 @@ const LaunchTokenPolygon = (address, sendTransaction, balance) => {
     return async () => {
         try {
             const adminAddress = await adminTokenAddress();
-            
+
             if (!adminAddress?.address) {
                 toast.error("Something went wrong, please try again!");
                 return false;
             }
 
             const userBalance = balance ? parseFloat(balance) : 0;
-
+            console.log("userBalance", userBalance)
             if (userBalance < 0.05) {
                 toast.error("Insufficient balance in wallet!");
                 return false;
@@ -23,7 +23,7 @@ const LaunchTokenPolygon = (address, sendTransaction, balance) => {
                 to: adminAddress.address,
                 value: parseEther("0.05"),
             });
-            console.log("txt-respnse",txResponse);
+            console.log("txt-respnse", txResponse);
 
             if (txResponse) {
                 toast.success("Transaction Successful!");

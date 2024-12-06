@@ -16,6 +16,7 @@ import LaunchTokenPolygon from "../components/LaunchTokenDeduct/LaunchPolygonTok
 
 
 import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { useNavigate } from 'react-router-dom';
 
 const LaunchTokens = () => {
     const dispatch = useDispatch();
@@ -33,9 +34,13 @@ const LaunchTokens = () => {
     const { data: balanceData } = useBalance({ address });
     const { data: hash, sendTransaction } = useSendTransaction();
 
+    const navigate = useNavigate();
+
     const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
         hash: hash,
     });
+
+    console.log("balanceData", balanceData)
 
 
     const { block_chain } = useContext(WalletContext);
@@ -126,6 +131,7 @@ const LaunchTokens = () => {
                 if (response.status === 200) {
                     toast.success(response.message);
                     resetForm();
+                    navigate('/');
                     dispatch(fetchCoins(sortOption));
                 } else {
                     toast.error('Failed to create coin. Please try again.');
@@ -170,6 +176,7 @@ const LaunchTokens = () => {
                 if (response.status === 200) {
                     toast.success(response.message);
                     resetForm();
+                    navigate('/');
                     dispatch(fetchCoins(sortOption));
                 } else {
                     toast.error('Failed to create coin. Please try again.');

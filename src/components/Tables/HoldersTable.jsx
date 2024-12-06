@@ -41,7 +41,8 @@ const HoldersTable = () => {
         fetchHolders();
     }, [id]);
     console.log("coinscoinscoinscoins", coins)
-    
+
+
     const handleCopy = (address) => {
         navigator.clipboard.writeText(address).then(() => {
             toast.success('Address copied!');
@@ -62,6 +63,8 @@ const HoldersTable = () => {
     if (error) {
         return <div>Error: {error}</div>;
     }
+    if (error) return <div>No Data Found</div>;
+
 
     return (
         <div>

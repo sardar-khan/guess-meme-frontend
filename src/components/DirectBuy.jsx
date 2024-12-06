@@ -6,6 +6,7 @@ import solImg from "../assets/icons/sol.webp";
 const DirectBuy = ({ isOpen, onClose }) => {
     const [tokenAddress, setTokenAddress] = useState('');
     const [amount, setAmount] = useState('');
+    const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
     if (!isOpen) return null;
 
@@ -28,7 +29,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
                         <input
                             type='text'
                             className='w-full px-2 py-3'
-                            placeholder='Enter Token Address'
+                            placeholder='Token Address'
                             value={tokenAddress}
                             onChange={(e) => setTokenAddress(e.target.value)}
                         />
@@ -51,8 +52,14 @@ const DirectBuy = ({ isOpen, onClose }) => {
                                     type="number"
                                     name="amount"
                                     value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
+                                    placeholder='Amount'
                                     className="w-full px-2 py-3 pr-4"
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (!value || Number(value) >= 0) {
+                                            setAmount(value);
+                                        }
+                                    }}
                                 />
                                 <div className="w-fit flex items-center gap-1 bg-white">
                                     <span className="text-black font-semibold text-sm SegoeUi">

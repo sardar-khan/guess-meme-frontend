@@ -15,10 +15,17 @@ import WalletContext, { useWalletContext, WalletApi } from '../context/WalletCon
 import LaunchTokenPolygon from "../components/LaunchTokenDeduct/LaunchPolygonToken"
 
 
+import { useAppKitConnection } from '@reown/appkit-adapter-solana/react';
+import { useAppKitProvider } from '@reown/appkit/react';
+
 import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
 
 const LaunchTokens = () => {
+    const { connection } = useAppKitConnection();
+    const { walletProvider } = useAppKitProvider('solana');
+
+
     const dispatch = useDispatch();
     const { address, isConnected } = useAppKitAccount();
     const [name, setName] = useState('');

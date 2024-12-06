@@ -46,6 +46,7 @@ import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import { Keypair, Connection, PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
 import IDL1 from "./solIdl.json"; // Ensure the JSON file is accessible in your build
+import { WalletProvider } from "@solana/wallet-adapter-react";
 
 const programId = new PublicKey(
     "7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh"
@@ -61,7 +62,7 @@ const feeRecipient = new PublicKey(
 const SELLSLIPPAGE = 50;
 
 const mintaddy = new PublicKey(
-    "qVsZ9LG4pp2cKRuCDkXrL3RDZPGFK6vLyZUGSQQJ2Uj"
+    "F2ysZLbZkNksxhj3hAfQ7R84zusC8Xgw12VyfPB83EkZ"
 );
 
 // Replace with your private key
@@ -87,7 +88,7 @@ const provider = new AnchorProvider(connection, wallet, {
     commitment: "confirmed",
 });
 
-const program = new Program(IDL1, programId, provider);
+const program = new Program(IDL1, programId, WalletProvider);
 
 export {
     programId,
@@ -97,5 +98,7 @@ export {
     mintaddy,
     wallet,
     provider,
-    program,
+     program,
+    
+    IDL1
 };

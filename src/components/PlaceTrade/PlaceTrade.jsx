@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 import { fetchTrades } from "../../features/tradesSlice";
 import { buyTokensOnBlockchain, sellTokensOnBlockchain } from "./ether-trade-utils";
 import { wallet, mintaddy } from "./config";
-import { buyWithAddress, initializeUserATA } from "./solanaBuySellFunction";
+import { buy } from "./solanaBuySellFunction";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useAppKitProvider } from '@reown/appkit/react';
@@ -20,10 +20,16 @@ import LaunchTokenPolygon from "../LaunchTokenDeduct/LaunchPolygonToken";
 
 import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import SetSlipPage from "../Modals/SetSlipPage";
+import { PublicKey } from "@solana/web3.js";
+
 
 
 // eslint-disable-next-line react/prop-types
 const PlaceTrade = ({ coinData }) => {
+
+  const tokenAddress_mint = coinData?.token_address ? new PublicKey(coinData.token_address) : null;
+
+
   const { id } = useParams();
   const dispatch = useDispatch();
   const [isSlipPageOpen, setIsSlipPageOpen] = useState(false);
@@ -42,6 +48,7 @@ const PlaceTrade = ({ coinData }) => {
   });
 
   const blockchainType = localStorage.getItem("blockchain") || "SOL";
+
   console.log("coinDataPlaceTrade", coinData?.token_address)
   console.log("coinDataPlaceTrade data", coinData)
 
@@ -70,6 +77,9 @@ const PlaceTrade = ({ coinData }) => {
 
 
 
+
+
+
   const handleTrade = async () => {
     if (isConnected) {
       if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
@@ -83,9 +93,77 @@ const PlaceTrade = ({ coinData }) => {
     }
 
     setIsLoading(true);
+    console.log("blockchainType and coinData?.status", blockchainType, 'and', coinData?.status)
 
     try {
-      if (blockchainType === "ETH" && coinData?.status === 'deployed') {
+
+      if (blockchainType === "SOL" && coinData?.status === "deployed") {
+        console.log("coinData?.status", coinData?.status)
+
+        const buySuccess = await buy(walletProvider, amount, tokenAddress_mint);
+        // toast.success(`Transction Successfull: ${buySuccess}`)
+
+        if (buySuccess) {
+          toast.success(`Transction Successfull: ${buySuccess}`)
+        }
+
+        // if (buySuccess) {
+        //   setAmount('')
+
+        //   const apiResponse = await BuyToken({
+        //     account_type: 'solana',
+        //     amount: parseFloat(amount),
+        //     token_amount: 1,
+        //     token_id: id,
+        //     type: tradeType,
+        //     transaction_hash: buySuccess,
+        //   });
+
+        //   if (apiResponse?.status === 200) {
+        //     toast.success(`Transction Successfull: ${buySuccess}`)
+        //     // toast.success(
+        //     // `${tradeType === "buy" ? "buy" : "sell"} saved successfully`);
+        //     dispatch(fetchTrades(id)); // Fetch updated trades
+
+        //   } else {
+        //     throw new Error(
+        //       `Failed to record ${tradeType} trade in the backend`
+        //     );
+        //   }
+
+
+        // }
+        console.log("Purchase successful");
+      }
+
+      else if (blockchainType === "SOL" && coinData?.status === 'created') {
+
+        let deductSOL = await handleLaunchToken(amount);
+
+        if (deductSOL) {
+          const apiResponse = await BuyToken({
+            account_type: 'solana',
+            amount: parseFloat(amount),
+            token_amount: 1,
+            token_id: id,
+            type: tradeType,
+          });
+
+          if (apiResponse?.status === 200) {
+            toast.success(`${tradeType === "buy" ? "buy" : "sell"} successful`);
+            setAmount('')
+            dispatch(fetchTrades(id));
+          } else {
+            throw new Error(`Failed to ${tradeType} tokens`);
+          }
+        } else {
+          toast.error('Transaction failed. Please try again now.');
+        }
+
+
+      }
+
+      else if (blockchainType === "ETH" && coinData?.status === 'deployed') {
 
         const tokenAddress = coinData?.token_address;
         // const tokenAddress = coinData?.token_address;
@@ -137,39 +215,14 @@ const PlaceTrade = ({ coinData }) => {
         }
       }
 
-      else if (blockchainType === "SOL" && coinData?.status === 'created') {
-
-        let deductSOL = await handleLaunchToken(amount);
-
-        if (deductSOL) {
-          const apiResponse = await BuyToken({
-            account_type: 'solana',
-            amount: parseFloat(amount),
-            token_amount: 1,
-            token_id: id,
-            type: tradeType,
-          });
-
-          if (apiResponse?.status === 200) {
-            toast.success(`${tradeType === "buy" ? "buy" : "sell"} successful`);
-            dispatch(fetchTrades(id));
-          } else {
-            throw new Error(`Failed to ${tradeType} tokens`);
-          }
-        } else {
-          toast.error('Transaction failed. Please try again now.');
-        }
-
-
-      }
-
-
       else if (blockchainType === "ETH" && coinData?.status === 'created' || 'failed') {
 
         let deductETH = await handleLaunchTokenE();
 
 
       }
+
+
       else {
         // Non-ETH blockchain logic
         // const apiResponse = await BuyToken({
@@ -187,6 +240,8 @@ const PlaceTrade = ({ coinData }) => {
         //   throw new Error(`Failed to ${tradeType} tokens`);
         // }
       }
+
+
     } catch (error) {
       toast.error(error.message || `Error placing ${tradeType} trade`);
       console.error(`Error during ${tradeType}:`, error);
@@ -220,30 +275,12 @@ const PlaceTrade = ({ coinData }) => {
       }
 
     } catch (error) {
+
     }
   }
 
-  const handleBuySOl = async () => {
-    console.log("halloooooo")
-    console.log("wallet address ", walletProvider);
-    const SolAtaAddress = await initializeUserATA(walletProvider, coinData.token_address, mintaddy);
-    console.log("SolAtaAddress", SolAtaAddress)
-
-    if (SolAtaAddress !== '') {
-      const BuySolToken = await buyWithAddress(SolAtaAddress, walletProvider);
-      console.log("BuySolToken", BuySolToken)
 
 
-      if (BuySolToken?.success) {
-        toast.success(BuySolToken?.message)
-      } else {
-        toast.error(BuySolToken?.message)
-      }
-
-    } else {
-      toast.error('Error Generating ATA');
-    }
-  }
 
 
   return (
@@ -274,6 +311,7 @@ const PlaceTrade = ({ coinData }) => {
                     >
                       Sell
                     </button>
+
                   </div>
 
                   <div className="flex justify-between gap-3 px-3 pt-[35px]">
@@ -310,20 +348,22 @@ const PlaceTrade = ({ coinData }) => {
                               value={amount}
                               onChange={(e) => {
                                 const value = e.target.value;
-                                if (!value || Number(value) >= 0) {
+                                if (!value || Number(value) >= 1) {
                                   setAmount(value);
                                 }
                               }}
                               className="w-full px-2 py-3 pr-4"
                             />
                             <div className="w-fit flex items-center gap-1 bg-white">
-                              <span className="text-black font-semibold text-sm SegoeUi">
-                                {blockchainType === "ETH" ? "ETH" : "SOL"}
+                              <span className="whitespace-nowrap text-black font-semibold text-sm SegoeUi">
+                                {coinData?.name}
+                                {/* {blockchainType === "ETH" ? "ETH" : "SOL"} */}
                               </span>
                               <img
-                                src={blockchainType === "ETH" ? ethImg : solImg}
-                                className="w-[30px] mr-5"
-                                alt={blockchainType === "ETH" ? "ETH" : "SOL"}
+                                // src={blockchainType === "ETH" ? ethImg : solImg}
+                                src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`}
+                                className="w-[30px] mr-7 rounded-full"
+                              // alt={blockchainType === "ETH" ? "ETH" : "SOL"}
                               />
                             </div>
                           </div>
@@ -351,3 +391,4 @@ const PlaceTrade = ({ coinData }) => {
 };
 
 export default PlaceTrade;
+

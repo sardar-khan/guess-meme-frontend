@@ -5,12 +5,15 @@ import { adminSolAddress, LaunchTokenSolValue } from '../../services/config';
 import { toast } from 'react-toastify';
 
 
+
 const LaunchTokenSol = () => {
     const { connection } = useAppKitConnection();
     const { walletProvider } = useAppKitProvider('solana');
 
 
     const handleLaunchToken = async (amount) => {
+
+
         console.log("amountsol", amount)
         try {
             console.log("Initiating SOL transfer...");

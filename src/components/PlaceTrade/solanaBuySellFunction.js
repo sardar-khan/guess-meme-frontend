@@ -5,225 +5,248 @@
 // const { Buy_createTransactionInstruction, b, lx_global } = require("./utils");
 
 import { Keypair, PublicKey, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
-import { connection, feeRecipient, mintaddy, program, programId, wallet } from "./config";
+// import { connection, feeRecipient, IDL1, mintaddy, SELLSLIPPAGE, wallet } from "./config";
+import { connection, feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
 import { getAccount, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
-import { Buy_createTransactionInstruction, b, lx_global } from "./utils";
+import { Buy_createTransactionInstruction, b, fetchLiquidityPool, lx_global } from "./utils";
 import BN from "bn.js";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
+import { Program } from "@coral-xyz/anchor";
 
+
+
+function decodeLiquidityPool(data) {
+    if (!data || data.length < 32) {
+        throw new Error("Invalid liquidity pool data");
+    }
+
+    // Convert the binary data into BigInt or numbers as per layout
+    const virtualSolReserves = new BN(data.slice(0, 8), "le");
+    const virtualTokenReserves = new BN(data.slice(8, 16), "le");
+    const realTokenReserves = new BN(data.slice(16, 24), "le");
+    const feeBasisPoints = new BN(data.slice(24, 32), "le");
+
+    // Return as a structured object
+    return {
+        virtualSolReserves,
+        virtualTokenReserves,
+        realTokenReserves,
+        feeBasisPoints,
+    };
+}
 // const bs58 = require("bs58");
 // const userPublickey = new PublicKey("GMjT1392P2XMgMwQJEvQFsjJrrFW6symXjerkUvzinLV");
 
-async function initializeUserATA(walletProvider, user, mint) {
-    console.log("minter", user, mint, "associated", TOKEN_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID)
-    user = new PublicKey(user);
+async function buy(walletProvider, amount, mintaddy) {
+    console.log("amount for sol", Number(amount) * 10 ** 6);
 
-    console.log("my user", user)
-    const userATA = await getAssociatedTokenAddress(
-        mint,
-        user,
-        false,
-        TOKEN_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID
+    console.log(walletProvider, "wallet Provider");
+    const programId = new PublicKey("7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh");
+
+    console.log("mintaddy", mintaddy);
+    // const buy_value = "0.1"; // Just for setting high slippage basically
+    const tokenamt = Number(amount) * 10 ** 6; // Remaining token amount based on calling ts-node retrieve.ts
+
+    const [S] = PublicKey.findProgramAddressSync(
+        [Buffer.from("mint-authority")],
+        programId
+    );
+    const [C] = PublicKey.findProgramAddressSync(
+        [Buffer.from("bonding-curve"), mintaddy.toBuffer()],
+        programId
     );
 
-    console.log("User ATA:", userATA.toBase58());
+    const program = new Program(IDL1, programId, walletProvider);
 
-    const accountInfo = await connection.getAccountInfo(userATA);
-    if (accountInfo !== null) {
-        console.log("ATA already exists.");
-        return userATA;
+    console.log("Mint authority: " + S.toBase58());
+    console.log("Bonding curve: " + C.toBase58());
+
+    const [O] = PublicKey.findProgramAddressSync(
+        [Buffer.from("global")],
+        programId
+    );
+    console.log(O, "Global PDA");
+
+    let atains;
+    const r = b(mintaddy, walletProvider.publicKey, false);
+    let hasAta = false;
+    try {
+        const res = await getAccount(connection, r);
+    } catch (error) {
+        hasAta = true
+        atains = Buy_createTransactionInstruction(
+            walletProvider.publicKey,
+            r,
+            walletProvider.publicKey,
+            mintaddy
+        );
     }
 
-    const transaction = new Transaction().add(
-        createAssociatedTokenAccountInstruction(
-            walletProvider.publicKey,
-            userATA,
-            user,
-            mint
-        )
-    );
-    transaction.feePayer = walletProvider.publicKey;
-    transaction.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
+    const a = new BN(Math.floor(1e9 * parseFloat(amount)));
 
-    const signature = await walletProvider.signAndSendTransaction(transaction);
+    let o = {
+        solAmount: a,
+    };
+    let buyTx
+    if (hasAta) {
 
-    console.log("Transaction signature", signature);
-
-    // return userATA;
-    return userATA.toBase58();
-}
-
-async function buyWithAddress(address, walletProvider) {
-    try {
-        console.log("mintaddy", mintaddy);
-        const buy_value = "0.1";
-        const tokenamt = 210000000000;
-
-        const [S] = PublicKey.findProgramAddressSync(
-            [Buffer.from("mint-authority")],
-            programId
-        );
-        const [C] = PublicKey.findProgramAddressSync(
-            [Buffer.from("bonding-curve"), mintaddy.toBuffer()],
-            programId
-        );
-
-        console.log("Mint authority: " + S.toBase58());
-        console.log("Bonding curve: " + C.toBase58());
-
-        const B = b(mintaddy, C, true);
-
-        const MPL_TOKEN_METADATA_PROGRAM_ID = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s";
-        const E = new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
-        const [O] = PublicKey.findProgramAddressSync(
-            [Buffer.from("global")],
-            programId
-        );
-        const [D] = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), E.toBuffer(), mintaddy.toBuffer()],
-            E
-        );
-
-        let atains;
-
-        const r = b(mintaddy, walletProvider.publicKey, false);
-        try {
-            const res = await getAccount(connection, r);
-        } catch (error) {
-            atains = Buy_createTransactionInstruction(
-                walletProvider.publicKey,
-                r,
-                walletProvider.publicKey,
-                mintaddy
-            );
-        }
-
-        const { bonding_curve: k } = await lx_global();
-        const {
-            virtual_token_reserves,
-            virtual_sol_reserves,
-            real_token_reserves,
-            token_total_supply,
-            complete,
-        } = k;
-
-        console.log("initialVirtualTokenReserves:", virtual_token_reserves);
-        console.log("initialVirtualSolReserves:", virtual_sol_reserves);
-        console.log("initialRealTokenReserves:", real_token_reserves);
-        console.log("tokenTotalSupply:", token_total_supply);
-
-        console.log("complete:", complete);
-
-        const EX = (e) => (k ? e.mul(new BN(0)).div(new BN(1e4)) : new BN(0));
-
-        const K = (e, t) => {
-            let a, r;
-
-            if (e.eq(new BN(0)) || !k) {
-                return new BN(0);
-            }
-
-            let { initialVirtualSolReserves: l, initialVirtualTokenReserves: s, initialRealTokenReserves: o } = k;
-
-            if (t) {
-                let t = l.mul(s);
-                let i = l.add(e);
-                let n = t.div(i).add(new BN(1));
-                r = s.sub(n)
-                    ;
-                r = BN.min(r, o);
-                a = e;
-            } else {
-                a = (e = BN.min(e, o)).mul(l).div(s.sub(e)).add(new BN(1));
-                r = e;
-            }
-            console.log(a.toNumber());
-            let i = EX(a);
-            return t ? r : a.add(i);
-        };
-
-        let a = new BN(Math.floor(1e9 * parseFloat(buy_value)));
-
-        let o = {
-            solAmount: a,
-        };
-        console.log("11111")
-        let buyTx = await program.transaction
+        buyTx = await program.methods
             .buy(
                 new BN(tokenamt),
                 o.solAmount.add(a.mul(new BN(Math.floor(10 * 999))).div(new BN(1e3)))
-                ,{
-                    accounts: {
-                        global: O,
-                        feeRecipient: feeRecipient,
-                        mint: mintaddy,
-                        bondingCurve: C,
-                        associatedBondingCurve: B,
-                        associatedUser: address,
-                        user: walletProvider.publicKey,
-                        systemProgram: new PublicKey("11111111111111111111111111111111"),
-                        tokenProgram: new PublicKey(
-                            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-                        ),
-                        rent: new PublicKey("SysvarRent111111111111111111111111111111111"),
-                    }
-                });
+            )
+            .accounts({
+                global: O,
+                feeRecipient: feeRecipient,
+                mint: mintaddy,
+                bondingCurve: C,
+                associatedBondingCurve: b(mintaddy, C, true),
+                associatedUser: r,
+                user: walletProvider.publicKey,
+                systemProgram: new PublicKey("11111111111111111111111111111111"),
+                tokenProgram: new PublicKey(
+                    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+                ),
+                rent: new PublicKey("SysvarRent111111111111111111111111111111111"),
+            })
+            .preInstructions([atains])
+            .transaction();
+    } else {
 
-
-        // const tx = program.transaction.deposit(
-        //     new anchor.BN(convertedSolAmnt),
-        //     {
-        //         accounts: {
-        //             master: master1,
-        //             user: pda,
-        //             addresses: addresses,
-        //             addr2: address24,
-        //             addr3: address3,
-        //             addr4: address24,
-        //             buyer: publicKey,
-        //             systemProgram: "11111111111111111111111111111111",
-        //         }
-
-        //     });
-
-
-        const transaction = new web3.Transaction()
-        transaction.add(buyTx)
-        transaction.feePayer = walletProvider.publicKey;
-        transaction.recentBlockhash = latestBlockhash.blockhash
-        console.log('transaction', program);
-        // signed Transaction
-        const signedTx = await walletProvider.signTransaction(transaction)
-        console.log("after tansasctin is signed", true)
-        console.log("22222")
-        const signature = await walletProvider.sendRawTransaction(signedTx.serialize());
-        console.log("after sendRawTransaction is signed", true)
-        // const { signature } = await provider.signAndSendTransaction(transaction);
-
-        console.log('signed transaction >', signature);
-        await walletProvider.confirmTransaction(signature)
-        const data = {
-            'wallet_address': publicKey.toString(),
-            "amount": convertedSolAmnt
-        }
-
-        console.log("Buy transaction signature: ", buyTx);
-        return {
-            success: true,
-            transactionHash: buyTx
-        };
-
-    } catch (error) {
-        console.error("Error in buyWithAddress:", error.message);
-        return {
-            success: false,
-            message: "An error occurred during the buy transaction. Please try again later.",
-            error: error.message
-        };
+        buyTx = await program.methods
+            .buy(
+                new BN(tokenamt),
+                o.solAmount.add(a.mul(new BN(Math.floor(10 * 999))).div(new BN(1e3)))
+            )
+            .accounts({
+                global: O,
+                feeRecipient: feeRecipient,
+                mint: mintaddy,
+                bondingCurve: C,
+                associatedBondingCurve: b(mintaddy, C, true),
+                associatedUser: r,
+                user: walletProvider.publicKey,
+                systemProgram: new PublicKey("11111111111111111111111111111111"),
+                tokenProgram: new PublicKey(
+                    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+                ),
+                rent: new PublicKey("SysvarRent111111111111111111111111111111111"),
+            })
+            // .preInstructions([atains])
+            .transaction();
     }
+
+    // Fetch recentBlockhash
+
+    buyTx.feePayer = walletProvider.publicKey;
+    buyTx.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
+
+    const signature = await walletProvider.signAndSendTransaction(buyTx);
+
+    console.log("Transaction signature", signature);
+    return signature
 }
 
 
-export { buyWithAddress, initializeUserATA }
+async function sell(walletProvider) {
+    const totalvaluenum = 50;
+    let sell_value = totalvaluenum.toString();
+    const programId = new PublicKey("7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh");
+    const program = new Program(IDL1, programId, walletProvider);
+
+    console.log("Owner balance: " + sell_value);
+
+    const [S] = PublicKey.findProgramAddressSync(
+        [Buffer.from("mint-authority")],
+        programId
+    );
+    const [C] = PublicKey.findProgramAddressSync(
+        [Buffer.from("bonding-curve"), mintaddy.toBuffer()],
+        programId
+    );
+
+    console.log("Mint authority: " + S.toBase58());
+
+    console.log("Bonding curve: " + C.toBase58());
+
+    const B = b(mintaddy, C, !0);
+
+    const MPL_TOKEN_METADATA_PROGRAM_ID =
+        "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s";
+
+    const E = new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
+    const [O] = PublicKey.findProgramAddressSync(
+        [Buffer.from("global")],
+        programId
+    );
+
+    const r = b(mintaddy, walletProvider.publicKey, !1);
+
+    let a = new BN(0);
+    let v = 0;
+    let j = SELLSLIPPAGE; // slippage
+    let k = {
+        feeBasisPoints: new BN(0),
+    };
+
+    async function sellQuote(e) {
+        let liquidityPool = await fetchLiquidityPool(C, program);
+        console.log(liquidityPool.data, "pool")
+        const decodedPool = decodeLiquidityPool(liquidityPool.data);
+        console.log(decodedPool, "Decoded Liquidity Pool", decodedPool.virtualSolReserves.toString(), decodedPool.virtualTokenReserves.toString());
+
+
+        let y = (e) => e.mul(k.feeBasisPoints).div(new BN(1e4));
+        // if (e.eq(new BN(0)) || !sellQuote) return new BN(0);
+
+        let a = e
+            .mul(decodedPool.virtualSolReserves)
+            .div(decodedPool.virtualTokenReserves.add(e));
+
+        let r = y(a);
+
+        return a.sub(r);
+    }
+
+    let el = new BN(Math.floor(parseFloat(sell_value) || 0).toString()).mul(
+        new BN("1000000")
+    );
+
+    a = await sellQuote(el);
+    // console.log(el.toNumber(), a.toNumber())
+
+    let total = a.sub(a.mul(new BN(Math.floor(10 * j))).div(new BN(1e3)));
+
+    console.log(total.toString(), "total", el.toString(), "innnnnnnnnnnnnn");
+
+    let sellTx = await program.methods
+        .sell(el, total)
+        .accounts({
+            global: O,
+            feeRecipient: feeRecipient,
+            mint: mintaddy,
+            bondingCurve: C,
+            associatedBondingCurve: B,
+            associatedUser: r,
+            user: wallet.publicKey,
+            systemProgram: new PublicKey("11111111111111111111111111111111"),
+            tokenProgram: new PublicKey(
+                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            ),
+            rent: new PublicKey("SysvarRent111111111111111111111111111111111"),
+        })
+        .transaction();
+    console.log(sellTx, "sellTx")
+    // Fetch recentBlockhash
+
+    sellTx.feePayer = walletProvider.publicKey;
+    sellTx.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
+
+    const signature = await walletProvider.signAndSendTransaction(sellTx);
+
+    console.log("Transaction signature", signature);
+}
+
+
+
+export { buy, sell }

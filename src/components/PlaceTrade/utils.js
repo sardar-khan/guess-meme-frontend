@@ -2,7 +2,7 @@
 // const { mintaddy, program, programId } = require("./config");
 // const { PublicKey, SystemProgram, TransactionInstruction } = require("@solana/web3.js");
 import BN from "bn.js";
-import { mintaddy, program, programId } from "./config";
+import { connection, mintaddy, program, programId } from "./config";
 import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.js";
 
 
@@ -64,20 +64,24 @@ function Buy_createTransactionInstruction(
     });
 }
 
-async function lx_global() {
+ async function lx_global(programId,program) {
     const [i] = PublicKey.findProgramAddressSync(
-        [Buffer.from("bonding-curve"), mintaddy.toBuffer()],
-        programId
+      [Buffer.from("bonding-curve")],
+      programId
     );
-    const r = await program.account.bondingCurve.fetch(i);
-
+    console.log("iiiii",i.toString(),program)
+    const r = await program.account.global.fetch(i);
+  
     return {
-        bonding_curve: r,
+      global: r,
     };
-}
+  }
+  
 
-async function fetchLiquidityPool(_str) {
-    return await program.account.bondingCurve.fetch(_str);
+async function fetchLiquidityPool(_str,program1) {
+   // return await program1.account.bondingCurve.fetch(_str);
+    return await connection.getAccountInfo(_str);
+
 }
 
 async function fetchPrice(purchaseAmount, hasLiquidity, bonding_curve) {

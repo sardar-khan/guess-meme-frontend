@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 import { fetchTrades } from "../../features/tradesSlice";
 import { buyTokensOnBlockchain, sellTokensOnBlockchain } from "./ether-trade-utils";
 import { wallet, mintaddy } from "./config";
-import { buy } from "./solanaBuySellFunction";
+import { buy, reteriveTokenDetails } from "./solanaBuySellFunction";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useAppKitProvider } from '@reown/appkit/react';
@@ -61,6 +61,18 @@ const PlaceTrade = ({ coinData }) => {
     setShowSOGs(!showSOGs);
   };
 
+  useEffect(()=>{
+    const remaningAndMaxbuyTokens=async()=>{
+try {
+  const res =  await reteriveTokenDetails();
+  
+} catch (error) {
+  console.log("error while fetching token details",error)
+  
+}
+    }
+
+  },[amount])
 
   const handleLaunchToken = LaunchTokenSol()
 
@@ -80,9 +92,6 @@ const PlaceTrade = ({ coinData }) => {
     }
 
   }, [isConfirming, isConfirmed, hash])
-
-
-
 
 
 

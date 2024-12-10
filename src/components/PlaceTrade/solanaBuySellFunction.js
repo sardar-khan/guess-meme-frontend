@@ -249,4 +249,121 @@ async function sell(walletProvider) {
 
 
 
-export { buy, sell }
+ const tokenCalculations = async (wallet, taddress, amount) => {
+    try {
+        
+        const tokenamt = tokenToSmallestUnit(parseInt(amount), 6)
+
+        window.Buffer = buffer.Buffer
+        const connection = new web3.Connection(
+            web3.clusterApiUrl('devnet', true),
+            'confirmed',
+        )
+        //console.log('connection', connection)
+
+        const programId = new web3.PublicKey(
+            'hp3TJUpe3y1KX9h3UYEpE4NgccMTt58fEN1VgxYDMNX',
+        )
+        const provider = new AnchorProvider(connection, wallet, {
+            commitment: 'confirmed',
+        })
+        const program = new Program(idl, programId, provider)
+        const tokenAddress = new web3.PublicKey(taddress)
+        const data = await retrieveTokenInfo(program, programId, tokenAddress)
+
+        //token price buy
+        const tokenPriceInLamport =
+            parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
+            parseFloat(parseFloat(data?.virtualTokenReserves) - tokenamt)
+        const tokenPriceInLamportSell =
+            parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
+            parseFloat(parseFloat(data?.virtualTokenReserves) + tokenamt)
+        const tokenPriceInSol = convertScientificToDecimal(
+            parseFloat(tokenPriceInLamport / 1000000000),
+        )
+        const tokenPriceInSolSell = convertScientificToDecimal(
+            parseFloat(tokenPriceInLamportSell / 1000000000),
+        )
+
+        // token per 1 SOL calculations
+        const consttokenPriceInLamport =
+            parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
+            parseFloat(parseFloat(data?.virtualTokenReserves) + 1000000)
+        const consttokenPriceInLamportSell =
+            parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
+            parseFloat(parseFloat(data?.virtualTokenReserves) - 1000000)
+        // console.log('token-price-in-lamport', tokenPriceInLamport)
+        const consttokenPriceInSol = convertScientificToDecimal(
+            parseFloat(consttokenPriceInLamport / 1000000000),
+        )
+        const consttokenPriceInSolSell = convertScientificToDecimal(
+            parseFloat(consttokenPriceInLamportSell / 1000000000),
+        )
+        return {
+            //tokenInfo: data,
+            tokenPriceInSol: tokenPriceInSol,
+            sellTokenPriceInSol: tokenPriceInSolSell,
+            onetokenPriceInSol: consttokenPriceInSol,
+            sellTokenPer1Sol: consttokenPriceInSolSell,
+            tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
+
+            //solPer1Token:parseFloat(1/tokenAgainstSol)
+        }
+    } catch (error) {
+        console.log('error while fetching sell token price', error)
+    }
+}
+
+  const reteriveTokenDetails = async (wallet, taddress) => {
+    window.Buffer = buffer.Buffer
+    const connection = new web3.Connection(
+        web3.clusterApiUrl('devnet', true),
+        'confirmed',
+    )
+    //console.log('connection', connection)
+
+    const programId = new web3.PublicKey(
+        '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
+    )
+    const provider = new AnchorProvider(connection, wallet, {
+        commitment: 'confirmed',
+    })
+    const program = new Program(IDL1, programId, provider)
+    const tokenAddress = new web3.PublicKey(taddress)
+    const [C] = web3.PublicKey.findProgramAddressSync(
+        [Buffer.from('bonding-curve'), tokenAddress.toBuffer()],
+        programId,
+    )
+
+    const r = await program.account.bondingCurve.fetch(C)
+
+    const {
+        virtualTokenReserves,
+        virtualSolReserves,
+        realTokenReserves,
+        tokenTotalSupply,
+        complete = false, // Default value if not present
+    } = r
+
+    // Convert BN objects to strings
+    const virtualTokenReservesStr = virtualTokenReserves.toString()
+    const virtualSolReservesStr = virtualSolReserves.toString()
+    const realTokenReservesStr = realTokenReserves.toString()
+    const tokenTotalSupplyStr = tokenTotalSupply.toString()
+
+    // Logging the specific properties in a formatted string
+    const formattedOutput = {
+        virtualTokenReserves: virtualTokenReservesStr,
+        virtualSolReserves: virtualSolReservesStr,
+        realTokenReserves: realTokenReservesStr,
+        tokenTotalSupply: tokenTotalSupplyStr,
+        remainingTokens: parseFloat(realTokenReservesStr / 1000000),
+        totalTokens: parseFloat(tokenTotalSupplyStr / 1000000),
+        complete: complete,
+    }
+
+    //console.log('virtual rese', formattedOutput)
+    return formattedOutput
+}
+
+export { buy, sell,tokenCalculations,reteriveTokenDetails }

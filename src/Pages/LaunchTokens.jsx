@@ -70,27 +70,54 @@ const LaunchTokens = () => {
         balanceData?.formatted
     );
 
+    // const handleImageUpload = async (e) => {
+    //     if (isConnected) {
+    //         const file = e.target.files[0];
+    //         if (file) {
+    //             const formData = new FormData();
+    //             formData.append('profile_photo', file);
+    //             setFileName(file.name);
+
+    //             try {
+    //                 const data = await uploadImage(formData);
+    //                 setImageUrl(data.imageUrl);
+    //                 toast.success('Image uploaded successfully!');
+    //             } catch (error) {
+    //                 console.log("errorerror", error.message)
+    //                 toast.error(`Error uploading image: ${error.message}`);
+    //             }
+    //         }
+    //     } else {
+    //         toast.error('Connect Wallet First')
+    //     }
+    // };
     const handleImageUpload = async (e) => {
-        const file = e.target.files[0];
         if (isConnected) {
+            const file = e.target.files[0];
             if (file) {
                 const formData = new FormData();
                 formData.append('profile_photo', file);
-                setFileName(file.name);
 
                 try {
                     const data = await uploadImage(formData);
+                    console.log("imageUrl", data.imageUrl);
                     setImageUrl(data.imageUrl);
                     toast.success('Image uploaded successfully!');
                 } catch (error) {
-                    console.log("errorerror", error.message)
+                    console.error("Error uploading image:", error.message);
                     toast.error(`Error uploading image: ${error.message}`);
+                } finally {
+                    // Reset file input to allow re-uploading the same file
+                    e.target.value = null;
                 }
             }
         } else {
-            toast.error('Connect Wallet First')
+            toast.error('Connect Wallet First');
+            // Reset file input in case wallet is connected later
+            e.target.value = null;
         }
     };
+
 
     useEffect(() => {
         if (isConfirmed && hash) { createEthCoin({ hash }) }
@@ -300,7 +327,37 @@ const LaunchTokens = () => {
                                     <InputField label="Ticker:" value={ticker} onChange={(e) => setTicker(e.target.value)} checkRequired={true} />
                                 </div>
 
-                                <div className='flex items-center gap-4'>
+                                <div className="flex items-center gap-4">
+                                    <label
+                                        htmlFor="imageUpload"
+                                        className="formLabel min-w-auto md:min-w-[150px] text-right"
+                                    >
+                                        *Image:
+                                    </label>
+                                    <input
+                                        type="file"
+                                        id="imageUpload"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden" // Hide the default file input
+                                    />
+                                    {imageUrl ? (
+                                        <div className="w-[100px]">
+                                            <label htmlFor="imageUpload" className="cursor-pointer">
+                                                <img
+                                                    src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${imageUrl}`}
+                                                    alt="Uploaded"
+                                                    className="border border-gray-300 rounded"
+                                                />
+                                            </label>
+                                        </div>
+                                    ) : (
+                                        <label htmlFor="imageUpload" className="cursor-pointer">
+                                            <img src={folder} alt="Folder icon" />
+                                        </label>
+                                    )}
+                                </div>
+                                {/* <div className='flex items-center gap-4'>
                                     <label htmlFor="imageUpload" className='formLabel min-w-auto md:min-w-[150px] text-right'>*Image:</label>
                                     <input
                                         type="file"
@@ -312,9 +369,9 @@ const LaunchTokens = () => {
                                     <label htmlFor="imageUpload" className="cursor-pointer">
                                         <img src={folder} alt="Folder icon" />
                                     </label>
-                                    {/* {imageUrl && <img src={imageUrl} alt="Uploaded" className="w-20 h-20 object-cover" />} */}
-                                    {fileName && <span className="ml-2 text-gray-700">{fileName}</span>} {/* Display file name */}
-                                </div>
+                                    {fileName && <span className="ml-2 text-gray-700">{fileName}</span>}
+                                </div> */}
+                                {/* {imageUrl && <img src={imageUrl} alt="Uploaded" className="w-20 h-20 object-cover" />} */}
 
                                 <TextArea value={description} onChange={(e) => setDescription(e.target.value)} checkRequired={true} />
 
@@ -362,7 +419,7 @@ const LaunchTokens = () => {
                 </div>
 
             </div>
-        </div>
+        </div >
     );
 };
 

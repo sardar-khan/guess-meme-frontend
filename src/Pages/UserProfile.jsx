@@ -139,35 +139,84 @@ const UserProfile = () => {
 
 
     return (
-        <div className='flex flex-col lg:flex-row gap-4 justify-between max-w-[930px] mx-auto p-2 pt-10 pr-2 pb-[100px]'>
+        <div className=''>
 
+            <div className='flex flex-col lg:flex-row gap-4 justify-between max-w-[930px] mx-auto p-2 pt-10 pr-2 pb-[20px]'>
 
-            <div className='w-full max-w-[100%] lg:max-w-[35%]'>
+                <div className='w-full max-w-[100%] lg:max-w-[35%]'>
 
-                <CardWrapper>
-                    <div className='flex flex-col items-center justify-center relative'>
-                        {showUserData && isConnected && <Link to='/editprofile'><img src={editIcon} className='w-[20px] absolute top-0 right-1 cursor-pointer' alt="" /></Link>}
-                        <img src={img} className='w-[80px] h-[80px]' alt="" />
-                        <div className='text-center'>
-                            <h5 className='PixelOperatorbold text-xl'>{profileState?.data?.data?.user?.user_name}</h5>
-                            {/* <p className='text-base'>5 followers</p> */}
-                            <p className='text-base'>{profileState?.data?.data?.user?.bio}</p>
+                    <CardWrapper>
+                        <div className='flex flex-col items-center justify-center relative'>
+                            {showUserData && isConnected && <Link to='/editprofile'><img src={editIcon} className='w-[20px] absolute top-0 right-1 cursor-pointer' alt="" /></Link>}
+                            <img src={img} className='w-[80px] h-[80px]' alt="" />
+                            <div className='text-center'>
+                                <h5 className='PixelOperatorbold text-xl'>{profileState?.data?.data?.user?.user_name}</h5>
+                                {/* <p className='text-base'>5 followers</p> */}
+                                <p className='text-base'>{profileState?.data?.data?.user?.bio}</p>
+                            </div>
                         </div>
+                        <button className="themeBtn w-fit mx-auto mt-4" onClick={handleToggleFollow}>
+                            <span className="!text-xs">
+                                {checkFollow ? "Following" : "Follow"}
+                            </span>
+                        </button>
+                    </CardWrapper>
+
+
+
+
+                </div >
+
+                <div className='w-full max-w-[100%] lg:max-w-[65%]'>
+                    <CardWrapper>
+                        <div className='flex flex-col items-center justify-center'>
+                            <div className='bg-[#E9E9E9] p-[5px] text-2xl text-center PixelOperator rounded-lg w-full overflow-hidden'>{profileState?.data?.data?.user?.wallet_address[0]?.address}</div>
+                            <div className='w-full'>
+                                <Link to={`https://solscan.io/account/${profileState?.data?.data?.user?.wallet_address[0]?.address}`} target='_blank' className='flex justify-end gap-1 mt-1 PixelOperator'>View on Solscan <img src={Arrow} alt="" /></Link>
+                            </div>
+                        </div>
+                    </CardWrapper>
+
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                        <CardWrapper>
+                            <p className='text-base text-center flex justify-center items-center gap-1'>Mentions received: {profileState?.data?.data?.user?.total_mentions} <img src={commet} alt="" /></p>
+                        </CardWrapper>
+                        <CardWrapper>
+                            <p className='text-base text-center flex justify-center items-center gap-1 text-[#D9223E]'>Likes Received: {profileState?.data?.data?.user?.total_likes} <img src={heart} alt="" /></p>
+                        </CardWrapper>
                     </div>
-                    <button className="themeBtn w-fit mx-auto mt-4" onClick={handleToggleFollow}>
-                        <span className="!text-xs">
-                            {checkFollow ? "Following" : "Follow"}
-                        </span>
-                    </button>
-                </CardWrapper>
+
+                    <CardWrapper>
+                        <div className='flex flex-row gap-1'>
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    className={`PixelOperator w-fit px-2 py-1 rounded-lg font-semibold border border-[#7539F4] ${activeTab === tab.id
+                                        ? 'bg-[#7539F4] text-white'
+                                        : 'bg-white border-[#7539F4] text-[#000]'
+                                        }`}
+                                    onClick={() => setActiveTab(tab.id)}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+                    </CardWrapper>
+
+
+                </div>
+
+            </div>
+
+            <div className='w-full max-w-[400px] mx-auto pb-[100px]'>
                 {/* tabs start */}
-                <div className='mt-7'>
-                    <div className={`PixelOperator w-fit px-2 py-1 rounded-lg font-semibold border border-[#7539F4] bg-[#7539F4] text-white`}>{activeTab}</div>
+                <div className=''>
+                    {/* <div className={`PixelOperator w-fit px-2 py-1 rounded-lg font-semibold border border-[#7539F4] bg-[#7539F4] text-white`}>{activeTab}</div> */}
 
                     {activeTab === 'coins held' &&
                         <>
                             {profileState?.data?.data?.coins_held.length === 0 ?
-                                <div className='PixelOperator text-2xl'>
+                                <div className='PixelOperator text-2xl text-center'>
                                     No Holding Coin
                                 </div>
                                 :
@@ -186,7 +235,7 @@ const UserProfile = () => {
                     {activeTab === 'coins created' &&
                         <>
                             {profileState?.data?.data?.user?.coins_created.length === 0 ?
-                                <div className='PixelOperator text-2xl'>
+                                <div className='PixelOperator text-2xl text-center'>
                                     No Created Coins
                                 </div>
                                 :
@@ -204,7 +253,7 @@ const UserProfile = () => {
                     {activeTab === 'notification' && showUserData &&
                         <>
                             {notifications?.length === 0 ?
-                                <div className='PixelOperator text-2xl'>
+                                <div className='PixelOperator text-2xl text-center'>
                                     No Notifications
                                 </div>
                                 :
@@ -224,7 +273,7 @@ const UserProfile = () => {
                         <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
 
                             {profileState?.data?.data?.followers.length === 0 ?
-                                <div className='PixelOperator text-2xl'>
+                                <div className='PixelOperator text-2xl text-center'>
                                     No Followers
                                 </div>
                                 :
@@ -258,50 +307,7 @@ const UserProfile = () => {
 
                 </div>
                 {/* tabs End */}
-
-
-
-            </div >
-
-            <div className='w-full max-w-[100%] lg:max-w-[65%]'>
-                <CardWrapper>
-                    <div className='flex flex-col items-center justify-center'>
-                        <div className='bg-[#E9E9E9] p-[5px] text-2xl text-center PixelOperator rounded-lg w-full overflow-hidden'>{profileState?.data?.data?.user?.wallet_address[0]?.address}</div>
-                        <div className='w-full'>
-                            <Link to={`https://solscan.io/account/${profileState?.data?.data?.user?.wallet_address[0]?.address}`} target='_blank' className='flex justify-end gap-1 mt-1 PixelOperator'>View on Solscan <img src={Arrow} alt="" /></Link>
-                        </div>
-                    </div>
-                </CardWrapper>
-
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                    <CardWrapper>
-                        <p className='text-base text-center flex justify-center items-center gap-1'>Mentions received: {profileState?.data?.data?.user?.total_mentions} <img src={commet} alt="" /></p>
-                    </CardWrapper>
-                    <CardWrapper>
-                        <p className='text-base text-center flex justify-center items-center gap-1 text-[#D9223E]'>Likes Received: {profileState?.data?.data?.user?.total_likes} <img src={heart} alt="" /></p>
-                    </CardWrapper>
-                </div>
-
-                <CardWrapper>
-                    <div className='flex flex-row gap-1'>
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab.id}
-                                className={`PixelOperator w-fit px-2 py-1 rounded-lg font-semibold border border-[#7539F4] ${activeTab === tab.id
-                                    ? 'bg-[#7539F4] text-white'
-                                    : 'bg-white border-[#7539F4] text-[#000]'
-                                    }`}
-                                onClick={() => setActiveTab(tab.id)}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
-                </CardWrapper>
-
-
             </div>
-
 
 
         </div >

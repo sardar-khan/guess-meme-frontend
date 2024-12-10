@@ -30,14 +30,14 @@ const ConnectButton = () => {
             if (isConnected && address) {
                 const response = await handleSignUp(address, checkBlockChain);
                 if (response?.status === 201 || response?.status === 200) {
-                    toast.success(response.message, { autoClose: 1000 });
+                    // toast.success(response.message, { autoClose: 1000 });
                     console.log("Authentication:", response.message);
                 }
             }
         } catch (error) {
             disconnect();
             console.error('Error connecting wallet:', error);
-            toast.error('Failed to connect wallet.', { autoClose: 1000 });
+            // toast.error('Failed to connect wallet.', { autoClose: 1000 });
         }
     }, [isConnected, address, disconnect]);
 

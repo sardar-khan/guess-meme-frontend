@@ -26,8 +26,23 @@ import { PublicKey } from "@solana/web3.js";
 
 // eslint-disable-next-line react/prop-types
 const PlaceTrade = ({ coinData }) => {
+  console.log("placeTrade COin data", coinData)
+  console.log("placeTrade COin data token_address", coinData?.token_address)
 
-  const tokenAddress_mint = coinData?.token_address ? new PublicKey(coinData.token_address) : null;
+  // const tokenAddress_mint = coinData?.token_address ? new PublicKey(coinData.token_address) : null;
+  let tokenAddress_mint = null;
+
+  if (coinData?.token_address) {
+    try {
+      tokenAddress_mint = new PublicKey(coinData.token_address);
+    } catch (error) {
+      console.error("Invalid token address:", coinData.token_address, error);
+      tokenAddress_mint = null; 
+    }
+  } else {
+    console.warn("Token address is missing in coinData.");
+  }
+
 
 
   const { id } = useParams();
@@ -49,8 +64,6 @@ const PlaceTrade = ({ coinData }) => {
 
   const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
-  console.log("coinDataPlaceTrade", coinData?.token_address)
-  console.log("coinDataPlaceTrade data", coinData)
 
   const result = useBalance({
     address: address,
@@ -80,10 +93,6 @@ const PlaceTrade = ({ coinData }) => {
     }
 
   }, [isConfirming, isConfirmed, hash])
-
-
-
-
 
 
   const handleTrade = async () => {

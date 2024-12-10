@@ -93,7 +93,7 @@ const Threads = () => {
                     <ChatRoom coinData={coinData} />
                 </div>
                 <div className='flex flex-col gap-6 w-full lg:w-[30%]'>
-                    <PlaceTrade coinData={coinData} />
+                    {coinData && <PlaceTrade coinData={coinData} />}
                     <TradesTable />
                     <HoldersTable />
                 </div>

@@ -316,3 +316,14 @@ export const checkLikeStatus = async (thread_id) => {
         console.log(error);
     }
 };
+
+
+export const getNotifications = async () => {
+    try {
+        const response = await apiInstance.get(`/user/notifications`);
+        return response.data;
+    } catch (error) {
+        console.error('Error getting notifications:', error);
+        throw error;
+    }
+};

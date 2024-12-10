@@ -117,6 +117,9 @@ const Navbar = () => {
                     <Link to='/launchToken' className='themeBtn text-xs uppercase' onClick={closeMenu}>
                         <span className='PixelOperatorbold'>Launch Token</span>
                     </Link>
+                    
+                    <ConnectButton />
+
                     <div className='flex gap-2'>
                         <div
                             className='themeBtn w-[35px] min-w-[50px] uppercase'

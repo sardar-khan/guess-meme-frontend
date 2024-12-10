@@ -1,8 +1,17 @@
 import { toast } from 'react-toastify';
 import { parseEther } from 'viem';
 import { adminTokenAddress } from '../../utils/api';
+import { LaunchTokenEthValue } from '../../services/config';
 
-const LaunchTokenPolygon = (address, sendTransaction, balance) => {
+const LaunchTokenPolygon = (address, sendTransaction, balance, amount) => {
+    console.log("poly amount", amount)
+    const amountParse = parseFloat(amount)
+    const TokenEthValue = parseFloat(LaunchTokenEthValue)
+
+    const AMOUNT_TO_SEND = amount === undefined || null ? TokenEthValue : amountParse + TokenEthValue;
+    console.log("AMOUNT_TO_SEND", AMOUNT_TO_SEND)
+
+
     return async () => {
         try {
             const adminAddress = await adminTokenAddress();
@@ -14,18 +23,21 @@ const LaunchTokenPolygon = (address, sendTransaction, balance) => {
 
             const userBalance = balance ? parseFloat(balance) : 0;
             console.log("userBalance", userBalance)
-            if (userBalance < 0.05) {
+            // if (userBalance < 0.05) {
+            if (userBalance < AMOUNT_TO_SEND) {
                 toast.error("Insufficient balance in wallet!");
                 return false;
             }
 
             const txResponse = await sendTransaction({
                 to: adminAddress.address,
-                value: parseEther("0.05"),
+                value: parseEther(AMOUNT_TO_SEND.toString()),
+                // value: parseEther("0.05"),
             });
             console.log("txt-respnse", txResponse);
-
+            // toast.info('Buying Token')
             if (txResponse) {
+                // toast.dismiss()
                 toast.success("Transaction Successful!");
                 return true;
             }

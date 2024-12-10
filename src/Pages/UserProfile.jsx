@@ -15,8 +15,9 @@ import img from '../assets/images/Group 159.png'
 
 import userprofileImg from '../assets/images/userprofile.png'
 import Follwoing from '../components/Follwoing'
-import { CheckFollow, toggleFollow, ViewUser, viewUserprofile } from '../utils/api'
+import { CheckFollow, getNotifications, toggleFollow, ViewUser, viewUserprofile } from '../utils/api'
 import { useAppKitAccount } from '@reown/appkit/react'
+import Notifications from '../components/Notifications'
 
 const UserProfile = () => {
     const { id } = useParams();
@@ -24,12 +25,14 @@ const UserProfile = () => {
     const [activeTab, setActiveTab] = useState('coins created');
     const [showUserData, setShowUserData] = useState(false);
     const [checkFollow, setCheckFollow] = useState();
+    const [notifications, setNotifications] = useState();
     const [userID, setUserID] = useState();
     const { isConnected } = useAppKitAccount()
 
     const tabs = [
         { id: 'coins created', label: 'Coins Created' },
         { id: 'coins held', label: 'Coins Held' },
+        { id: 'notification', label: 'Notification' },
         { id: 'followers', label: 'Followers' },
         { id: 'following', label: 'Following' },
     ];
@@ -92,7 +95,21 @@ const UserProfile = () => {
         }
 
         FetchCheckFollowData();
-    }, [checkFollow]);
+    }, [checkFollow, notifications]);
+
+    useEffect(() => {
+        const FetchNotifications = async () => {
+            try {
+                const reponse = await getNotifications();
+                setNotifications(reponse.data);
+                console.log("setNotifications", reponse);
+            } catch (error) {
+                console.log("setNotifications error", error)
+            }
+        }
+
+        FetchNotifications();
+    }, []);
 
     const handleToggleFollow = async () => {
         try {
@@ -181,6 +198,25 @@ const UserProfile = () => {
                                     ))}
                                 </>
                             }
+
+                        </>
+                    }
+                    {activeTab === 'notification' && showUserData &&
+                        <>
+                            {notifications?.length === 0 ?
+                                <div className='PixelOperator text-2xl'>
+                                    No Notifications
+                                </div>
+                                :
+                                <>
+                                    {notifications.map((notification, index) => (
+                                        <SmallCardWrapper>
+                                            <Notifications key={index} notification={notification} />
+                                        </SmallCardWrapper>
+                                    ))}
+                                </>
+                            }
+
 
                         </>
                     }

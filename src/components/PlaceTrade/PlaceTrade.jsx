@@ -67,11 +67,17 @@ const PlaceTrade = ({ coinData }) => {
   const handleLaunchTokenE = LaunchTokenPolygon(
     address,
     sendTransaction,
-    balanceData?.formatted
+    balanceData?.formatted,
+    amount
   );
 
   useEffect(() => {
-    if (isConfirmed && hash) { buyCreatedCoin({ hash }) }
+    if (isConfirmed && hash) {
+
+      buyCreatedCoin({ hash }
+
+      )
+    }
 
   }, [isConfirming, isConfirmed, hash])
 
@@ -177,7 +183,8 @@ const PlaceTrade = ({ coinData }) => {
         if (tradeType === "buy") {
           response = await buyTokensOnBlockchain(tokenAddress, amount);
           console.log("response buyTokensOnBlockchain", response)
-        } else if (tradeType === "sell") {
+        }
+        else if (tradeType === "sell") {
           response = await sellTokensOnBlockchain(tokenAddress, amount);
         }
         console.log("response buyTokensOnBlockchain", response)
@@ -215,10 +222,32 @@ const PlaceTrade = ({ coinData }) => {
         }
       }
 
-      else if (blockchainType === "ETH" && coinData?.status === 'created' || 'failed') {
+      else if (blockchainType === "ETH" && coinData?.status === 'created') {
 
         let deductETH = await handleLaunchTokenE();
+        console.log("deductETH", deductETH)
+        if (deductETH) {
+          setAmount('')
+          //   const apiResponse = await BuyToken({
+          //     account_type: 'ethereum',
+          //     amount: parseFloat(amount),
+          //     token_amount: 1,
+          //     token_id: id,
+          //     type: tradeType,
+          //     transaction_hash: deductETH,
+          //   });
 
+          //   if (apiResponse?.status === 200) {
+          //     toast.success(
+          //       `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
+          //     );
+          //     dispatch(fetchTrades(id)); // Fetch updated trades
+          //   } else {
+          //     throw new Error(
+          //       `Failed to record ${tradeType} trade in the backend`
+          //     );
+          //   }
+        }
 
       }
 
@@ -262,6 +291,7 @@ const PlaceTrade = ({ coinData }) => {
           token_amount: 1,
           token_id: id,
           type: tradeType,
+          transaction_hash: hash,
         });
 
         if (apiResponse?.status === 200) {
@@ -348,7 +378,7 @@ const PlaceTrade = ({ coinData }) => {
                               value={amount}
                               onChange={(e) => {
                                 const value = e.target.value;
-                                if (!value || Number(value) >= 1) {
+                                if (!value || Number(value) >= 0) {
                                   setAmount(value);
                                 }
                               }}

@@ -8,8 +8,8 @@ import { useDispatch } from "react-redux";
 
 import { fetchTrades } from "../../features/tradesSlice";
 import { buyTokensOnBlockchain, sellTokensOnBlockchain } from "./ether-trade-utils";
-import { wallet, mintaddy } from "./config";
-import { buy, reteriveTokenDetails } from "./solanaBuySellFunction";
+import { wallet, mintaddy, connection } from "./config";
+import { buy, reteriveTokenDetails, TokenPriceCalculations } from "./solanaBuySellFunction";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useAppKitProvider } from '@reown/appkit/react';
@@ -20,7 +20,7 @@ import LaunchTokenPolygon from "../LaunchTokenDeduct/LaunchPolygonToken";
 
 import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import SetSlipPage from "../Modals/SetSlipPage";
-import { PublicKey } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 
 
@@ -36,6 +36,27 @@ const PlaceTrade = ({ coinData }) => {
   const wallet = useWallet()
   const [showSOGs, setShowSOGs] = useState(false);
   const [amount, setAmount] = useState("");
+  const [userBalance, setUserBalance] = useState({
+    tokenBalance: null,
+    solBalance: null,
+})
+  const [tokenCal, setTokenCal] = useState({
+    data: null,
+    loading: false,
+    success: false,
+})
+ const [tokenInfo, setTokenInfo] = useState({
+        loading: false,
+        success: false,
+        data: null,
+    })
+  const [amountError, setAmountError] = useState({
+    error: false,
+    reason: '',
+})
+  const [maxBuyTokens, setMaxBuyTokens] = useState('')
+  const [remaningTokens, setRemaningTokens] = useState('')
+  const [solAmount, setSolAmount] = useState('')
   const [isLoading, setIsLoading] = useState(false);
   const { walletProvider } = useAppKitProvider('solana');
   const [tradeType, setTradeType] = useState("buy"); // Default trade type is "buy"
@@ -47,32 +68,52 @@ const PlaceTrade = ({ coinData }) => {
     hash: hash,
   });
 
-  const blockchainType = localStorage.getItem("blockchain") || "SOL";
+ const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
   console.log("coinDataPlaceTrade", coinData?.token_address)
   console.log("coinDataPlaceTrade data", coinData)
 
+  console.log("wallet-provider",walletProvider.publicKey);
+
   const result = useBalance({
     address: address,
   })
-
-  console.log("user ethereum balanace", result?.data?.formatted);
   const handleSwitchClick = () => {
     setShowSOGs(!showSOGs);
   };
 
-  useEffect(()=>{
-    const remaningAndMaxbuyTokens=async()=>{
-try {
-  const res =  await reteriveTokenDetails();
-  
-} catch (error) {
-  console.log("error while fetching token details",error)
-  
-}
+  useEffect(() => {
+    if(coinData?.token_address ){
+      remaningAndMaxbuyTokens(coinData?.token_address)
     }
+    
 
-  },[amount])
+  }, [amount,coinData,wallet])
+
+  const remaningAndMaxbuyTokens = async ( tokenAddress) => {
+    if(!walletProvider){
+      return toast.error("Please connect your wallet");
+    }
+    if(!tokenAddress){
+      return toast.error("Token address not found!")
+    }
+    try {
+      const res = await reteriveTokenDetails(walletProvider, tokenAddress);
+      console.log("result from the tokens", res);
+
+
+      const maxBuyPercentage = 100
+      const percentage = (res?.totalTokens * maxBuyPercentage) / 100;
+      
+      console.log("percentage", percentage);
+      setMaxBuyTokens(percentage)
+      setRemaningTokens(res?.remainingTokens)
+
+    } catch (error) {
+      console.log("error while fetching token details", error)
+
+    }
+  }
 
   const handleLaunchToken = LaunchTokenSol()
 
@@ -93,7 +134,7 @@ try {
 
   }, [isConfirming, isConfirmed, hash])
 
-
+  console.log("solAmount",solAmount)
 
   const handleTrade = async () => {
     if (isConnected) {
@@ -317,7 +358,134 @@ try {
 
     }
   }
+  
+  const handleAmount = async (val) => {
+    await getUserBalances()
+    console.log("valss",val, tokenCal?.data?.tokenPer1Sol,maxBuyTokens)
+      console.log('called', val * tokenCal?.data?.tokenPer1Sol,userBalance)
+    if (parseFloat(val * tokenCal?.data?.tokenPer1Sol) > maxBuyTokens) {
 
+        return setAmountError((prevState) => ({
+            ...prevState,
+            error: true,
+            reason: 'max buy exceeded',
+        }))
+        toast.error("macbut exceeded")
+    }
+    if (
+        parseFloat(val * tokenCal?.data?.tokenPer1Sol) > remaningTokens
+    ) {
+        return setAmountError((prevState) => ({
+            ...prevState,
+            error: true,
+            reason: 'Max token reserved reached',
+        }))
+        toast.error("macbut exceeded")
+    }
+    if (val < userBalance?.solBalance) {
+        setSolAmount(val)
+        setAmount(val * tokenCal?.data?.tokenPer1Sol)
+        setTokenToBuy(val * tokenCal?.data?.tokenPer1Sol)
+        setAmountError((prevState) => ({
+            ...prevState,
+            error: false,
+            reason: '',
+        }))
+    } else {
+        setAmountError((prevState) => ({
+            ...prevState,
+            error: true,
+            reason: `you don't have enough sol`,
+        }))
+    }
+}
+
+const getUserBalances = async () => {
+  try {
+    if(!coinData?.token_address){return toast.error("echipoya")}
+     
+
+      //user-sol-balance
+      const balance = await connection.getBalance(walletProvider.publicKey)
+
+      //user-selected-token-balance
+      const tokenMintAddress = new PublicKey(coinData?.token_address)
+
+      const tokenAccounts =
+          await connection.getParsedTokenAccountsByOwner(walletProvider.publicKey, {
+              mint: tokenMintAddress,
+          })
+       console.log('tokens', tokenAccounts)
+      let tokenBalance
+      if (tokenAccounts?.value?.length > 0) {
+          tokenBalance =
+              tokenAccounts?.value[0]?.account?.data?.parsed?.info
+                  ?.tokenAmount.uiAmount
+          //console.log('user-token-balance', balance)
+      } else {
+          if (amount !== '') {
+              setAmountError((prevState) => ({
+                  ...prevState,
+                  error: true,
+                  reason: `you don't have enough sol`,
+              }))
+          }
+      }
+      //console.log("roken-bal-bal",tokenBalance)
+      setUserBalance((prevState) => ({
+          ...prevState,
+          solBalance: balance / LAMPORTS_PER_SOL,
+          tokenBalance: tokenBalance === undefined ? 0 : tokenBalance,
+      }))
+  } catch (error) {
+      console.log('error while fetching user balance', error)
+  }
+}
+
+
+
+
+useEffect(() => {
+  if (!coinData?.token_address) return
+  setTokenCal((prevState) => ({
+    ...prevState,
+    loading: true,
+}))
+  // Function to fetch token information
+  const fetchTokenInformation = async () => {
+      try {
+          //  console.log("amount from feild",amount)
+          const res = await TokenPriceCalculations(
+            coinData?.token_address,
+              amount === '' ? 0 : amount,
+          )
+          console.log('res-for-token-calculations', res)
+          setTokenCal((prevState) => ({
+              ...prevState,
+              loading: false,
+              data: res,
+              success: true,
+          }))
+      } catch (error) {
+          console.log('Error while calculating', error)
+          setTokenCal((prevState) => ({
+              ...prevState,
+              loading: false,
+              data: null,
+              success: false,
+          }))
+      }
+  }
+  
+  // Fetch token information initially
+  fetchTokenInformation(coinData?.token_address)
+
+  // Set up an interval to fetch token information every 5 seconds
+  const intervalId = setInterval(fetchTokenInformation, 5000)
+
+  // Clear the interval when the component unmounts or when `id` changes
+  return () => clearInterval(intervalId)
+}, [ amount, coinData?.token_address])
 
 
 
@@ -384,11 +552,12 @@ try {
                             <input
                               type="number"
                               name="amount"
-                              value={amount}
+                              value={solAmount}
                               onChange={(e) => {
                                 const value = e.target.value;
                                 if (!value || Number(value) >= 0) {
-                                  setAmount(value);
+                                 // setAmount(value);
+                                  handleAmount(value)
                                 }
                               }}
                               className="w-full px-2 py-3 pr-4"

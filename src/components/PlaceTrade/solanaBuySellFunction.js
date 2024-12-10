@@ -6,12 +6,13 @@
 
 import { Keypair, PublicKey, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 // import { connection, feeRecipient, IDL1, mintaddy, SELLSLIPPAGE, wallet } from "./config";
-import { connection, feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
+import { connection, provider,feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
 import { getAccount, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import { Buy_createTransactionInstruction, b, fetchLiquidityPool, lx_global } from "./utils";
 import BN from "bn.js";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { Program } from "@coral-xyz/anchor";
+import * as buffer from 'buffer'
 
 
 
@@ -249,28 +250,26 @@ async function sell(walletProvider) {
 
 
 
- const tokenCalculations = async (wallet, taddress, amount) => {
+
+ const TokenPriceCalculations = async (taddress, amount) => {
     try {
-        
+        console.log("token calculations",taddress)
         const tokenamt = tokenToSmallestUnit(parseInt(amount), 6)
+        console.log("ammunt",tokenamt);
 
         window.Buffer = buffer.Buffer
-        const connection = new web3.Connection(
-            web3.clusterApiUrl('devnet', true),
-            'confirmed',
-        )
+      
         //console.log('connection', connection)
 
-        const programId = new web3.PublicKey(
-            'hp3TJUpe3y1KX9h3UYEpE4NgccMTt58fEN1VgxYDMNX',
+        const programId = new PublicKey(
+            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
         )
-        const provider = new AnchorProvider(connection, wallet, {
-            commitment: 'confirmed',
-        })
-        const program = new Program(idl, programId, provider)
-        const tokenAddress = new web3.PublicKey(taddress)
-        const data = await retrieveTokenInfo(program, programId, tokenAddress)
-
+       
+        const program = new Program(IDL1, programId, provider)
+        const tokenAddress = new PublicKey(taddress)
+        console.log("info-usessss",program,tokenAddress,programId)
+                const data = await retrieveTokenInfo(program, programId, tokenAddress)
+console.log("dataklklkl",data)
         //token price buy
         const tokenPriceInLamport =
             parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
@@ -314,29 +313,71 @@ async function sell(walletProvider) {
     }
 }
 
-  const reteriveTokenDetails = async (wallet, taddress) => {
-    window.Buffer = buffer.Buffer
-    const connection = new web3.Connection(
-        web3.clusterApiUrl('devnet', true),
-        'confirmed',
-    )
-    //console.log('connection', connection)
+const reteriveTokenDetails = async (walletProvider, taddress) => {
+    try {
+        window.Buffer = buffer.Buffer
+        console.log("provider",walletProvider);
+        const programId = new PublicKey(
+            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
+        )
+        const program = new Program(IDL1, programId, provider)
+        console.log("program",program.account.bondingCurve);
+        const tokenAddress = new PublicKey(taddress)
+        console.log("tokenAddress",tokenAddress);
+        const [C] = PublicKey.findProgramAddressSync(
+            [Buffer.from('bonding-curve'), tokenAddress.toBuffer()],
+            programId,
+        )
+        console.log("c",C)
+        
 
-    const programId = new web3.PublicKey(
-        '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
-    )
-    const provider = new AnchorProvider(connection, wallet, {
-        commitment: 'confirmed',
-    })
-    const program = new Program(IDL1, programId, provider)
-    const tokenAddress = new web3.PublicKey(taddress)
-    const [C] = web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('bonding-curve'), tokenAddress.toBuffer()],
+        const r = await program.account.bondingCurve.fetch(C)
+        console.log("r",r)
+
+        const {
+            virtualTokenReserves,
+            virtualSolReserves,
+            realTokenReserves,
+            tokenTotalSupply,
+            complete = false, // Default value if not present
+        } = r
+        
+
+        // Convert BN objects to strings
+        const virtualTokenReservesStr = virtualTokenReserves.toString()
+        const virtualSolReservesStr = virtualSolReserves.toString()
+        const realTokenReservesStr = realTokenReserves.toString()
+        const tokenTotalSupplyStr = tokenTotalSupply.toString()
+
+        // Logging the specific properties in a formatted string
+        const formattedOutput = {
+            virtualTokenReserves: virtualTokenReservesStr,
+            virtualSolReserves: virtualSolReservesStr,
+            realTokenReserves: realTokenReservesStr,
+            tokenTotalSupply: tokenTotalSupplyStr,
+            remainingTokens: parseFloat(realTokenReservesStr / 1000000),
+            totalTokens: parseFloat(tokenTotalSupplyStr / 1000000),
+            complete: complete,
+        }
+
+        console.log('virtual rese', formattedOutput)
+        return formattedOutput
+    } catch (error) {
+        console.log("error while retreving token details", error)
+    }
+
+}
+
+ const retrieveTokenInfo = async (program, programId, mintaddy) => {
+   
+    window.Buffer = buffer.Buffer
+    const [C] = PublicKey.findProgramAddressSync(
+        [Buffer.from('bonding-curve'), mintaddy.toBuffer()],
         programId,
     )
 
     const r = await program.account.bondingCurve.fetch(C)
-
+console.log("rrrrrr",r)
     const {
         virtualTokenReserves,
         virtualSolReserves,
@@ -362,8 +403,38 @@ async function sell(walletProvider) {
         complete: complete,
     }
 
-    //console.log('virtual rese', formattedOutput)
+    console.log('virtual reseves', formattedOutput)
     return formattedOutput
 }
 
-export { buy, sell,tokenCalculations,reteriveTokenDetails }
+
+function convertScientificToDecimal(scientificNotation) {
+    // Convert scientific notation to string
+    let scientificString = scientificNotation.toString()
+
+    // Split the string into coefficient and exponent parts
+    let parts = scientificString.toLowerCase().split('e')
+    let coefficient = parts[0]
+    let exponent = parseInt(parts[1], 10)
+
+    // If there's no exponent, return the original scientific notation string
+    if (!exponent) return scientificString
+
+    // Adjust coefficient length to match the required precision
+    let precision = Math.max(0, -exponent - coefficient.length + 2)
+    let adjustedCoefficient = (
+        exponent < 0
+            ? '0.' + '0'.repeat(-exponent - 1) + coefficient.replace('.', '')
+            : coefficient.slice(0, exponent + 1) +
+              '.' +
+              coefficient.slice(exponent + 1)
+    ).replace(/\.?0+$/, '')
+
+    // Return the adjusted coefficient with sign
+    return (scientificNotation < 0 ? '-' : '') + adjustedCoefficient
+}
+function tokenToSmallestUnit(tokenAmount, decimals) {
+    return tokenAmount * Math.pow(10, decimals)
+}
+
+export { buy, sell, reteriveTokenDetails,TokenPriceCalculations }

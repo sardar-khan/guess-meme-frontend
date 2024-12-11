@@ -13,6 +13,7 @@ import BN from "bn.js";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { Program } from "@coral-xyz/anchor";
 import * as buffer from 'buffer'
+import { Console } from "console";
 
 
 
@@ -40,7 +41,8 @@ function decodeLiquidityPool(data) {
 
 async function buy(walletProvider, amount, mintaddy) {
     console.log("amount for sol", Number(amount) * 10 ** 6);
-
+    const maxSlippage='1'
+    const buy_value =maxSlippage?.toString()
     console.log(walletProvider, "wallet Provider");
     const programId = new PublicKey("7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh");
 
@@ -83,7 +85,7 @@ async function buy(walletProvider, amount, mintaddy) {
         );
     }
 
-    const a = new BN(Math.floor(1e9 * parseFloat(amount)));
+    const a = new BN(Math.floor(1e9 * parseFloat(buy_value)));
 
     let o = {
         solAmount: a,
@@ -268,46 +270,107 @@ async function sell(walletProvider) {
         const program = new Program(IDL1, programId, provider)
         const tokenAddress = new PublicKey(taddress)
         console.log("info-usessss",program,tokenAddress,programId)
-                const data = await retrieveTokenInfo(program, programId, tokenAddress)
-console.log("dataklklkl",data)
-        //token price buy
-        const tokenPriceInLamport =
-            parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
-            parseFloat(parseFloat(data?.virtualTokenReserves) - tokenamt)
-        const tokenPriceInLamportSell =
-            parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
-            parseFloat(parseFloat(data?.virtualTokenReserves) + tokenamt)
-        const tokenPriceInSol = convertScientificToDecimal(
-            parseFloat(tokenPriceInLamport / 1000000000),
-        )
-        const tokenPriceInSolSell = convertScientificToDecimal(
-            parseFloat(tokenPriceInLamportSell / 1000000000),
-        )
+        const data = await retrieveTokenInfo(program, programId, tokenAddress)
+        console.log("dataklklkl",data)
 
-        // token per 1 SOL calculations
-        const consttokenPriceInLamport =
-            parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
-            parseFloat(parseFloat(data?.virtualTokenReserves) + 1000000)
-        const consttokenPriceInLamportSell =
-            parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
-            parseFloat(parseFloat(data?.virtualTokenReserves) - 1000000)
-        // console.log('token-price-in-lamport', tokenPriceInLamport)
+        const virtualSolReserves = BigInt(data?.virtualSolReserves);
+        const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
+        const tokenAmountBN = BigInt(tokenamt);
+
+         // Buy price calculation
+         const tokenPriceInLamport = (
+            (tokenAmountBN * virtualSolReserves) / 
+            (virtualTokenReserves - tokenAmountBN)
+        );
+        
+        // Sell price calculation
+        const tokenPriceInLamportSell = (
+            (tokenAmountBN * virtualSolReserves) / 
+            (virtualTokenReserves + tokenAmountBN)
+        );
+
+        // Convert to SOL
+        const tokenPriceInSol = convertScientificToDecimal(
+            Number(tokenPriceInLamport) / 1_000_000_000
+        );
+        const tokenPriceInSolSell = convertScientificToDecimal(
+            Number(tokenPriceInLamportSell) / 1_000_000_000
+        );
+        const LAMPORTS_PER_SOL = 1_000_000;
+        const oneSOLTokenAmount = BigInt(LAMPORTS_PER_SOL);
+
+        const consttokenPriceInLamport = (
+            (oneSOLTokenAmount * virtualSolReserves) / 
+            (virtualTokenReserves + oneSOLTokenAmount)
+        );
+        
+        const consttokenPriceInLamportSell = (
+            (oneSOLTokenAmount * virtualSolReserves) / 
+            (virtualTokenReserves - oneSOLTokenAmount)
+        );
+        
         const consttokenPriceInSol = convertScientificToDecimal(
-            parseFloat(consttokenPriceInLamport / 1000000000),
-        )
+            Number(consttokenPriceInLamport) / 1_000_000_000
+        );
         const consttokenPriceInSolSell = convertScientificToDecimal(
-            parseFloat(consttokenPriceInLamportSell / 1000000000),
-        )
-        return {
-            //tokenInfo: data,
+            Number(consttokenPriceInLamportSell) / 1_000_000_000
+        );
+
+        const jkjkj ={
             tokenPriceInSol: tokenPriceInSol,
             sellTokenPriceInSol: tokenPriceInSolSell,
             onetokenPriceInSol: consttokenPriceInSol,
             sellTokenPer1Sol: consttokenPriceInSolSell,
             tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
-
-            //solPer1Token:parseFloat(1/tokenAgainstSol)
         }
+
+        console.log("hallloojkjkjk",jkjkj)
+
+        return {
+            tokenPriceInSol: tokenPriceInSol,
+            sellTokenPriceInSol: tokenPriceInSolSell,
+            onetokenPriceInSol: consttokenPriceInSol,
+            sellTokenPer1Sol: consttokenPriceInSolSell,
+            tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
+        };
+        //token price buy
+            // const tokenPriceInLamport =
+            //     parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
+            //     parseFloat(parseFloat(data?.virtualTokenReserves) - tokenamt)
+            // const tokenPriceInLamportSell =
+            //     parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
+            //     parseFloat(parseFloat(data?.virtualTokenReserves) + tokenamt)
+        // const tokenPriceInSol = convertScientificToDecimal(
+        //     parseFloat(tokenPriceInLamport / 1000000000),
+        // )
+        // const tokenPriceInSolSell = convertScientificToDecimal(
+        //     parseFloat(tokenPriceInLamportSell / 1000000000),
+        // )
+
+        // token per 1 SOL calculations
+        // const consttokenPriceInLamport =
+        //     parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
+        //     parseFloat(parseFloat(data?.virtualTokenReserves) + 1000000)
+        // const consttokenPriceInLamportSell =
+        //     parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
+        //     parseFloat(parseFloat(data?.virtualTokenReserves) - 1000000)
+        // console.log('token-price-in-lamport', tokenPriceInLamport)
+        // const consttokenPriceInSol = convertScientificToDecimal(
+        //     parseFloat(consttokenPriceInLamport / 1000000000),
+        // )
+        // const consttokenPriceInSolSell = convertScientificToDecimal(
+        //     parseFloat(consttokenPriceInLamportSell / 1000000000),
+        // )
+        // return {
+        //     //tokenInfo: data,
+        //     tokenPriceInSol: tokenPriceInSol,
+        //     sellTokenPriceInSol: tokenPriceInSolSell,
+        //     onetokenPriceInSol: consttokenPriceInSol,
+        //     sellTokenPer1Sol: consttokenPriceInSolSell,
+        //     tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
+
+        //     //solPer1Token:parseFloat(1/tokenAgainstSol)
+        // }
     } catch (error) {
         console.log('error while fetching sell token price', error)
     }
@@ -409,30 +472,38 @@ console.log("rrrrrr",r)
 
 
 function convertScientificToDecimal(scientificNotation) {
+    // Handle non-numeric or null inputs
+    if (scientificNotation == null || isNaN(scientificNotation)) {
+        return scientificNotation;
+    }
+
     // Convert scientific notation to string
-    let scientificString = scientificNotation.toString()
+    let scientificString = scientificNotation.toString();
 
     // Split the string into coefficient and exponent parts
-    let parts = scientificString.toLowerCase().split('e')
-    let coefficient = parts[0]
-    let exponent = parseInt(parts[1], 10)
+    let parts = scientificString.toLowerCase().split('e');
+    let coefficient = parts[0];
+    let exponent = parts[1] ? parseInt(parts[1], 10) : 0;
 
     // If there's no exponent, return the original scientific notation string
-    if (!exponent) return scientificString
+    if (!exponent) return scientificString;
 
     // Adjust coefficient length to match the required precision
-    let precision = Math.max(0, -exponent - coefficient.length + 2)
+    let precision = Math.max(0, -exponent - coefficient.length + 2);
     let adjustedCoefficient = (
         exponent < 0
-            ? '0.' + '0'.repeat(-exponent - 1) + coefficient.replace('.', '')
+            ? '0.' + '0'.repeat(Math.abs(exponent) - 1) + coefficient.replace('.', '')
             : coefficient.slice(0, exponent + 1) +
-              '.' +
-              coefficient.slice(exponent + 1)
-    ).replace(/\.?0+$/, '')
+              (coefficient.length > exponent + 1 ? 
+                  '.' + coefficient.slice(exponent + 1) : '')
+    ).replace(/\.?0+$/, '');
 
     // Return the adjusted coefficient with sign
-    return (scientificNotation < 0 ? '-' : '') + adjustedCoefficient
+    return (scientificNotation < 0 ? '-' : '') + adjustedCoefficient;
 }
+// const convertScientificToDecimal = (num) => {
+//     return num.toLocaleString('fullwide', { useGrouping: false });
+// };
 function tokenToSmallestUnit(tokenAmount, decimals) {
     return tokenAmount * Math.pow(10, decimals)
 }

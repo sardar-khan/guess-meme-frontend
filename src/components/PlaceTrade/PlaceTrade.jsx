@@ -55,6 +55,7 @@ const PlaceTrade = ({ coinData }) => {
     reason: '',
 })
   const [maxBuyTokens, setMaxBuyTokens] = useState('')
+  const [tokenToBuy,setTokenToBuy]=useState('')
   const [remaningTokens, setRemaningTokens] = useState('')
   const [solAmount, setSolAmount] = useState('')
   const [isLoading, setIsLoading] = useState(false);
@@ -90,6 +91,7 @@ const PlaceTrade = ({ coinData }) => {
 
   }, [amount,coinData,wallet])
 
+  // calculate remaining token and maxtoken buy value
   const remaningAndMaxbuyTokens = async ( tokenAddress) => {
     if(!walletProvider){
       return toast.error("Please connect your wallet");
@@ -156,7 +158,7 @@ const PlaceTrade = ({ coinData }) => {
       if (blockchainType === "SOL" && coinData?.status === "deployed") {
         console.log("coinData?.status", coinData?.status)
 
-        const buySuccess = await buy(walletProvider, amount, tokenAddress_mint);
+        const buySuccess = await buy(walletProvider, "31249999", tokenAddress_mint);
         // toast.success(`Transction Successfull: ${buySuccess}`)
 
         if (buySuccess) {
@@ -359,10 +361,13 @@ const PlaceTrade = ({ coinData }) => {
     }
   }
   
+
+  //calculate token values for buy
   const handleAmount = async (val) => {
     await getUserBalances()
     console.log("valss",val, tokenCal?.data?.tokenPer1Sol,maxBuyTokens)
       console.log('called', val * tokenCal?.data?.tokenPer1Sol,userBalance)
+                    //3 * 500000 = 150000                   1000000
     if (parseFloat(val * tokenCal?.data?.tokenPer1Sol) > maxBuyTokens) {
 
         return setAmountError((prevState) => ({
@@ -372,7 +377,7 @@ const PlaceTrade = ({ coinData }) => {
         }))
         toast.error("macbut exceeded")
     }
-    if (
+    if (           //3 * 500000 = 150000                   100000
         parseFloat(val * tokenCal?.data?.tokenPer1Sol) > remaningTokens
     ) {
         return setAmountError((prevState) => ({
@@ -400,6 +405,10 @@ const PlaceTrade = ({ coinData }) => {
     }
 }
 
+console.log("amount error",amountError)
+
+
+//get user sol and token balance 
 const getUserBalances = async () => {
   try {
     if(!coinData?.token_address){return toast.error("echipoya")}
@@ -444,7 +453,7 @@ const getUserBalances = async () => {
 
 
 
-
+// buy sell calculations from the blockcahin-solana
 useEffect(() => {
   if (!coinData?.token_address) return
   setTokenCal((prevState) => ({
@@ -453,6 +462,7 @@ useEffect(() => {
 }))
   // Function to fetch token information
   const fetchTokenInformation = async () => {
+    console.log("amountsss",amount)
       try {
           //  console.log("amount from feild",amount)
           const res = await TokenPriceCalculations(

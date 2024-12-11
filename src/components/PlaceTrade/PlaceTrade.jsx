@@ -157,8 +157,9 @@ const PlaceTrade = ({ coinData }) => {
 
       if (blockchainType === "SOL" && coinData?.status === "deployed") {
         console.log("coinData?.status", coinData?.status)
+        //30680580
 
-        const buySuccess = await buy(walletProvider, "31249999", tokenAddress_mint);
+        const buySuccess = await buy(walletProvider, "40000000.03333333", tokenAddress_mint);
         // toast.success(`Transction Successfull: ${buySuccess}`)
 
         if (buySuccess) {

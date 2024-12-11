@@ -13,7 +13,6 @@ import BN from "bn.js";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { Program } from "@coral-xyz/anchor";
 import * as buffer from 'buffer'
-import { Console } from "console";
 
 
 
@@ -275,12 +274,13 @@ async function sell(walletProvider) {
 
         const virtualSolReserves = BigInt(data?.virtualSolReserves);
         const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
+        console.log("datavrual sols",virtualSolReserves,virtualTokenReserves)
         const tokenAmountBN = BigInt(tokenamt);
 
          // Buy price calculation
          const tokenPriceInLamport = (
             (tokenAmountBN * virtualSolReserves) / 
-            (virtualTokenReserves - tokenAmountBN)
+        (virtualTokenReserves - tokenAmountBN)
         );
         
         // Sell price calculation
@@ -298,10 +298,20 @@ async function sell(walletProvider) {
         );
         const LAMPORTS_PER_SOL = 1_000_000;
         const oneSOLTokenAmount = BigInt(LAMPORTS_PER_SOL);
-
+       // console.log("oneSOLTokenAmount",oneSOLTokenAmount,virtualSolReserves,virtualTokenReserves,oneSOLTokenAmount)
         const consttokenPriceInLamport = (
-            (oneSOLTokenAmount * virtualSolReserves) / 
-            (virtualTokenReserves + oneSOLTokenAmount)
+           parseFloat(oneSOLTokenAmount * virtualSolReserves) / 
+            parseFloat(virtualTokenReserves + oneSOLTokenAmount)
+        );
+
+        //  consttokenPriceInLamport = (
+        //     parseFloat(oneSOLTokenAmount * virtualSolReserves) / 
+        //      parseFloat(virtualTokenReserves + oneSOLTokenAmount)
+        //  );
+      
+       
+        const consttokenPriceInSol = convertScientificToDecimal(
+            parseFloat(consttokenPriceInLamport) / 1_000_000_000
         );
         
         const consttokenPriceInLamportSell = (
@@ -309,9 +319,6 @@ async function sell(walletProvider) {
             (virtualTokenReserves - oneSOLTokenAmount)
         );
         
-        const consttokenPriceInSol = convertScientificToDecimal(
-            Number(consttokenPriceInLamport) / 1_000_000_000
-        );
         const consttokenPriceInSolSell = convertScientificToDecimal(
             Number(consttokenPriceInLamportSell) / 1_000_000_000
         );
@@ -324,7 +331,7 @@ async function sell(walletProvider) {
             tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
         }
 
-        console.log("hallloojkjkjk",jkjkj)
+        //console.log("hallloojkjkjk",consttokenPriceInSol)
 
         return {
             tokenPriceInSol: tokenPriceInSol,

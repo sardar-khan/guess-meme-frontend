@@ -4,10 +4,12 @@ import dollarbag from '../../assets/icons/dollarbag.png';
 import rock from '../../assets/icons/rock.png';
 import { NavLink } from 'react-router-dom';
 import ConnectButton from '../../web3/ConnectButton';
+import { viewUserprofile } from '../../utils/api';
 
 const TaskBar = () => {
     const [currentTime, setCurrentTime] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [userProfileData, setUserProfileData] = useState();
 
     const updateTime = () => {
         const now = new Date();
@@ -15,17 +17,34 @@ const TaskBar = () => {
     };
 
     useEffect(() => {
+        const fetchMainUserProfile = async () => {
+            try {
+                const viewUserprofileData = await viewUserprofile();
+
+                console.log("viewUserprofileData", viewUserprofileData)
+                setUserProfileData(viewUserprofileData?.data)
+            } catch (error) {
+                console.log("viewUserprofileData error", error)
+            }
+        }
+
+        fetchMainUserProfile();
+    }, []);
+
+    console.log("userProfileDatauserProfileDatas", userProfileData)
+
+
+    useEffect(() => {
         updateTime();
         const intervalId = setInterval(updateTime, 60000);
         return () => clearInterval(intervalId);
-    }, []);
+    }, [userProfileData]);
 
     const navLinkClass = (isActive) =>
         `SegoeUi text-xs overflow-hidden whitespace-nowrap text-ellipsis text-white flex items-center gap-2 w-full min-w-[120px] ${isActive ? 'taskActive' : 'taskActiveNot'}`;
 
     const dropdownClass = (isDropdownOpen) =>
-        `ml-2 SegoeUi text-xs overflow-hidden whitespace-nowrap text-ellipsis text-white flex items-center justify-between gap-2 w-full min-w-[120px] ${
-            isDropdownOpen ? 'taskActive' : 'taskActiveNot'
+        `ml-2 SegoeUi text-xs overflow-hidden whitespace-nowrap text-ellipsis text-white flex items-center justify-between gap-2 w-full min-w-[120px] ${isDropdownOpen ? 'taskActive' : 'taskActiveNot'
         }`;
 
     return (
@@ -67,9 +86,8 @@ const TaskBar = () => {
                             >
                                 👁️ Reveals
                             </NavLink>
-
                             <NavLink
-                                to='/userprofile'
+                                to={`/userprofile/${userProfileData._id}`}
                                 className={({ isActive }) => navLinkClass(isActive)}
                                 onClick={() => setIsDropdownOpen(false)}
                             >

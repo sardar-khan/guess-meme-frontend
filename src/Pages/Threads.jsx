@@ -14,6 +14,7 @@ import Progress from '../components/Progress';
 const Threads = () => {
     const { id } = useParams();
     const [coinData, setCoinData] = useState(null);
+    const [kingoftheHill, setKingoftheHill] = useState();
     const [isDisabled, setIsDisabled] = useState(false);
 
     useEffect(() => {
@@ -35,11 +36,11 @@ const Threads = () => {
         const fetchKingoftheHill_progress = async () => {
             try {
                 const response = await kingoftheHill_progress();
-                console.log('Single Coin Data:', response);
-                setCoinData(response?.data);
+                console.log('kingoftheHill_progress:', response);
+                setKingoftheHill(response?.data?.king_progress);
             } catch (error) {
-                console.error('Error fetching coin data:', error);
-                toast.error('Failed to fetch coin data.');
+                console.error('Error kingoftheHill_progress:', error);
+                toast.error('Failed to kingoftheHill_progress.');
             }
         };
 
@@ -114,8 +115,8 @@ const Threads = () => {
                     {coinData && <PlaceTrade coinData={coinData} />}
                     <TradesTable />
                     <HoldersTable />
-                    <Progress progress={coinData?.bonding_curve_progress} />
-                    <Progress progress={coinData?.bonding_curve_progress} />
+                    <Progress title="Bonding curve progress" progress={coinData?.bonding_curve_progress} />
+                    <Progress title="Guess master" progress={kingoftheHill} />
                 </div>
             </div>
         </div>

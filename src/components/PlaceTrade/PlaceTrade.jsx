@@ -34,10 +34,10 @@ const PlaceTrade = ({ coinData }) => {
 
   if (coinData?.token_address) {
     try {
-      tokenAddress_mint = new PublicKey(coinData.token_address);
+      tokenAddress_mint = new PublicKey(coinData?.token_address);
     } catch (error) {
-      console.error("Invalid token address:", coinData.token_address, error);
-      tokenAddress_mint = null; 
+      console.error("Invalid token address:", coinData?.token_address, error);
+      tokenAddress_mint = null;
     }
   } else {
     console.warn("Token address is missing in coinData.");
@@ -179,7 +179,7 @@ const PlaceTrade = ({ coinData }) => {
       }
 
       else if (blockchainType === "ETH" && coinData?.status === 'deployed') {
-
+        console.log("ETH and deployed")
         const tokenAddress = coinData?.token_address;
         // const tokenAddress = coinData?.token_address;
 
@@ -358,7 +358,7 @@ const PlaceTrade = ({ coinData }) => {
                       className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
                       onClick={handleSwitchClick}
                     >
-                      {showSOGs ? "Switch to ETH" : "Switch to SOL"}
+                      {showSOGs ? `Switch to ${coinData?.name}` : `Switch to ${blockchainType}`}
                     </span>
                     <div>
                       <span

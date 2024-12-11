@@ -31,7 +31,7 @@ function App() {
           <Route path='/comingSoon' element={<ComingSoon />} />
           <Route path='/howitworks' element={<HowItWorks />} />
           <Route path='/revealsBestPerformers' element={<RevealsBestPerformers />} />
-          <Route path='/trade/:id' element={<Threads />} /> {/* Updated route */}
+          <Route path='/trade/:id' element={<Threads />} /> 
         </Routes>
         <TaskBar />
       </Router>

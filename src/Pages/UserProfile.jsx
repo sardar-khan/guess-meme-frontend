@@ -27,6 +27,7 @@ const UserProfile = () => {
     const [checkFollow, setCheckFollow] = useState();
     const [notifications, setNotifications] = useState();
     const [userID, setUserID] = useState();
+    const [userProfileData, setUserProfileData] = useState();
     const { isConnected } = useAppKitAccount()
 
     const tabs = [
@@ -44,6 +45,28 @@ const UserProfile = () => {
     });
 
     useEffect(() => {
+        const fetchMainUserProfile = async () => {
+            try {
+                const viewUserprofileData = await viewUserprofile();
+
+                console.log("viewUserprofileData", viewUserprofileData)
+                console.log("viewUserprofileData _id", viewUserprofileData?.data?._id)
+
+                viewUserprofileData?.data?._id === id ? setShowUserData(true) : setShowUserData(false)
+                setUserID(viewUserprofileData?.data?._id)
+                setUserProfileData(viewUserprofileData?.data)
+            } catch (error) {
+                console.log("viewUserprofileData error", error)
+            }
+        }
+
+        fetchMainUserProfile();
+    }, [showUserData, userID]);
+
+    console.log("userProfileData", userProfileData)
+    console.log("showUserData", showUserData)
+
+    useEffect(() => {
         const fetchUserProfile = async () => {
             try {
                 // First, fetch user profile data
@@ -51,7 +74,7 @@ const UserProfile = () => {
 
                 // Call viewUserprofile function as well
 
-                setProfileState({ data, loading: false, error: null });
+                setProfileState({ data: showUserData ? userProfileData : data, loading: false, error: null });
             } catch (err) {
                 // Handle errors in case of failure
                 setProfileState({
@@ -65,22 +88,6 @@ const UserProfile = () => {
         fetchUserProfile();
     }, []);
 
-    useEffect(() => {
-        const fetchUserProfile = async () => {
-            try {
-                const viewUserprofileData = await viewUserprofile();
-
-                console.log("viewUserprofileData", viewUserprofileData?.data?._id)
-
-                viewUserprofileData?.data?._id === id ? setShowUserData(true) : setShowUserData(false)
-                setUserID(viewUserprofileData?.data?._id)
-            } catch (error) {
-                console.log("viewUserprofileData error", error)
-            }
-        }
-
-        fetchUserProfile();
-    }, [showUserData, userID]);
 
     useEffect(() => {
         const FetchCheckFollowData = async () => {
@@ -155,11 +162,13 @@ const UserProfile = () => {
                                 <p className='text-base'>{profileState?.data?.data?.user?.bio}</p>
                             </div>
                         </div>
-                        <button className="themeBtn w-fit mx-auto mt-4" onClick={handleToggleFollow}>
-                            <span className="!text-xs">
-                                {checkFollow ? "Following" : "Follow"}
-                            </span>
-                        </button>
+                        {!showUserData &&
+                            <button className="themeBtn w-fit mx-auto mt-4" onClick={handleToggleFollow}>
+                                <span className="!text-xs">
+                                    {checkFollow ? "Following" : "Follow"}
+                                </span>
+                            </button>
+                        }
                     </CardWrapper>
 
 
@@ -187,26 +196,35 @@ const UserProfile = () => {
                     </div>
 
                     <CardWrapper>
+
                         <div className='flex flex-row gap-1'>
-                            {tabs.map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    className={`PixelOperator w-fit px-2 py-1 rounded-lg font-semibold border border-[#7539F4] ${activeTab === tab.id
-                                        ? 'bg-[#7539F4] text-white'
-                                        : 'bg-white border-[#7539F4] text-[#000]'
-                                        }`}
-                                    onClick={() => setActiveTab(tab.id)}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
+                            {tabs.map((tab) => {
+                                // Show all tabs if showUserData is true, else skip "Notification" tab
+                                if (!showUserData && tab.id === 'notification') {
+                                    return null; // Skip rendering the "Notification" tab
+                                }
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        className={`PixelOperator w-fit px-2 py-1 rounded-lg font-semibold border border-[#7539F4] ${activeTab === tab.id
+                                                ? 'bg-[#7539F4] text-white'
+                                                : 'bg-white border-[#7539F4] text-[#000]'
+                                            }`}
+                                        onClick={() => setActiveTab(tab.id)}
+                                    >
+                                        {tab.label}
+                                    </button>
+                                );
+                            })}
                         </div>
+
+
                     </CardWrapper>
 
 
                 </div>
 
-            </div>
+            </div >
 
             <div className='w-full max-w-[400px] mx-auto pb-[100px]'>
                 {/* tabs start */}

@@ -89,6 +89,19 @@ export const viewCoins = async (sortBy = '') => {
     }
 };
 
+export const kingoftheHill_progress = async (token_address) => {
+    try {
+        const response = await apiInstance.post('trade/king-of-hill-progress', {
+            token_address: token_address
+        });
+        console.log('kingoftheHill_progress', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error during kingoftheHill_progress:', error);
+        throw error;
+    }
+};
+
 
 
 //createCoin function

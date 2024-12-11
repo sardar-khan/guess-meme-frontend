@@ -8,7 +8,8 @@ import CandlestickComboChart from '../components/Charts/CandlestickComboChart';
 import PlaceTrade from '../components/PlaceTrade/PlaceTrade';
 import logoSmall from '../assets/icons/logoSmall.png';
 import { toast } from 'react-toastify';
-import { viewCoin } from '../utils/api';
+import { kingoftheHill_progress, viewCoin } from '../utils/api';
+import Progress from '../components/Progress';
 
 const Threads = () => {
     const { id } = useParams();
@@ -29,6 +30,23 @@ const Threads = () => {
 
         fetchCoinData();
     }, [id]);
+
+    useEffect(() => {
+        const fetchKingoftheHill_progress = async () => {
+            try {
+                const response = await kingoftheHill_progress();
+                console.log('Single Coin Data:', response);
+                setCoinData(response?.data);
+            } catch (error) {
+                console.error('Error fetching coin data:', error);
+                toast.error('Failed to fetch coin data.');
+            }
+        };
+
+        fetchKingoftheHill_progress();
+    }, []);
+
+
 
     const handleCopy = () => {
         navigator.clipboard.writeText(id).then(() => {
@@ -96,6 +114,8 @@ const Threads = () => {
                     {coinData && <PlaceTrade coinData={coinData} />}
                     <TradesTable />
                     <HoldersTable />
+                    <Progress progress={coinData?.bonding_curve_progress} />
+                    <Progress progress={coinData?.bonding_curve_progress} />
                 </div>
             </div>
         </div>

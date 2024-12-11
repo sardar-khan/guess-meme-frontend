@@ -41,6 +41,7 @@ const HoldersTable = () => {
         fetchHolders();
     }, [id]);
     console.log("coinscoinscoinscoins", coins)
+    console.log("holders", holders)
 
 
     const handleCopy = (address) => {
@@ -63,7 +64,8 @@ const HoldersTable = () => {
     if (error) {
         return <div>Error: {error}</div>;
     }
-    if (error) return <div>No Data Found</div>;
+    // if (holders.length === 0) return <div>No Data Found</div>;
+    if (holders.length === 0) return <div>No Data Found</div>;
 
 
     return (

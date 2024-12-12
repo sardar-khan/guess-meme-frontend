@@ -16,22 +16,22 @@ const TaskBar = () => {
         setCurrentTime(now.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true }));
     };
 
+
+    const fetchMainUserProfile = async () => {
+        try {
+            const viewUserprofileData = await viewUserprofile();
+
+            console.log("viewUserprofileData", viewUserprofileData);
+            setUserProfileData(viewUserprofileData?.data);
+        } catch (error) {
+            console.log("viewUserprofileData error", error);
+        }
+    };
     useEffect(() => {
-        const fetchMainUserProfile = async () => {
-            try {
-                const viewUserprofileData = await viewUserprofile();
-
-                console.log("viewUserprofileData", viewUserprofileData);
-                setUserProfileData(viewUserprofileData?.data);
-            } catch (error) {
-                console.log("viewUserprofileData error", error);
-            }
-        };
-
         fetchMainUserProfile();
     }, []);
 
-    
+
     useEffect(() => {
         console.log("userProfileData has changed:", userProfileData);
     }, [userProfileData]);
@@ -58,7 +58,7 @@ const TaskBar = () => {
             <div className='relative'>
                 <button
                     className={dropdownClass(isDropdownOpen)}
-                    onClick={() => setIsDropdownOpen((prev) => !prev)}
+                    onClick={() => { setIsDropdownOpen((prev) => !prev), fetchMainUserProfile() }}
                 >
                     Menu <span>▼</span>
                 </button>

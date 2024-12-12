@@ -71,10 +71,10 @@ const PlaceTrade = ({ coinData }) => {
 
  const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
-  console.log("coinDataPlaceTrade", coinData?.token_address)
-  console.log("coinDataPlaceTrade data", coinData)
+  // console.log("coinDataPlaceTrade", coinData?.token_address)
+  // console.log("coinDataPlaceTrade data", coinData)
 
-  console.log("wallet-provider",walletProvider.publicKey);
+  //console.log("wallet-provider",walletProvider.publicKey);
 
   const result = useBalance({
     address: address,
@@ -84,6 +84,7 @@ const PlaceTrade = ({ coinData }) => {
   };
 
   useEffect(() => {
+    getUserBalances()
     if(coinData?.token_address ){
       remaningAndMaxbuyTokens(coinData?.token_address)
     }
@@ -136,14 +137,14 @@ const PlaceTrade = ({ coinData }) => {
 
   }, [isConfirming, isConfirmed, hash])
 
-  console.log("solAmount",solAmount)
+  //console.log("solAmount",solAmount)
 
   const handleTrade = async () => {
     if (isConnected) {
-      if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-        toast.error("Please enter a valid amount");
-        return;
-      }
+      // if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+      //   toast.error("Please enter a valid amount");
+      //   return;
+      // }
     }
     else {
       toast.error("Connect Wallet First");
@@ -158,8 +159,8 @@ const PlaceTrade = ({ coinData }) => {
       if (blockchainType === "SOL" && coinData?.status === "deployed") {
         console.log("coinData?.status", coinData?.status)
         //30680580
-
-        const buySuccess = await buy(walletProvider, "40000000.03333333", tokenAddress_mint);
+//38709677.419355
+        const buySuccess = await buy(walletProvider, tokenToBuy, tokenAddress_mint);
         // toast.success(`Transction Successfull: ${buySuccess}`)
 
         if (buySuccess) {
@@ -365,39 +366,49 @@ const PlaceTrade = ({ coinData }) => {
 
   //calculate token values for buy
   const handleAmount = async (val) => {
-    await getUserBalances()
-    console.log("valss",val, tokenCal?.data?.tokenPer1Sol,maxBuyTokens)
-      console.log('called', val * tokenCal?.data?.tokenPer1Sol,userBalance)
-                    //3 * 500000 = 150000                   1000000
-    if (parseFloat(val * tokenCal?.data?.tokenPer1Sol) > maxBuyTokens) {
+    setAmount(val)
+    const res = await TokenPriceCalculations(
+      coinData?.token_address,
+      val === '' ? 0 : val,false
+                )
+                console.log("result",res)
+                
+    // console.log("valss",val, tokenCal?.data?.tokenPer1Sol,maxBuyTokens)
+    //   console.log('called', val * tokenCal?.data?.tokenPer1Sol,userBalance)
+    //                 //3 * 500000 = 150000                   1000000
+    console.log("max buy check",res?.tokensbuy > maxBuyTokens,res?.tokensbuy , maxBuyTokens)
+    if (res?.tokensbuy > maxBuyTokens) {
 
         return setAmountError((prevState) => ({
             ...prevState,
             error: true,
             reason: 'max buy exceeded',
         }))
-        toast.error("macbut exceeded")
+        //toast.error("macbut exceeded")
     }
+    console.log("Max token reserved check",res?.tokensbuy > remaningTokens,res?.tokensbuy , remaningTokens)
     if (           //3 * 500000 = 150000                   100000
-        parseFloat(val * tokenCal?.data?.tokenPer1Sol) > remaningTokens
+      res?.tokensbuy> remaningTokens
     ) {
         return setAmountError((prevState) => ({
             ...prevState,
             error: true,
             reason: 'Max token reserved reached',
         }))
-        toast.error("macbut exceeded")
+       
     }
+    console.log("user-balanceddd",userBalance?.solBalance,val,val < userBalance?.solBalance)
     if (val < userBalance?.solBalance) {
         setSolAmount(val)
-        setAmount(val * tokenCal?.data?.tokenPer1Sol)
-        setTokenToBuy(val * tokenCal?.data?.tokenPer1Sol)
+        setAmount(val)
+        setTokenToBuy(res?.tokensbuy)
         setAmountError((prevState) => ({
             ...prevState,
             error: false,
             reason: '',
         }))
     } else {
+   
         setAmountError((prevState) => ({
             ...prevState,
             error: true,
@@ -406,13 +417,13 @@ const PlaceTrade = ({ coinData }) => {
     }
 }
 
-console.log("amount error",amountError)
+//console.log("amount error",amountError)
 
 
 //get user sol and token balance 
 const getUserBalances = async () => {
   try {
-    if(!coinData?.token_address){return toast.error("echipoya")}
+    if(!coinData?.token_address){return }
      
 
       //user-sol-balance
@@ -455,48 +466,48 @@ const getUserBalances = async () => {
 
 
 // buy sell calculations from the blockcahin-solana
-useEffect(() => {
-  if (!coinData?.token_address) return
-  setTokenCal((prevState) => ({
-    ...prevState,
-    loading: true,
-}))
-  // Function to fetch token information
-  const fetchTokenInformation = async () => {
-    console.log("amountsss",amount)
-      try {
-          //  console.log("amount from feild",amount)
-          const res = await TokenPriceCalculations(
-            coinData?.token_address,
-              amount === '' ? 0 : amount,
-          )
-          console.log('res-for-token-calculations', res)
-          setTokenCal((prevState) => ({
-              ...prevState,
-              loading: false,
-              data: res,
-              success: true,
-          }))
-      } catch (error) {
-          console.log('Error while calculating', error)
-          setTokenCal((prevState) => ({
-              ...prevState,
-              loading: false,
-              data: null,
-              success: false,
-          }))
-      }
-  }
+// useEffect(() => {
+//   if (!coinData?.token_address) return
+//   setTokenCal((prevState) => ({
+//     ...prevState,
+//     loading: true,
+// }))
+//   // Function to fetch token information
+//   const fetchTokenInformation = async () => {
+//     console.log("amountsss",amount)
+//       try {
+//           //  console.log("amount from feild",amount)
+//           const res = await TokenPriceCalculations(
+//             coinData?.token_address,
+//               amount === '' ? 0 : amount,
+//           )
+//           console.log('res-for-token-calculations', res)
+//           setTokenCal((prevState) => ({
+//               ...prevState,
+//               loading: false,
+//               data: res,
+//               success: true,
+//           }))
+//       } catch (error) {
+//           console.log('Error while calculating', error)
+//           setTokenCal((prevState) => ({
+//               ...prevState,
+//               loading: false,
+//               data: null,
+//               success: false,
+//           }))
+//       }
+//   }
   
-  // Fetch token information initially
-  fetchTokenInformation(coinData?.token_address)
+//   // Fetch token information initially
+//   fetchTokenInformation(coinData?.token_address)
 
-  // Set up an interval to fetch token information every 5 seconds
-  const intervalId = setInterval(fetchTokenInformation, 5000)
+//   // Set up an interval to fetch token information every 5 seconds
+//   const intervalId = setInterval(fetchTokenInformation, 5000)
 
-  // Clear the interval when the component unmounts or when `id` changes
-  return () => clearInterval(intervalId)
-}, [ amount, coinData?.token_address])
+//   // Clear the interval when the component unmounts or when `id` changes
+//   return () => clearInterval(intervalId)
+// }, [ amount, coinData?.token_address])
 
 
 
@@ -558,12 +569,17 @@ useEffect(() => {
                   <div className="flex justify-between gap-3 px-3 pt-[15px]">
                     {!showSOGs && (
                       <div className="w-full Inter">
-                        <div className="w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]">
+                         
+                        <div className={` ${
+                                    amountError.error
+                                        ? 'border border-red-500'
+                                        : 'border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'
+                                } w-full `}>
                           <div className="flex w-full justify-between border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]">
                             <input
                               type="number"
                               name="amount"
-                              value={solAmount}
+                              value={amount}
                               onChange={(e) => {
                                 const value = e.target.value;
                                 if (!value || Number(value) >= 0) {
@@ -588,6 +604,9 @@ useEffect(() => {
                           </div>
 
                         </div>
+                       {tokenToBuy!='' && tokenToBuy!='0' && tokenToBuy!=0&& <p>{tokenToBuy}</p>}
+
+                        {amountError.error&& <p className="text-red-600">{amountError.reason}</p>}
                       </div>
                     )}
                   </div>

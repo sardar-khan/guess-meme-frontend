@@ -4,7 +4,7 @@
 // const { Buy_createTransactionInstruction, b, lx_global } = require("./utils");
 // const { Buy_createTransactionInstruction, b, lx_global } = require("./utils");
 
-import { Keypair, PublicKey, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
+import { Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 // import { connection, feeRecipient, IDL1, mintaddy, SELLSLIPPAGE, wallet } from "./config";
 import { connection, provider,feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
 import { getAccount, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
@@ -249,139 +249,203 @@ async function sell(walletProvider) {
     console.log("Transaction signature", signature);
 }
 
+const TokenPriceCalculations = async (taddress, amount , isSolToToken ) => {
 
-
-
- const TokenPriceCalculations = async (taddress, amount) => {
-    try {
-        console.log("token calculations",taddress)
-        const tokenamt = tokenToSmallestUnit(parseInt(amount), 6)
-        console.log("ammunt",tokenamt);
-
-        window.Buffer = buffer.Buffer
-      
-        //console.log('connection', connection)
-
-        const programId = new PublicKey(
+    
+    window.Buffer = buffer.Buffer
+    const tokenAddress = new PublicKey(taddress)
+            const programId = new PublicKey(
             '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
         )
        
         const program = new Program(IDL1, programId, provider)
-        const tokenAddress = new PublicKey(taddress)
-        console.log("info-usessss",program,tokenAddress,programId)
-        const data = await retrieveTokenInfo(program, programId, tokenAddress)
-        console.log("dataklklkl",data)
+    const data = await retrieveTokenInfo(program, programId, tokenAddress);
+    
+    const virtualSolReserves = BigInt(data?.virtualSolReserves);
+    const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
 
-        const virtualSolReserves = BigInt(data?.virtualSolReserves);
-        const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
-        console.log("datavrual sols",virtualSolReserves,virtualTokenReserves)
-        const tokenAmountBN = BigInt(tokenamt);
+    const k = virtualSolReserves * virtualTokenReserves;
 
-         // Buy price calculation
-         const tokenPriceInLamport = (
-            (tokenAmountBN * virtualSolReserves) / 
-        (virtualTokenReserves - tokenAmountBN)
-        );
-        
-        // Sell price calculation
-        const tokenPriceInLamportSell = (
-            (tokenAmountBN * virtualSolReserves) / 
-            (virtualTokenReserves + tokenAmountBN)
-        );
+    if(isSolToToken){
+    const oneSOLInLamports =BigInt(Math.floor(amount * LAMPORTS_PER_SOL));
+console.log("sol in lamports",oneSOLInLamports);
+    // Constant product (k)
+   
+    // Tokens per 1 SOL
+    const buyTokensAgainstSol = Number(
+        virtualTokenReserves - (k / (virtualSolReserves + oneSOLInLamports))
+    );
+    const sellTokensAgainstSol = Number(
+        (k / (virtualSolReserves - oneSOLInLamports)) - virtualTokenReserves
+    );
 
-        // Convert to SOL
-        const tokenPriceInSol = convertScientificToDecimal(
-            Number(tokenPriceInLamport) / 1_000_000_000
-        );
-        const tokenPriceInSolSell = convertScientificToDecimal(
-            Number(tokenPriceInLamportSell) / 1_000_000_000
-        );
-        const LAMPORTS_PER_SOL = 1_000_000;
-        const oneSOLTokenAmount = BigInt(LAMPORTS_PER_SOL);
-       // console.log("oneSOLTokenAmount",oneSOLTokenAmount,virtualSolReserves,virtualTokenReserves,oneSOLTokenAmount)
-        const consttokenPriceInLamport = (
-           parseFloat(oneSOLTokenAmount * virtualSolReserves) / 
-            parseFloat(virtualTokenReserves + oneSOLTokenAmount)
-        );
+    // Buy price in SOL
+    const tokenPriceInLamport = (oneSOLInLamports * virtualSolReserves) / virtualTokenReserves;
+    const tokenPriceInSol = Number(tokenPriceInLamport) / 1_000_000_000;
 
-        //  consttokenPriceInLamport = (
-        //     parseFloat(oneSOLTokenAmount * virtualSolReserves) / 
-        //      parseFloat(virtualTokenReserves + oneSOLTokenAmount)
-        //  );
-      
-       
-        const consttokenPriceInSol = convertScientificToDecimal(
-            parseFloat(consttokenPriceInLamport) / 1_000_000_000
-        );
-        
-        const consttokenPriceInLamportSell = (
-            (oneSOLTokenAmount * virtualSolReserves) / 
-            (virtualTokenReserves - oneSOLTokenAmount)
-        );
-        
-        const consttokenPriceInSolSell = convertScientificToDecimal(
-            Number(consttokenPriceInLamportSell) / 1_000_000_000
-        );
+    // Sell price in SOL
+    const tokenPriceInLamportSell = (oneSOLInLamports * virtualSolReserves) / (virtualTokenReserves + oneSOLInLamports);
+    const tokenPriceInSolSell = Number(tokenPriceInLamportSell) / 1_000_000_000;
+    const    tokensbuy = buyTokensAgainstSol/1000000
+    const tokensell = sellTokensAgainstSol/1000000
 
-        const jkjkj ={
-            tokenPriceInSol: tokenPriceInSol,
-            sellTokenPriceInSol: tokenPriceInSolSell,
-            onetokenPriceInSol: consttokenPriceInSol,
-            sellTokenPer1Sol: consttokenPriceInSolSell,
-            tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
-        }
+    console.log({
+        tokenPriceInSol,
+        sellTokenPriceInSol: tokenPriceInSolSell,
+        tokensbuy,
+        tokensell
+    });
 
-        //console.log("hallloojkjkjk",consttokenPriceInSol)
+    return {
+        tokenPriceInSol,
+        sellTokenPriceInSol: tokenPriceInSolSell,
+        tokensbuy,
+        tokensell
+    };
+}else{
+    const tokenAmountBN = BigInt(Math.floor(amount * 1_000_000)); // Assuming 6 decimal tokens
+        console.log("Tokens in smallest unit:", tokenAmountBN);
+
+        // SOL price for given tokens
+        const buySolAgainstTokens =Math.abs( Number(
+            virtualSolReserves - (k / (virtualTokenReserves - tokenAmountBN))
+        ));
+        const sellSolAgainstTokens = Math.abs(Number(
+            (k / (virtualTokenReserves + tokenAmountBN)) - virtualSolReserves
+        ));
 
         return {
-            tokenPriceInSol: tokenPriceInSol,
-            sellTokenPriceInSol: tokenPriceInSolSell,
-            onetokenPriceInSol: consttokenPriceInSol,
-            sellTokenPer1Sol: consttokenPriceInSolSell,
-            tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
+            tokensbuy: buySolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
+            tokensell: sellSolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
         };
-        //token price buy
-            // const tokenPriceInLamport =
-            //     parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
-            //     parseFloat(parseFloat(data?.virtualTokenReserves) - tokenamt)
-            // const tokenPriceInLamportSell =
-            //     parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
-            //     parseFloat(parseFloat(data?.virtualTokenReserves) + tokenamt)
-        // const tokenPriceInSol = convertScientificToDecimal(
-        //     parseFloat(tokenPriceInLamport / 1000000000),
-        // )
-        // const tokenPriceInSolSell = convertScientificToDecimal(
-        //     parseFloat(tokenPriceInLamportSell / 1000000000),
-        // )
-
-        // token per 1 SOL calculations
-        // const consttokenPriceInLamport =
-        //     parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
-        //     parseFloat(parseFloat(data?.virtualTokenReserves) + 1000000)
-        // const consttokenPriceInLamportSell =
-        //     parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
-        //     parseFloat(parseFloat(data?.virtualTokenReserves) - 1000000)
-        // console.log('token-price-in-lamport', tokenPriceInLamport)
-        // const consttokenPriceInSol = convertScientificToDecimal(
-        //     parseFloat(consttokenPriceInLamport / 1000000000),
-        // )
-        // const consttokenPriceInSolSell = convertScientificToDecimal(
-        //     parseFloat(consttokenPriceInLamportSell / 1000000000),
-        // )
-        // return {
-        //     //tokenInfo: data,
-        //     tokenPriceInSol: tokenPriceInSol,
-        //     sellTokenPriceInSol: tokenPriceInSolSell,
-        //     onetokenPriceInSol: consttokenPriceInSol,
-        //     sellTokenPer1Sol: consttokenPriceInSolSell,
-        //     tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
-
-        //     //solPer1Token:parseFloat(1/tokenAgainstSol)
-        // }
-    } catch (error) {
-        console.log('error while fetching sell token price', error)
-    }
 }
+};
+
+
+
+//  const TokenPriceCalculations = async (taddress, amount) => {
+//     try {
+//         console.log("token calculations",taddress)
+//         const tokenamt = tokenToSmallestUnit(parseInt(amount), 6)
+//         console.log("ammunt",tokenamt);
+
+//         window.Buffer = buffer.Buffer
+      
+//         //console.log('connection', connection)
+
+//         const programId = new PublicKey(
+//             '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
+//         )
+       
+//         const program = new Program(IDL1, programId, provider)
+//         const tokenAddress = new PublicKey(taddress)
+//         console.log("info-usessss",program,tokenAddress,programId)
+//         const data = await retrieveTokenInfo(program, programId, tokenAddress)
+//         console.log("dataklklkl",data)
+
+//         const virtualSolReserves = BigInt(data?.virtualSolReserves);
+//         const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
+//         console.log("datavrual sols",virtualSolReserves,virtualTokenReserves)
+//         const tokenAmountBN = BigInt(tokenamt);
+
+//          // Buy price calculation
+//          const tokenPriceInLamport = (
+//             (tokenAmountBN * virtualSolReserves) / 
+//         (virtualTokenReserves - tokenAmountBN)
+//         );
+        
+//         // Sell price calculation
+//         const tokenPriceInLamportSell = (
+//             (tokenAmountBN * virtualSolReserves) / 
+//             (virtualTokenReserves + tokenAmountBN)
+//         );
+
+//         // Convert to SOL
+//         const tokenPriceInSol = convertScientificToDecimal(
+//             Number(tokenPriceInLamport) / 1_000_000_000
+//         );
+//         const tokenPriceInSolSell = convertScientificToDecimal(
+//             Number(tokenPriceInLamportSell) / 1_000_000_000
+//         );
+//         const LAMPORTS_PER_SOL = 1_000_000;
+//         const oneSOLTokenAmount = BigInt(LAMPORTS_PER_SOL);
+//         console.log("oneSOLTokenAmount",oneSOLTokenAmount,virtualSolReserves,virtualTokenReserves,oneSOLTokenAmount)
+//         const consttokenPriceInLamport = (
+//            parseFloat(oneSOLTokenAmount * virtualSolReserves) / 
+//             parseFloat(virtualTokenReserves + oneSOLTokenAmount)
+//         );
+      
+//         const consttokenPriceInLamportSell = (
+//             (oneSOLTokenAmount * virtualSolReserves) / 
+//             (virtualTokenReserves - oneSOLTokenAmount)
+//         );
+        
+//         const consttokenPriceInSol = convertScientificToDecimal(
+//             parseFloat(consttokenPriceInLamport) / 1_000_000_000
+//         );
+//         const consttokenPriceInSolSell = convertScientificToDecimal(
+//             Number(consttokenPriceInLamportSell) / 1_000_000_000
+//         );
+
+//         const jkjkj ={
+//             tokenPriceInSol: tokenPriceInSol,
+//             sellTokenPriceInSol: tokenPriceInSolSell,
+//             onetokenPriceInSol: consttokenPriceInSol,
+//             sellTokenPer1Sol: consttokenPriceInSolSell,
+//             tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
+//         }
+
+//         console.log("hallloojkjkjk",consttokenPriceInSol)
+
+//         return {
+//             tokenPriceInSol: tokenPriceInSol,
+//             sellTokenPriceInSol: tokenPriceInSolSell,
+//             onetokenPriceInSol: consttokenPriceInSol,
+//             sellTokenPer1Sol: consttokenPriceInSolSell,
+//             tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
+//         };
+//         //token price buy
+//             // const tokenPriceInLamport =
+//             //     parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
+//             //     parseFloat(parseFloat(data?.virtualTokenReserves) - tokenamt)
+//             // const tokenPriceInLamportSell =
+//             //     parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
+//             //     parseFloat(parseFloat(data?.virtualTokenReserves) + tokenamt)
+//         // const tokenPriceInSol = convertScientificToDecimal(
+//         //     parseFloat(tokenPriceInLamport / 1000000000),
+//         // )
+//         // const tokenPriceInSolSell = convertScientificToDecimal(
+//         //     parseFloat(tokenPriceInLamportSell / 1000000000),
+//         // )
+
+//         // token per 1 SOL calculations
+//         // const consttokenPriceInLamport =
+//         //     parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
+//         //     parseFloat(parseFloat(data?.virtualTokenReserves) + 1000000)
+//         // const consttokenPriceInLamportSell =
+//         //     parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
+//         //     parseFloat(parseFloat(data?.virtualTokenReserves) - 1000000)
+//         // console.log('token-price-in-lamport', tokenPriceInLamport)
+//         // const consttokenPriceInSol = convertScientificToDecimal(
+//         //     parseFloat(consttokenPriceInLamport / 1000000000),
+//         // )
+//         // const consttokenPriceInSolSell = convertScientificToDecimal(
+//         //     parseFloat(consttokenPriceInLamportSell / 1000000000),
+//         // )
+//         // return {
+//         //     //tokenInfo: data,
+//         //     tokenPriceInSol: tokenPriceInSol,
+//         //     sellTokenPriceInSol: tokenPriceInSolSell,
+//         //     onetokenPriceInSol: consttokenPriceInSol,
+//         //     sellTokenPer1Sol: consttokenPriceInSolSell,
+//         //     tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
+
+//         //     //solPer1Token:parseFloat(1/tokenAgainstSol)
+//         // }
+//     } catch (error) {
+//         console.log('error while fetching sell token price', error)
+//     }
+// }
 
 const reteriveTokenDetails = async (walletProvider, taddress) => {
     try {

@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import abi from "../../web3/abi.json";
 
 // Contract Address
-const CONTRACT_ADDRESS = "0x93C27bA75a1480ac1a7aE7ea9887D5Ee8AFf6942";
+const CONTRACT_ADDRESS = "0x72a62b40ae25ddc6d4bc7d3087ce21769087dac0";
 
 // Connect to the factory contract
 export const getFactoryContract = async () => {
@@ -14,7 +14,7 @@ export const getFactoryContract = async () => {
   const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
 
   const signer = provider.getSigner(); // Get the connected signer from MetaMask
-  const factoryContract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
+  const factoryContract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer, {gasLimit:10000000});
   return factoryContract;
 };
 

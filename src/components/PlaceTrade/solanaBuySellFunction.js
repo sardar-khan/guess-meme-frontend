@@ -6,7 +6,7 @@
 
 import { Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 // import { connection, feeRecipient, IDL1, mintaddy, SELLSLIPPAGE, wallet } from "./config";
-import { connection, provider,feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
+import { connection, provider, feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
 import { getAccount, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import { Buy_createTransactionInstruction, b, fetchLiquidityPool, lx_global } from "./utils";
 import BN from "bn.js";
@@ -40,8 +40,8 @@ function decodeLiquidityPool(data) {
 
 async function buy(walletProvider, amount, mintaddy) {
     console.log("amount for sol", Number(amount) * 10 ** 6);
-    const maxSlippage='1'
-    const buy_value =maxSlippage?.toString()
+    const maxSlippage = '1'
+    const buy_value = maxSlippage?.toString()
     console.log(walletProvider, "wallet Provider");
     const programId = new PublicKey("7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh");
 
@@ -249,65 +249,65 @@ async function sell(walletProvider) {
     console.log("Transaction signature", signature);
 }
 
-const TokenPriceCalculations = async (taddress, amount , isSolToToken ) => {
+const TokenPriceCalculations = async (taddress, amount, isSolToToken) => {
 
-    
+
     window.Buffer = buffer.Buffer
     const tokenAddress = new PublicKey(taddress)
-            const programId = new PublicKey(
-            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
-        )
-       
-        const program = new Program(IDL1, programId, provider)
+    const programId = new PublicKey(
+        '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
+    )
+
+    const program = new Program(IDL1, programId, provider)
     const data = await retrieveTokenInfo(program, programId, tokenAddress);
-    
+
     const virtualSolReserves = BigInt(data?.virtualSolReserves);
     const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
 
     const k = virtualSolReserves * virtualTokenReserves;
 
-    if(isSolToToken){
-    const oneSOLInLamports =BigInt(Math.floor(amount * LAMPORTS_PER_SOL));
-console.log("sol in lamports",oneSOLInLamports);
-    // Constant product (k)
-   
-    // Tokens per 1 SOL
-    const buyTokensAgainstSol = Number(
-        virtualTokenReserves - (k / (virtualSolReserves + oneSOLInLamports))
-    );
-    const sellTokensAgainstSol = Number(
-        (k / (virtualSolReserves - oneSOLInLamports)) - virtualTokenReserves
-    );
+    if (isSolToToken) {
+        const oneSOLInLamports = BigInt(Math.floor(amount * LAMPORTS_PER_SOL));
+        console.log("sol in lamports", oneSOLInLamports);
+        // Constant product (k)
 
-    // Buy price in SOL
-    const tokenPriceInLamport = (oneSOLInLamports * virtualSolReserves) / virtualTokenReserves;
-    const tokenPriceInSol = Number(tokenPriceInLamport) / 1_000_000_000;
+        // Tokens per 1 SOL
+        const buyTokensAgainstSol = Number(
+            virtualTokenReserves - (k / (virtualSolReserves + oneSOLInLamports))
+        );
+        const sellTokensAgainstSol = Number(
+            (k / (virtualSolReserves - oneSOLInLamports)) - virtualTokenReserves
+        );
 
-    // Sell price in SOL
-    const tokenPriceInLamportSell = (oneSOLInLamports * virtualSolReserves) / (virtualTokenReserves + oneSOLInLamports);
-    const tokenPriceInSolSell = Number(tokenPriceInLamportSell) / 1_000_000_000;
-    const    tokensbuy = buyTokensAgainstSol/1000000
-    const tokensell = sellTokensAgainstSol/1000000
+        // Buy price in SOL
+        const tokenPriceInLamport = (oneSOLInLamports * virtualSolReserves) / virtualTokenReserves;
+        const tokenPriceInSol = Number(tokenPriceInLamport) / 1_000_000_000;
 
-    console.log({
-        tokenPriceInSol,
-        sellTokenPriceInSol: tokenPriceInSolSell,
-        tokensbuy,
-        tokensell
-    });
+        // Sell price in SOL
+        const tokenPriceInLamportSell = (oneSOLInLamports * virtualSolReserves) / (virtualTokenReserves + oneSOLInLamports);
+        const tokenPriceInSolSell = Number(tokenPriceInLamportSell) / 1_000_000_000;
+        const tokensbuy = buyTokensAgainstSol / 1000000
+        const tokensell = sellTokensAgainstSol / 1000000
 
-    return {
-        tokenPriceInSol,
-        sellTokenPriceInSol: tokenPriceInSolSell,
-        tokensbuy,
-        tokensell
-    };
-}else{
-    const tokenAmountBN = BigInt(Math.floor(amount * 1_000_000)); // Assuming 6 decimal tokens
+        console.log({
+            tokenPriceInSol,
+            sellTokenPriceInSol: tokenPriceInSolSell,
+            tokensbuy,
+            tokensell
+        });
+
+        return {
+            tokenPriceInSol,
+            sellTokenPriceInSol: tokenPriceInSolSell,
+            tokensbuy,
+            tokensell
+        };
+    } else {
+        const tokenAmountBN = BigInt(Math.floor(amount * 1_000_000)); // Assuming 6 decimal tokens
         console.log("Tokens in smallest unit:", tokenAmountBN);
 
         // SOL price for given tokens
-        const buySolAgainstTokens =Math.abs( Number(
+        const buySolAgainstTokens = Math.abs(Number(
             virtualSolReserves - (k / (virtualTokenReserves - tokenAmountBN))
         ));
         const sellSolAgainstTokens = Math.abs(Number(
@@ -318,7 +318,7 @@ console.log("sol in lamports",oneSOLInLamports);
             tokensbuy: buySolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
             tokensell: sellSolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
         };
-}
+    }
 };
 
 
@@ -330,13 +330,13 @@ console.log("sol in lamports",oneSOLInLamports);
 //         console.log("ammunt",tokenamt);
 
 //         window.Buffer = buffer.Buffer
-      
+
 //         //console.log('connection', connection)
 
 //         const programId = new PublicKey(
 //             '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
 //         )
-       
+
 //         const program = new Program(IDL1, programId, provider)
 //         const tokenAddress = new PublicKey(taddress)
 //         console.log("info-usessss",program,tokenAddress,programId)
@@ -353,7 +353,7 @@ console.log("sol in lamports",oneSOLInLamports);
 //             (tokenAmountBN * virtualSolReserves) / 
 //         (virtualTokenReserves - tokenAmountBN)
 //         );
-        
+
 //         // Sell price calculation
 //         const tokenPriceInLamportSell = (
 //             (tokenAmountBN * virtualSolReserves) / 
@@ -374,12 +374,12 @@ console.log("sol in lamports",oneSOLInLamports);
 //            parseFloat(oneSOLTokenAmount * virtualSolReserves) / 
 //             parseFloat(virtualTokenReserves + oneSOLTokenAmount)
 //         );
-      
+
 //         const consttokenPriceInLamportSell = (
 //             (oneSOLTokenAmount * virtualSolReserves) / 
 //             (virtualTokenReserves - oneSOLTokenAmount)
 //         );
-        
+
 //         const consttokenPriceInSol = convertScientificToDecimal(
 //             parseFloat(consttokenPriceInLamport) / 1_000_000_000
 //         );
@@ -450,23 +450,23 @@ console.log("sol in lamports",oneSOLInLamports);
 const reteriveTokenDetails = async (walletProvider, taddress) => {
     try {
         window.Buffer = buffer.Buffer
-        console.log("provider",walletProvider);
+        console.log("provider", walletProvider);
         const programId = new PublicKey(
             '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
         )
         const program = new Program(IDL1, programId, provider)
-        console.log("program",program.account.bondingCurve);
+        console.log("program", program.account.bondingCurve);
         const tokenAddress = new PublicKey(taddress)
-        console.log("tokenAddress",tokenAddress);
+        console.log("tokenAddress", tokenAddress);
         const [C] = PublicKey.findProgramAddressSync(
             [Buffer.from('bonding-curve'), tokenAddress.toBuffer()],
             programId,
         )
-        console.log("c",C)
-        
+        console.log("c", C)
+
 
         const r = await program.account.bondingCurve.fetch(C)
-        console.log("r",r)
+        console.log("r", r)
 
         const {
             virtualTokenReserves,
@@ -475,7 +475,7 @@ const reteriveTokenDetails = async (walletProvider, taddress) => {
             tokenTotalSupply,
             complete = false, // Default value if not present
         } = r
-        
+
 
         // Convert BN objects to strings
         const virtualTokenReservesStr = virtualTokenReserves.toString()
@@ -502,8 +502,8 @@ const reteriveTokenDetails = async (walletProvider, taddress) => {
 
 }
 
- const retrieveTokenInfo = async (program, programId, mintaddy) => {
-   
+const retrieveTokenInfo = async (program, programId, mintaddy) => {
+
     window.Buffer = buffer.Buffer
     const [C] = PublicKey.findProgramAddressSync(
         [Buffer.from('bonding-curve'), mintaddy.toBuffer()],
@@ -511,7 +511,7 @@ const reteriveTokenDetails = async (walletProvider, taddress) => {
     )
 
     const r = await program.account.bondingCurve.fetch(C)
-console.log("rrrrrr",r)
+    console.log("rrrrrr", r)
     const {
         virtualTokenReserves,
         virtualSolReserves,
@@ -565,8 +565,8 @@ function convertScientificToDecimal(scientificNotation) {
         exponent < 0
             ? '0.' + '0'.repeat(Math.abs(exponent) - 1) + coefficient.replace('.', '')
             : coefficient.slice(0, exponent + 1) +
-              (coefficient.length > exponent + 1 ? 
-                  '.' + coefficient.slice(exponent + 1) : '')
+            (coefficient.length > exponent + 1 ?
+                '.' + coefficient.slice(exponent + 1) : '')
     ).replace(/\.?0+$/, '');
 
     // Return the adjusted coefficient with sign
@@ -579,4 +579,4 @@ function tokenToSmallestUnit(tokenAmount, decimals) {
     return tokenAmount * Math.pow(10, decimals)
 }
 
-export { buy, sell, reteriveTokenDetails,TokenPriceCalculations }
+export { buy, sell, reteriveTokenDetails, TokenPriceCalculations, convertScientificToDecimal }

@@ -54,23 +54,23 @@ const PlaceTrade = ({ coinData }) => {
   const [userBalance, setUserBalance] = useState({
     tokenBalance: null,
     solBalance: null,
-})
+  })
   const [tokenCal, setTokenCal] = useState({
     data: null,
     loading: false,
     success: false,
-})
- const [tokenInfo, setTokenInfo] = useState({
-        loading: false,
-        success: false,
-        data: null,
-    })
+  })
+  const [tokenInfo, setTokenInfo] = useState({
+    loading: false,
+    success: false,
+    data: null,
+  })
   const [amountError, setAmountError] = useState({
     error: false,
     reason: '',
-})
+  })
   const [maxBuyTokens, setMaxBuyTokens] = useState('')
-  const [tokenToBuy,setTokenToBuy]=useState('')
+  const [tokenToBuy, setTokenToBuy] = useState('')
   const [remaningTokens, setRemaningTokens] = useState('')
   const [solAmount, setSolAmount] = useState('')
   const [isLoading, setIsLoading] = useState(false);
@@ -84,7 +84,7 @@ const PlaceTrade = ({ coinData }) => {
     hash: hash,
   });
 
- const blockchainType = localStorage.getItem("blockchain") || "SOL";
+  const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
   // console.log("coinDataPlaceTrade", coinData?.token_address)
   // console.log("coinDataPlaceTrade data", coinData)
@@ -94,25 +94,38 @@ const PlaceTrade = ({ coinData }) => {
   const result = useBalance({
     address: address,
   })
-  const handleSwitchClick = () => {
+  const handleSwitchClick = async () => {
+
     setShowSOGs(!showSOGs);
+    if (!showSOGs) {
+      setAmount(tokenToBuy);
+    } else {
+      setAmount(solAmount);
+    }
+
+
+
+    // if (showSOGs) {
+    //   setTokenToBuy(res?.tokensbuy)
+    //   setAmount(val)
+    //   console.log("sssssddd", showSOGs)
+    // } else {
+    //   setTokenToBuy(val)
+    //   setAmount(res?.tokensbuy)
+    //   console.log("sssssddd", showSOGs)
+    // }
   };
 
-  useEffect(() => {
-    getUserBalances()
-    if(coinData?.token_address ){
-      remaningAndMaxbuyTokens(coinData?.token_address)
-    }
-    
 
-  }, [amount,coinData,wallet])
 
+  console.log("tokenToBuy", tokenToBuy)
   // calculate remaining token and maxtoken buy value
-  const remaningAndMaxbuyTokens = async ( tokenAddress) => {
-    if(!walletProvider){
-      return toast.error("Please connect your wallet");
+  const remaningAndMaxbuyTokens = async (tokenAddress) => {
+    if (!walletProvider) {
+      // return toast.error("Please connect your wallet");
+      console.log("Please connect your wallet");
     }
-    if(!tokenAddress){
+    if (!tokenAddress) {
       return toast.error("Token address not found!")
     }
     try {
@@ -122,7 +135,7 @@ const PlaceTrade = ({ coinData }) => {
 
       const maxBuyPercentage = 100
       const percentage = (res?.totalTokens * maxBuyPercentage) / 100;
-      
+
       console.log("percentage", percentage);
       setMaxBuyTokens(percentage)
       setRemaningTokens(res?.remainingTokens)
@@ -174,40 +187,44 @@ const PlaceTrade = ({ coinData }) => {
       if (blockchainType === "SOL" && coinData?.status === "deployed") {
         console.log("coinData?.status", coinData?.status)
         //30680580
-//38709677.419355
+        //38709677.419355
         const buySuccess = await buy(walletProvider, tokenToBuy, tokenAddress_mint);
         // toast.success(`Transction Successfull: ${buySuccess}`)
 
-        if (buySuccess) {
-          toast.success(`Transction Successfull: ${buySuccess}`)
-        }
-
         // if (buySuccess) {
-        //   setAmount('')
-
-        //   const apiResponse = await BuyToken({
-        //     account_type: 'solana',
-        //     amount: parseFloat(amount),
-        //     token_amount: 1,
-        //     token_id: id,
-        //     type: tradeType,
-        //     transaction_hash: buySuccess,
-        //   });
-
-        //   if (apiResponse?.status === 200) {
-        //     toast.success(`Transction Successfull: ${buySuccess}`)
-        //     // toast.success(
-        //     // `${tradeType === "buy" ? "buy" : "sell"} saved successfully`);
-        //     dispatch(fetchTrades(id)); // Fetch updated trades
-
-        //   } else {
-        //     throw new Error(
-        //       `Failed to record ${tradeType} trade in the backend`
-        //     );
-        //   }
-
+        //   toast.success(`Transction Successfull: ${buySuccess}`)
+        // console.log("buySuccess", buySuccess)
 
         // }
+        if (buySuccess) {
+          console.log("buySuccess", buySuccess)
+          setAmount('')
+          setTokenToBuy('')
+          setSolAmount('')
+
+          const apiResponse = await BuyToken({
+            account_type: 'solana',
+            amount: parseFloat(amount),
+            token_amount: 1,
+            token_id: id,
+            type: tradeType,
+            transaction_hash: buySuccess,
+          });
+
+          if (apiResponse?.status === 201) {
+            toast.success(`Transction Successfull: ${buySuccess}`)
+            // toast.success(
+            // `${tradeType === "buy" ? "buy" : "sell"} saved successfully`);
+            dispatch(fetchTrades(id)); // Fetch updated trades
+
+          } else {
+            throw new Error(
+              `Failed to record ${tradeType} trade in the backend`
+            );
+          }
+
+
+        }
         console.log("Purchase successful");
       }
 
@@ -241,6 +258,7 @@ const PlaceTrade = ({ coinData }) => {
       else if (blockchainType === "ETH" && coinData?.status === 'deployed') {
         console.log("ETH and deployed")
         const tokenAddress = coinData?.token_address;
+        console.log("tokenAddress", tokenAddress)
         // const tokenAddress = coinData?.token_address;
 
         if (!tokenAddress) {
@@ -377,69 +395,231 @@ const PlaceTrade = ({ coinData }) => {
 
     }
   }
-  
+
 
   //calculate token values for buy
   const handleAmount = async (val) => {
-    setAmount(val)
+    // setAmount(val)
     const res = await TokenPriceCalculations(
       coinData?.token_address,
-      val === '' ? 0 : val,true
-                )
-                console.log("result",res)
-                
+      val === '' ? 0 : val, !showSOGs
+    )
+    console.log("result", res, !showSOGs)
+
     // console.log("valss",val, tokenCal?.data?.tokenPer1Sol,maxBuyTokens)
     //   console.log('called', val * tokenCal?.data?.tokenPer1Sol,userBalance)
     //                 //3 * 500000 = 150000                   1000000
-    console.log("max buy check",res?.tokensbuy > maxBuyTokens,res?.tokensbuy , maxBuyTokens)
-    if (res?.tokensbuy > maxBuyTokens) {
+
+    if (!showSOGs) {
+      console.log("max buy check", res?.tokensbuy > maxBuyTokens, res?.tokensbuy, maxBuyTokens)
+      if (res?.tokensbuy > maxBuyTokens) {
 
         return setAmountError((prevState) => ({
-            ...prevState,
-            error: true,
-            reason: 'max buy exceeded',
+          ...prevState,
+          error: true,
+          reason: 'max buy exceeded',
         }))
         //toast.error("macbut exceeded")
-    }
-    console.log("Max token reserved check",res?.tokensbuy > remaningTokens,res?.tokensbuy , remaningTokens)
-    if (           //3 * 500000 = 150000                   100000
-      res?.tokensbuy> remaningTokens
-    ) {
+      }
+      console.log("Max token reserved check", res?.tokensbuy > remaningTokens, res?.tokensbuy, remaningTokens)
+      if (           //3 * 500000 = 150000                   100000
+        res?.tokensbuy > remaningTokens
+      ) {
         return setAmountError((prevState) => ({
-            ...prevState,
-            error: true,
-            reason: 'Max token reserved reached',
+          ...prevState,
+          error: true,
+          reason: 'Max token reserved reached',
         }))
-       
-    }
-    console.log("user-balanceddd",userBalance?.solBalance,val,val < userBalance?.solBalance)
-    if (val < userBalance?.solBalance) {
+
+      }
+      console.log("user-balanceddd", userBalance?.solBalance, val, val < userBalance?.solBalance)
+      // 1 sol > 4 
+      // 12348 >4 
+      // res // 0.003 >3
+      if (val < userBalance?.solBalance) {
         setSolAmount(val)
         setAmount(val)
+
         setTokenToBuy(res?.tokensbuy)
         setAmountError((prevState) => ({
-            ...prevState,
-            error: false,
-            reason: '',
+          ...prevState,
+          error: false,
+          reason: '',
         }))
-    } else {
-   
+      } else {
+
         setAmountError((prevState) => ({
-            ...prevState,
-            error: true,
-            reason: `you don't have enough sol`,
+          ...prevState,
+          error: true,
+          reason: `you don't have enough sol`,
         }))
+      }
     }
-}
+    else {
+      console.log("max try")
 
-//console.log("amount error",amountError)
+      // setAmount(res?.tokensbuy)
+      if (val > maxBuyTokens) {
+
+        return setAmountError((prevState) => ({
+          ...prevState,
+          error: true,
+          reason: 'max buy exceeded',
+        }))
+        //toast.error("macbut exceeded")
+      }
+      console.log("Max token reserved check", res?.tokensbuy > remaningTokens, res?.tokensbuy, remaningTokens)
+      if (           //3 * 500000 = 150000                   100000
+        val > remaningTokens
+      ) {
+        return setAmountError((prevState) => ({
+          ...prevState,
+          error: true,
+          reason: 'Max token reserved reached',
+        }))
+
+      }
+      console.log("user-balanceddd", userBalance?.solBalance, val, val < userBalance?.solBalance)
+      // 1 sol > 4 
+      // 12348 >4 
+      // res // 0.003 >3
+      if (res?.tokensbuy < userBalance?.solBalance) {
+        setSolAmount(res?.tokensbuy)
+        setAmount(val)
+
+        setTokenToBuy(val)
+        setAmountError((prevState) => ({
+          ...prevState,
+          error: false,
+          reason: '',
+        }))
+      } else {
+
+        setAmountError((prevState) => ({
+          ...prevState,
+          error: true,
+          reason: `you don't have enough sol`,
+        }))
+      }
+    }
 
 
-//get user sol and token balance 
-const getUserBalances = async () => {
-  try {
-    if(!coinData?.token_address){return }
-     
+  }
+
+  //console.log("amount error",amountError)
+  const handleAmountSell = async (val) => {
+    // setAmount(val)
+    const res = await TokenPriceCalculations(
+      coinData?.token_address,
+      val === '' ? 0 : val, !showSOGs
+    )
+    console.log("result", res, !showSOGs)
+
+    // console.log("valss",val, tokenCal?.data?.tokenPer1Sol,maxBuyTokens)
+    //   console.log('called', val * tokenCal?.data?.tokenPer1Sol,userBalance)
+    //                 //3 * 500000 = 150000                   1000000
+
+    if (!showSOGs) {
+      console.log("max buy check", res?.tokensbuy > maxBuyTokens, res?.tokensbuy, maxBuyTokens)
+      if (res?.tokensbuy > maxBuyTokens) {
+
+        return setAmountError((prevState) => ({
+          ...prevState,
+          error: true,
+          reason: 'max buy exceeded',
+        }))
+        //toast.error("macbut exceeded")
+      }
+      console.log("Max token reserved check", res?.tokensbuy > remaningTokens, res?.tokensbuy, remaningTokens)
+      if (           //3 * 500000 = 150000                   100000
+        res?.tokensbuy > remaningTokens
+      ) {
+        return setAmountError((prevState) => ({
+          ...prevState,
+          error: true,
+          reason: 'Max token reserved reached',
+        }))
+
+      }
+      console.log("user-balanceddd", userBalance?.solBalance, val, val < userBalance?.solBalance)
+      // 1 sol > 4 
+      // 12348 >4 
+      // res // 0.003 >3
+      if (val < userBalance?.solBalance) {
+        setSolAmount(val)
+        setAmount(val)
+
+        setTokenToBuy(res?.tokensbuy)
+        setAmountError((prevState) => ({
+          ...prevState,
+          error: false,
+          reason: '',
+        }))
+      } else {
+
+        setAmountError((prevState) => ({
+          ...prevState,
+          error: true,
+          reason: `you don't have enough sol`,
+        }))
+      }
+    }
+    else {
+      console.log("max try")
+
+      // setAmount(res?.tokensbuy)
+      if (val > maxBuyTokens) {
+
+        return setAmountError((prevState) => ({
+          ...prevState,
+          error: true,
+          reason: 'max buy exceeded',
+        }))
+        //toast.error("macbut exceeded")
+      }
+      console.log("Max token reserved check", res?.tokensbuy > remaningTokens, res?.tokensbuy, remaningTokens)
+      if (           //3 * 500000 = 150000                   100000
+        val > remaningTokens
+      ) {
+        return setAmountError((prevState) => ({
+          ...prevState,
+          error: true,
+          reason: 'Max token reserved reached',
+        }))
+
+      }
+      console.log("user-balanceddd", userBalance?.solBalance, val, val < userBalance?.solBalance)
+      // 1 sol > 4 
+      // 12348 >4 
+      // res // 0.003 >3
+      if (res?.tokensbuy < userBalance?.solBalance) {
+        setSolAmount(res?.tokensbuy)
+        setAmount(val)
+
+        setTokenToBuy(val)
+        setAmountError((prevState) => ({
+          ...prevState,
+          error: false,
+          reason: '',
+        }))
+      } else {
+
+        setAmountError((prevState) => ({
+          ...prevState,
+          error: true,
+          reason: `you don't have enough sol`,
+        }))
+      }
+    }
+
+
+  }
+
+  //get user sol and token balance 
+  const getUserBalances = async () => {
+    try {
+      if (!coinData?.token_address) { return }
+
 
       //user-sol-balance
       const balance = await connection.getBalance(walletProvider.publicKey)
@@ -448,86 +628,101 @@ const getUserBalances = async () => {
       const tokenMintAddress = new PublicKey(coinData?.token_address)
 
       const tokenAccounts =
-          await connection.getParsedTokenAccountsByOwner(walletProvider.publicKey, {
-              mint: tokenMintAddress,
-          })
-       console.log('tokens', tokenAccounts)
+        await connection.getParsedTokenAccountsByOwner(walletProvider.publicKey, {
+          mint: tokenMintAddress,
+        })
+      console.log('tokens', tokenAccounts)
       let tokenBalance
       if (tokenAccounts?.value?.length > 0) {
-          tokenBalance =
-              tokenAccounts?.value[0]?.account?.data?.parsed?.info
-                  ?.tokenAmount.uiAmount
-          //console.log('user-token-balance', balance)
+        tokenBalance =
+          tokenAccounts?.value[0]?.account?.data?.parsed?.info
+            ?.tokenAmount.uiAmount
+        //console.log('user-token-balance', balance)
       } else {
-          if (amount !== '') {
-              setAmountError((prevState) => ({
-                  ...prevState,
-                  error: true,
-                  reason: `you don't have enough sol`,
-              }))
-          }
+        if (amount !== '') {
+          setAmountError((prevState) => ({
+            ...prevState,
+            error: true,
+            reason: `you don't have enough sol`,
+          }))
+        }
       }
       //console.log("roken-bal-bal",tokenBalance)
       setUserBalance((prevState) => ({
-          ...prevState,
-          solBalance: balance / LAMPORTS_PER_SOL,
-          tokenBalance: tokenBalance === undefined ? 0 : tokenBalance,
+        ...prevState,
+        solBalance: balance / LAMPORTS_PER_SOL,
+        tokenBalance: tokenBalance === undefined ? 0 : tokenBalance,
       }))
-  } catch (error) {
+    } catch (error) {
       console.log('error while fetching user balance', error)
+    }
   }
-}
-console.log("userBalance",userBalance)
+  console.log("userBalance", userBalance)
+
+
+  useEffect(() => {
+    getUserBalances()
+    if (coinData?.token_address) {
+      remaningAndMaxbuyTokens(coinData?.token_address)
+    }
+  }, [amount, coinData, wallet, tokenToBuy])
+
+
+  // buy sell calculations from the blockcahin-solana
+  // useEffect(() => {
+  //   if (!coinData?.token_address) return
+  //   setTokenCal((prevState) => ({
+  //     ...prevState,
+  //     loading: true,
+  // }))
+  //   // Function to fetch token information
+  //   const fetchTokenInformation = async () => {
+  //     console.log("amountsss",amount)
+  //       try {
+  //           //  console.log("amount from feild",amount)
+  //           const res = await TokenPriceCalculations(
+  //             coinData?.token_address,
+  //               amount === '' ? 0 : amount,
+  //           )
+  //           console.log('res-for-token-calculations', res)
+  //           setTokenCal((prevState) => ({
+  //               ...prevState,
+  //               loading: false,
+  //               data: res,
+  //               success: true,
+  //           }))
+  //       } catch (error) {
+  //           console.log('Error while calculating', error)
+  //           setTokenCal((prevState) => ({
+  //               ...prevState,
+  //               loading: false,
+  //               data: null,
+  //               success: false,
+  //           }))
+  //       }
+  //   }
+
+  //   // Fetch token information initially
+  //   fetchTokenInformation(coinData?.token_address)
+
+  //   // Set up an interval to fetch token information every 5 seconds
+  //   const intervalId = setInterval(fetchTokenInformation, 5000)
+
+  //   // Clear the interval when the component unmounts or when `id` changes
+  //   return () => clearInterval(intervalId)
+  // }, [ amount, coinData?.token_address])
 
 
 
-// buy sell calculations from the blockcahin-solana
-// useEffect(() => {
-//   if (!coinData?.token_address) return
-//   setTokenCal((prevState) => ({
-//     ...prevState,
-//     loading: true,
-// }))
-//   // Function to fetch token information
-//   const fetchTokenInformation = async () => {
-//     console.log("amountsss",amount)
-//       try {
-//           //  console.log("amount from feild",amount)
-//           const res = await TokenPriceCalculations(
-//             coinData?.token_address,
-//               amount === '' ? 0 : amount,
-//           )
-//           console.log('res-for-token-calculations', res)
-//           setTokenCal((prevState) => ({
-//               ...prevState,
-//               loading: false,
-//               data: res,
-//               success: true,
-//           }))
-//       } catch (error) {
-//           console.log('Error while calculating', error)
-//           setTokenCal((prevState) => ({
-//               ...prevState,
-//               loading: false,
-//               data: null,
-//               success: false,
-//           }))
-//       }
-//   }
-  
-//   // Fetch token information initially
-//   fetchTokenInformation(coinData?.token_address)
+  console.log("amountamount", amount, "tokenToBuytokenToBuy", tokenToBuy)
 
-//   // Set up an interval to fetch token information every 5 seconds
-//   const intervalId = setInterval(fetchTokenInformation, 5000)
-
-//   // Clear the interval when the component unmounts or when `id` changes
-//   return () => clearInterval(intervalId)
-// }, [ amount, coinData?.token_address])
-
-
-
-
+  const handleBuyPercentage = (percentage) => {
+    const perctageSet = userBalance?.tokenBalance * (percentage / 100);
+    setAmount(perctageSet);
+    handleAmount(perctageSet)
+    console.log("perctageSet", perctageSet)
+  }
+  // console.log("tokenToBuytokenToBuy", tokenToBuy)
   return (
     <div className="border flex justify-center items-center w-full ">
       <div className="relative w-full border-t-[1px] border-t-[#fff] border-l-[5px] border-l-[#fff] border-r-[2px] border-r-[#353535] border-b-[2px] border-b-[#353535]">
@@ -552,7 +747,7 @@ console.log("userBalance",userBalance)
                         ? "bg-[#F87171] text-white"
                         : "bg-[#1F2937] text-[gray]"
                         }`}
-                      onClick={() => setTradeType("sell")}
+                      onClick={() => { setTradeType("sell"); setShowSOGs(true) }}
                     >
                       Sell
                     </button>
@@ -560,12 +755,16 @@ console.log("userBalance",userBalance)
                   </div>
 
                   <div className="flex justify-between gap-3 px-3 pt-[35px]">
-                    <span
-                      className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
-                      onClick={handleSwitchClick}
-                    >
-                      {showSOGs ? `Switch to ${coinData?.name}` : `Switch to ${blockchainType}`}
-                    </span>
+                    {tradeType === 'buy' ?
+                      <span
+                        className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
+                        onClick={handleSwitchClick}
+                      >
+                        {showSOGs ? `Switch to ${blockchainType}` : `Switch to ${coinData?.name}`}
+                      </span>
+                      :
+                      <span></span>
+                    }
                     <div>
                       <span
                         className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
@@ -583,14 +782,52 @@ console.log("userBalance",userBalance)
                   </div>
 
                   <div className="flex justify-between gap-3 px-3 pt-[15px]">
-                    {!showSOGs && (
-                      <div className="w-full Inter">
-                         
-                        <div className={` ${
-                                    amountError.error
-                                        ? 'border border-red-500'
-                                        : 'border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'
-                                } w-full `}>
+                    {/* {!showSOGs && */}
+                    <div className="w-full Inter">
+
+                      {tradeType === 'buy' ?
+                        <div className={`
+                          // ? 'border border-red-500'
+                          'border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'
+                           w-full `}>
+                          <div className="flex w-full justify-between border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]">
+                            <input
+                              type="number"
+                              name="amount"
+                              value={amount}
+                              //  value={solAmount : }
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (!value || Number(value) >= 0) {
+                                  // setAmount(value);
+                                  handleAmount(value)
+                                }
+                              }}
+                              className="w-full px-2 py-3 pr-4"
+                            />
+
+                            <div className="w-fit flex items-center gap-1 bg-white">
+                              <span className="whitespace-nowrap text-black font-semibold text-sm SegoeUi">
+                                {!showSOGs ? blockchainType : coinData?.name}
+                                {/* {blockchainType === "ETH" ? "ETH" : "SOL"} */}
+                              </span>
+                              <img
+                                src={
+                                  showSOGs
+                                    ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`
+                                    : solImg
+                                }
+                                className="w-[30px] mr-7 rounded-full"
+                              />
+                            </div>
+                          </div>
+
+
+                        </div>
+                        :
+                        <div className={`
+                          'border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'
+                           w-full `}>
                           <div className="flex w-full justify-between border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]">
                             <input
                               type="number"
@@ -599,39 +836,75 @@ console.log("userBalance",userBalance)
                               onChange={(e) => {
                                 const value = e.target.value;
                                 if (!value || Number(value) >= 0) {
-                                 // setAmount(value);
+                                  // setAmount(value);
                                   handleAmount(value)
                                 }
                               }}
                               className="w-full px-2 py-3 pr-4"
                             />
+
                             <div className="w-fit flex items-center gap-1 bg-white">
                               <span className="whitespace-nowrap text-black font-semibold text-sm SegoeUi">
                                 {coinData?.name}
-                                {/* {blockchainType === "ETH" ? "ETH" : "SOL"} */}
                               </span>
                               <img
-                                // src={blockchainType === "ETH" ? ethImg : solImg}
                                 src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`}
                                 className="w-[30px] mr-7 rounded-full"
-                              // alt={blockchainType === "ETH" ? "ETH" : "SOL"}
                               />
                             </div>
                           </div>
 
                         </div>
-                       {tokenToBuy!='' && tokenToBuy!='0' && tokenToBuy!=0&& <p>{tokenToBuy}</p>}
-
-                        {amountError.error&& <p className="text-red-600">{amountError.reason}</p>}
-                      </div>
-                    )}
+                      }
+                    </div>
+                    {/* } */}
                   </div>
                 </div>
+
+                {showSOGs && tradeType === 'buy' &&
+                  <div className='flex justify-start items-center gap-[3px] mt-3 ml-3'>
+                    <span onClick={() => { setAmount(''); handleAmount('') }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                      reset
+                    </span>
+                    <span onClick={() => { setAmount(0.1); handleAmount(0.1) }} className='Inter whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                      0.1 {blockchainType}
+                    </span>
+                    <span onClick={() => { setAmount(0.5); handleAmount(0.5) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                      0.5 {blockchainType}
+                    </span>
+                    <span onClick={() => { setAmount(1); handleAmount(1) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                      1 {blockchainType}
+                    </span>
+                  </div>
+                }
+                {tradeType === 'sell' &&
+                  <div className='flex justify-start items-center gap-[3px] mt-3 ml-3'>
+                    <span onClick={() => { setAmount(''); handleBuyPercentage('') }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                      reset
+                    </span>
+                    <span onClick={() => { handleBuyPercentage(25) }} className='Inter whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                      25 %
+                    </span>
+                    <span onClick={() => { handleBuyPercentage(50) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                      50 %
+                    </span>
+                    <span onClick={() => { handleBuyPercentage(75) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                      75 %
+                    </span>
+                    <span onClick={() => { handleBuyPercentage(100) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                      100 %
+                    </span>
+                  </div>
+                }
+
+                {tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && <p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? blockchainType : coinData?.name}</p>}
+
+                {amountError.error && <p className="text-red-700 mt-2 ml-3">{amountError.reason}</p>}
 
                 <button
                   className="themeBtn Inter w-fit mt-5 mx-auto"
                   onClick={handleTrade}
-                  disabled={isLoading}
+                  disabled={isLoading || amountError.error}
                 >
                   <span>{isLoading ? "Processing..." : "Trade"}</span>
                 </button>
@@ -640,7 +913,7 @@ console.log("userBalance",userBalance)
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

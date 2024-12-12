@@ -21,24 +21,28 @@ const TaskBar = () => {
             try {
                 const viewUserprofileData = await viewUserprofile();
 
-                console.log("viewUserprofileData", viewUserprofileData)
-                setUserProfileData(viewUserprofileData?.data)
+                console.log("viewUserprofileData", viewUserprofileData);
+                setUserProfileData(viewUserprofileData?.data);
             } catch (error) {
-                console.log("viewUserprofileData error", error)
+                console.log("viewUserprofileData error", error);
             }
-        }
+        };
 
         fetchMainUserProfile();
     }, []);
 
-    console.log("userProfileDatauserProfileDatas", userProfileData)
+    
+    useEffect(() => {
+        console.log("userProfileData has changed:", userProfileData);
+    }, [userProfileData]);
+
 
 
     useEffect(() => {
         updateTime();
         const intervalId = setInterval(updateTime, 60000);
         return () => clearInterval(intervalId);
-    }, [userProfileData]);
+    }, []);
 
     const navLinkClass = (isActive) =>
         `SegoeUi text-xs overflow-hidden whitespace-nowrap text-ellipsis text-white flex items-center gap-2 w-full min-w-[120px] ${isActive ? 'taskActive' : 'taskActiveNot'}`;
@@ -87,7 +91,7 @@ const TaskBar = () => {
                                 👁️ Reveals
                             </NavLink>
                             <NavLink
-                                to={`/userprofile/${userProfileData._id}`}
+                                to={`/userprofile/${userProfileData?._id}`}
                                 className={({ isActive }) => navLinkClass(isActive)}
                                 onClick={() => setIsDropdownOpen(false)}
                             >

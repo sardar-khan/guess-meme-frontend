@@ -62,6 +62,8 @@ const Threads = () => {
         });
     };
 
+   
+
     return (
         <div className='py-10 px-4 !pb-[100px] md:p-10'>
             <Link to='/' className='flex items-center gap-2 w-fit'>

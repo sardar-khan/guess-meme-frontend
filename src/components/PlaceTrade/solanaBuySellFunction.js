@@ -4,14 +4,15 @@
 // const { Buy_createTransactionInstruction, b, lx_global } = require("./utils");
 // const { Buy_createTransactionInstruction, b, lx_global } = require("./utils");
 
-import { Keypair, PublicKey, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
+import { Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 // import { connection, feeRecipient, IDL1, mintaddy, SELLSLIPPAGE, wallet } from "./config";
-import { connection, feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
+import { connection, provider,feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
 import { getAccount, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import { Buy_createTransactionInstruction, b, fetchLiquidityPool, lx_global } from "./utils";
 import BN from "bn.js";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
 import { Program } from "@coral-xyz/anchor";
+import * as buffer from 'buffer'
 
 
 
@@ -39,7 +40,8 @@ function decodeLiquidityPool(data) {
 
 async function buy(walletProvider, amount, mintaddy) {
     console.log("amount for sol", Number(amount) * 10 ** 6);
-
+    const maxSlippage='1'
+    const buy_value =maxSlippage?.toString()
     console.log(walletProvider, "wallet Provider");
     const programId = new PublicKey("7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh");
 
@@ -82,7 +84,7 @@ async function buy(walletProvider, amount, mintaddy) {
         );
     }
 
-    const a = new BN(Math.floor(1e9 * parseFloat(amount)));
+    const a = new BN(Math.floor(1e9 * parseFloat(buy_value)));
 
     let o = {
         solAmount: a,
@@ -247,6 +249,334 @@ async function sell(walletProvider) {
     console.log("Transaction signature", signature);
 }
 
+const TokenPriceCalculations = async (taddress, amount , isSolToToken ) => {
+
+    
+    window.Buffer = buffer.Buffer
+    const tokenAddress = new PublicKey(taddress)
+            const programId = new PublicKey(
+            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
+        )
+       
+        const program = new Program(IDL1, programId, provider)
+    const data = await retrieveTokenInfo(program, programId, tokenAddress);
+    
+    const virtualSolReserves = BigInt(data?.virtualSolReserves);
+    const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
+
+    const k = virtualSolReserves * virtualTokenReserves;
+
+    if(isSolToToken){
+    const oneSOLInLamports =BigInt(Math.floor(amount * LAMPORTS_PER_SOL));
+console.log("sol in lamports",oneSOLInLamports);
+    // Constant product (k)
+   
+    // Tokens per 1 SOL
+    const buyTokensAgainstSol = Number(
+        virtualTokenReserves - (k / (virtualSolReserves + oneSOLInLamports))
+    );
+    const sellTokensAgainstSol = Number(
+        (k / (virtualSolReserves - oneSOLInLamports)) - virtualTokenReserves
+    );
+
+    // Buy price in SOL
+    const tokenPriceInLamport = (oneSOLInLamports * virtualSolReserves) / virtualTokenReserves;
+    const tokenPriceInSol = Number(tokenPriceInLamport) / 1_000_000_000;
+
+    // Sell price in SOL
+    const tokenPriceInLamportSell = (oneSOLInLamports * virtualSolReserves) / (virtualTokenReserves + oneSOLInLamports);
+    const tokenPriceInSolSell = Number(tokenPriceInLamportSell) / 1_000_000_000;
+    const    tokensbuy = buyTokensAgainstSol/1000000
+    const tokensell = sellTokensAgainstSol/1000000
+
+    console.log({
+        tokenPriceInSol,
+        sellTokenPriceInSol: tokenPriceInSolSell,
+        tokensbuy,
+        tokensell
+    });
+
+    return {
+        tokenPriceInSol,
+        sellTokenPriceInSol: tokenPriceInSolSell,
+        tokensbuy,
+        tokensell
+    };
+}else{
+    const tokenAmountBN = BigInt(Math.floor(amount * 1_000_000)); // Assuming 6 decimal tokens
+        console.log("Tokens in smallest unit:", tokenAmountBN);
+
+        // SOL price for given tokens
+        const buySolAgainstTokens =Math.abs( Number(
+            virtualSolReserves - (k / (virtualTokenReserves - tokenAmountBN))
+        ));
+        const sellSolAgainstTokens = Math.abs(Number(
+            (k / (virtualTokenReserves + tokenAmountBN)) - virtualSolReserves
+        ));
+
+        return {
+            tokensbuy: buySolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
+            tokensell: sellSolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
+        };
+}
+};
 
 
-export { buy, sell }
+
+//  const TokenPriceCalculations = async (taddress, amount) => {
+//     try {
+//         console.log("token calculations",taddress)
+//         const tokenamt = tokenToSmallestUnit(parseInt(amount), 6)
+//         console.log("ammunt",tokenamt);
+
+//         window.Buffer = buffer.Buffer
+      
+//         //console.log('connection', connection)
+
+//         const programId = new PublicKey(
+//             '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
+//         )
+       
+//         const program = new Program(IDL1, programId, provider)
+//         const tokenAddress = new PublicKey(taddress)
+//         console.log("info-usessss",program,tokenAddress,programId)
+//         const data = await retrieveTokenInfo(program, programId, tokenAddress)
+//         console.log("dataklklkl",data)
+
+//         const virtualSolReserves = BigInt(data?.virtualSolReserves);
+//         const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
+//         console.log("datavrual sols",virtualSolReserves,virtualTokenReserves)
+//         const tokenAmountBN = BigInt(tokenamt);
+
+//          // Buy price calculation
+//          const tokenPriceInLamport = (
+//             (tokenAmountBN * virtualSolReserves) / 
+//         (virtualTokenReserves - tokenAmountBN)
+//         );
+        
+//         // Sell price calculation
+//         const tokenPriceInLamportSell = (
+//             (tokenAmountBN * virtualSolReserves) / 
+//             (virtualTokenReserves + tokenAmountBN)
+//         );
+
+//         // Convert to SOL
+//         const tokenPriceInSol = convertScientificToDecimal(
+//             Number(tokenPriceInLamport) / 1_000_000_000
+//         );
+//         const tokenPriceInSolSell = convertScientificToDecimal(
+//             Number(tokenPriceInLamportSell) / 1_000_000_000
+//         );
+//         const LAMPORTS_PER_SOL = 1_000_000;
+//         const oneSOLTokenAmount = BigInt(LAMPORTS_PER_SOL);
+//         console.log("oneSOLTokenAmount",oneSOLTokenAmount,virtualSolReserves,virtualTokenReserves,oneSOLTokenAmount)
+//         const consttokenPriceInLamport = (
+//            parseFloat(oneSOLTokenAmount * virtualSolReserves) / 
+//             parseFloat(virtualTokenReserves + oneSOLTokenAmount)
+//         );
+      
+//         const consttokenPriceInLamportSell = (
+//             (oneSOLTokenAmount * virtualSolReserves) / 
+//             (virtualTokenReserves - oneSOLTokenAmount)
+//         );
+        
+//         const consttokenPriceInSol = convertScientificToDecimal(
+//             parseFloat(consttokenPriceInLamport) / 1_000_000_000
+//         );
+//         const consttokenPriceInSolSell = convertScientificToDecimal(
+//             Number(consttokenPriceInLamportSell) / 1_000_000_000
+//         );
+
+//         const jkjkj ={
+//             tokenPriceInSol: tokenPriceInSol,
+//             sellTokenPriceInSol: tokenPriceInSolSell,
+//             onetokenPriceInSol: consttokenPriceInSol,
+//             sellTokenPer1Sol: consttokenPriceInSolSell,
+//             tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
+//         }
+
+//         console.log("hallloojkjkjk",consttokenPriceInSol)
+
+//         return {
+//             tokenPriceInSol: tokenPriceInSol,
+//             sellTokenPriceInSol: tokenPriceInSolSell,
+//             onetokenPriceInSol: consttokenPriceInSol,
+//             sellTokenPer1Sol: consttokenPriceInSolSell,
+//             tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
+//         };
+//         //token price buy
+//             // const tokenPriceInLamport =
+//             //     parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
+//             //     parseFloat(parseFloat(data?.virtualTokenReserves) - tokenamt)
+//             // const tokenPriceInLamportSell =
+//             //     parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
+//             //     parseFloat(parseFloat(data?.virtualTokenReserves) + tokenamt)
+//         // const tokenPriceInSol = convertScientificToDecimal(
+//         //     parseFloat(tokenPriceInLamport / 1000000000),
+//         // )
+//         // const tokenPriceInSolSell = convertScientificToDecimal(
+//         //     parseFloat(tokenPriceInLamportSell / 1000000000),
+//         // )
+
+//         // token per 1 SOL calculations
+//         // const consttokenPriceInLamport =
+//         //     parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
+//         //     parseFloat(parseFloat(data?.virtualTokenReserves) + 1000000)
+//         // const consttokenPriceInLamportSell =
+//         //     parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
+//         //     parseFloat(parseFloat(data?.virtualTokenReserves) - 1000000)
+//         // console.log('token-price-in-lamport', tokenPriceInLamport)
+//         // const consttokenPriceInSol = convertScientificToDecimal(
+//         //     parseFloat(consttokenPriceInLamport / 1000000000),
+//         // )
+//         // const consttokenPriceInSolSell = convertScientificToDecimal(
+//         //     parseFloat(consttokenPriceInLamportSell / 1000000000),
+//         // )
+//         // return {
+//         //     //tokenInfo: data,
+//         //     tokenPriceInSol: tokenPriceInSol,
+//         //     sellTokenPriceInSol: tokenPriceInSolSell,
+//         //     onetokenPriceInSol: consttokenPriceInSol,
+//         //     sellTokenPer1Sol: consttokenPriceInSolSell,
+//         //     tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
+
+//         //     //solPer1Token:parseFloat(1/tokenAgainstSol)
+//         // }
+//     } catch (error) {
+//         console.log('error while fetching sell token price', error)
+//     }
+// }
+
+const reteriveTokenDetails = async (walletProvider, taddress) => {
+    try {
+        window.Buffer = buffer.Buffer
+        console.log("provider",walletProvider);
+        const programId = new PublicKey(
+            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
+        )
+        const program = new Program(IDL1, programId, provider)
+        console.log("program",program.account.bondingCurve);
+        const tokenAddress = new PublicKey(taddress)
+        console.log("tokenAddress",tokenAddress);
+        const [C] = PublicKey.findProgramAddressSync(
+            [Buffer.from('bonding-curve'), tokenAddress.toBuffer()],
+            programId,
+        )
+        console.log("c",C)
+        
+
+        const r = await program.account.bondingCurve.fetch(C)
+        console.log("r",r)
+
+        const {
+            virtualTokenReserves,
+            virtualSolReserves,
+            realTokenReserves,
+            tokenTotalSupply,
+            complete = false, // Default value if not present
+        } = r
+        
+
+        // Convert BN objects to strings
+        const virtualTokenReservesStr = virtualTokenReserves.toString()
+        const virtualSolReservesStr = virtualSolReserves.toString()
+        const realTokenReservesStr = realTokenReserves.toString()
+        const tokenTotalSupplyStr = tokenTotalSupply.toString()
+
+        // Logging the specific properties in a formatted string
+        const formattedOutput = {
+            virtualTokenReserves: virtualTokenReservesStr,
+            virtualSolReserves: virtualSolReservesStr,
+            realTokenReserves: realTokenReservesStr,
+            tokenTotalSupply: tokenTotalSupplyStr,
+            remainingTokens: parseFloat(realTokenReservesStr / 1000000),
+            totalTokens: parseFloat(tokenTotalSupplyStr / 1000000),
+            complete: complete,
+        }
+
+        console.log('virtual rese', formattedOutput)
+        return formattedOutput
+    } catch (error) {
+        console.log("error while retreving token details", error)
+    }
+
+}
+
+ const retrieveTokenInfo = async (program, programId, mintaddy) => {
+   
+    window.Buffer = buffer.Buffer
+    const [C] = PublicKey.findProgramAddressSync(
+        [Buffer.from('bonding-curve'), mintaddy.toBuffer()],
+        programId,
+    )
+
+    const r = await program.account.bondingCurve.fetch(C)
+console.log("rrrrrr",r)
+    const {
+        virtualTokenReserves,
+        virtualSolReserves,
+        realTokenReserves,
+        tokenTotalSupply,
+        complete = false, // Default value if not present
+    } = r
+
+    // Convert BN objects to strings
+    const virtualTokenReservesStr = virtualTokenReserves.toString()
+    const virtualSolReservesStr = virtualSolReserves.toString()
+    const realTokenReservesStr = realTokenReserves.toString()
+    const tokenTotalSupplyStr = tokenTotalSupply.toString()
+
+    // Logging the specific properties in a formatted string
+    const formattedOutput = {
+        virtualTokenReserves: virtualTokenReservesStr,
+        virtualSolReserves: virtualSolReservesStr,
+        realTokenReserves: realTokenReservesStr,
+        tokenTotalSupply: tokenTotalSupplyStr,
+        remainingTokens: parseFloat(realTokenReservesStr / 1000000),
+        totalTokens: parseFloat(tokenTotalSupplyStr / 1000000),
+        complete: complete,
+    }
+
+    console.log('virtual reseves', formattedOutput)
+    return formattedOutput
+}
+
+
+function convertScientificToDecimal(scientificNotation) {
+    // Handle non-numeric or null inputs
+    if (scientificNotation == null || isNaN(scientificNotation)) {
+        return scientificNotation;
+    }
+
+    // Convert scientific notation to string
+    let scientificString = scientificNotation.toString();
+
+    // Split the string into coefficient and exponent parts
+    let parts = scientificString.toLowerCase().split('e');
+    let coefficient = parts[0];
+    let exponent = parts[1] ? parseInt(parts[1], 10) : 0;
+
+    // If there's no exponent, return the original scientific notation string
+    if (!exponent) return scientificString;
+
+    // Adjust coefficient length to match the required precision
+    let precision = Math.max(0, -exponent - coefficient.length + 2);
+    let adjustedCoefficient = (
+        exponent < 0
+            ? '0.' + '0'.repeat(Math.abs(exponent) - 1) + coefficient.replace('.', '')
+            : coefficient.slice(0, exponent + 1) +
+              (coefficient.length > exponent + 1 ? 
+                  '.' + coefficient.slice(exponent + 1) : '')
+    ).replace(/\.?0+$/, '');
+
+    // Return the adjusted coefficient with sign
+    return (scientificNotation < 0 ? '-' : '') + adjustedCoefficient;
+}
+// const convertScientificToDecimal = (num) => {
+//     return num.toLocaleString('fullwide', { useGrouping: false });
+// };
+function tokenToSmallestUnit(tokenAmount, decimals) {
+    return tokenAmount * Math.pow(10, decimals)
+}
+
+export { buy, sell, reteriveTokenDetails,TokenPriceCalculations }

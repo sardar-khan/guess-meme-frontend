@@ -369,7 +369,7 @@ const PlaceTrade = ({ coinData }) => {
     setAmount(val)
     const res = await TokenPriceCalculations(
       coinData?.token_address,
-      val === '' ? 0 : val,false
+      val === '' ? 0 : val,true
                 )
                 console.log("result",res)
                 
@@ -462,6 +462,7 @@ const getUserBalances = async () => {
       console.log('error while fetching user balance', error)
   }
 }
+console.log("userBalance",userBalance)
 
 
 

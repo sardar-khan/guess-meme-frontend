@@ -28,11 +28,12 @@ import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 const PlaceTrade = ({ coinData }) => {
   console.log("placeTrade COin data", coinData)
   console.log("placeTrade COin data token_address", coinData?.token_address)
+  const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
   // const tokenAddress_mint = coinData?.token_address ? new PublicKey(coinData.token_address) : null;
   let tokenAddress_mint = null;
 
-  if (coinData?.token_address) {
+  if (coinData?.token_address && blockchainType === 'SOL') {
     try {
       tokenAddress_mint = new PublicKey(coinData?.token_address);
     } catch (error) {
@@ -84,7 +85,6 @@ const PlaceTrade = ({ coinData }) => {
     hash: hash,
   });
 
-  const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
   // console.log("coinDataPlaceTrade", coinData?.token_address)
   // console.log("coinDataPlaceTrade data", coinData)
@@ -210,7 +210,7 @@ const PlaceTrade = ({ coinData }) => {
             type: tradeType,
             transaction_hash: buySuccess,
           });
-
+          console.log("apiResponse", apiResponse)
           if (apiResponse?.status === 201) {
             toast.success(`Transction Successfull: ${buySuccess}`)
             // toast.success(
@@ -295,7 +295,7 @@ const PlaceTrade = ({ coinData }) => {
             transaction_hash: response?.transactionHash
           });
 
-          if (apiResponse?.status === 200) {
+          if (apiResponse?.status === 201) {
             toast.success(
               `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
             );
@@ -313,7 +313,7 @@ const PlaceTrade = ({ coinData }) => {
       }
 
       else if (blockchainType === "ETH" && coinData?.status === 'created' && tradeType === 'buy') {
-
+        console.log("ETH ****** created ****** buy")
         let deductETH = await handleLaunchTokenE();
         console.log("deductETH", deductETH)
         if (deductETH) {
@@ -730,11 +730,15 @@ const PlaceTrade = ({ coinData }) => {
                               //  value={solAmount : }
                               onChange={(e) => {
                                 const value = e.target.value;
-                                if (!value || Number(value) >= 0) {
-                                  // setAmount(value);
-                                  handleAmount(value)
+                                if (blockchainType === 'SOL') {
+                                  if (!value || Number(value) >= 0) {
+                                    handleAmount(value);
+                                  }
+                                } else {
+                                  setAmount(value);
                                 }
                               }}
+
                               className="w-full px-2 py-3 pr-4"
                             />
 
@@ -747,7 +751,7 @@ const PlaceTrade = ({ coinData }) => {
                                 src={
                                   showSOGs
                                     ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`
-                                    : solImg
+                                    : (blockchainType === 'SOL' ? solImg : ethImg)
                                 }
                                 className="w-[30px] mr-7 rounded-full"
                               />

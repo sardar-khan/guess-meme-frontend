@@ -4,14 +4,14 @@
 // const { Buy_createTransactionInstruction, b, lx_global } = require("./utils");
 // const { Buy_createTransactionInstruction, b, lx_global } = require("./utils");
 
-import { Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
+import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction, clusterApiUrl, sendAndConfirmTransaction } from "@solana/web3.js";
 // import { connection, feeRecipient, IDL1, mintaddy, SELLSLIPPAGE, wallet } from "./config";
-import { connection, provider, feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
+import { connection, provider,feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
 import { getAccount, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import { Buy_createTransactionInstruction, b, fetchLiquidityPool, lx_global } from "./utils";
 import BN from "bn.js";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
-import { Program } from "@coral-xyz/anchor";
+import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as buffer from 'buffer'
 
 
@@ -40,8 +40,8 @@ function decodeLiquidityPool(data) {
 
 async function buy(walletProvider, amount, mintaddy) {
     console.log("amount for sol", Number(amount) * 10 ** 6);
-    const maxSlippage = '1'
-    const buy_value = maxSlippage?.toString()
+    const maxSlippage='1'
+    const buy_value =maxSlippage?.toString()
     console.log(walletProvider, "wallet Provider");
     const programId = new PublicKey("7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh");
 
@@ -150,7 +150,7 @@ async function buy(walletProvider, amount, mintaddy) {
 }
 
 
-async function sell(walletProvider, amount,mintaddy) {
+async function sellcoin(walletProvider, amount, mintaddy) {
     const totalvaluenum = 50;
     let sell_value = amount.toString();
     const programId = new PublicKey("7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh");
@@ -192,18 +192,22 @@ async function sell(walletProvider, amount,mintaddy) {
     };
 
     async function sellQuote(e) {
-        let liquidityPool = await fetchLiquidityPool(C.toString(), program)
+        let liquidityPool = await fetchLiquidityPool(C, program);
+        console.log(liquidityPool.data, "pool")
+        const decodedPool = decodeLiquidityPool(liquidityPool.data);
+        console.log(decodedPool, "Decoded Liquidity Pool", decodedPool.virtualSolReserves.toString(), decodedPool.virtualTokenReserves.toString());
 
-        let y = (e) => e.mul(k.feeBasisPoints).div(new BN(1e4))
+
+        let y = (e) => e.mul(k.feeBasisPoints).div(new BN(1e4));
         // if (e.eq(new BN(0)) || !sellQuote) return new BN(0);
 
         let a = e
-            .mul(liquidityPool.virtualSolReserves)
-            .div(liquidityPool.virtualTokenReserves.add(e))
+            .mul(decodedPool.virtualSolReserves)
+            .div(decodedPool.virtualTokenReserves.add(e));
 
-        let r = y(a)
+        let r = y(a);
 
-        return a.sub(r)
+        return a.sub(r);
     }
 
     let el = new BN(Math.floor(parseFloat(sell_value) || 0).toString()).mul(
@@ -245,194 +249,222 @@ async function sell(walletProvider, amount,mintaddy) {
     console.log("Transaction signature", signature);
 }
 
-//  const sellCoin = async (
-//     wallet.
-//     tokenAmount,
-//     taddress,
-// ) => {
-//     try {
-//         window.Buffer = buffer.Buffer
+ const sell = async (
+    walletProvider,
+    tokenAmount,
+    taddress,
+    wallet,
+    maxSlippage,
+    priorityFree,
+) => {
+    try {
+        window.Buffer = buffer.Buffer
+        if (tokenAmount <= 0) {
+            return {
+                error: 'Please enter a valid amount!',
+                data: null,
+                success: false,
+            }
+        }
+        if (!taddress) {
+            return {
+                error: 'Token address is missing!',
+                data: null,
+                success: false,
+            }
+        }
+        const SELLSLIPPAGE = '10'
+        const totalvaluenum = tokenAmount
+        let sell_value = totalvaluenum.toString()
+
+        console.log('Owner balance: ' + sell_value)
+        const connection = new Connection(
+            clusterApiUrl('devnet', true),
+            'confirmed',
+        )
+        console.log('connection', connection)
+        const mintaddy = new PublicKey(taddress)
+
+        const programId = new PublicKey(
+            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
+        )
+        const feeRecipient = new PublicKey(
+            'GTwY38pfmivyecwZtevaT14N3WDHMQebrrWjt2i48E29',
+        )
+        const provider = new AnchorProvider(connection, walletProvider, {
+            commitment: 'confirmed',
+        })
+        const program = new Program(IDL1, programId, provider)
+
+        const [S] = PublicKey.findProgramAddressSync(
+            [Buffer.from('mint-authority')],
+            programId,
+        )
+        const [C] = PublicKey.findProgramAddressSync(
+            [Buffer.from('bonding-curve'), mintaddy.toBuffer()],
+            programId,
+        )
+
+        console.log('Mint authority: ' + S.toBase58())
+
+        console.log('Bonding curve: ' + C.toBase58())
+
+        const B = b(mintaddy, C, !0)
+
+        const MPL_TOKEN_METADATA_PROGRAM_ID =
+            'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+
+        const E = new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID)
+        const [O] = PublicKey.findProgramAddressSync(
+            [Buffer.from('global')],
+            programId,
+        )
+
+        const r = b(mintaddy, walletProvider.publicKey, !1)
+
+        let a = new BN(0)
+        let v = 0
+        let j = SELLSLIPPAGE // slippage
+        let k = {
+            feeBasisPoints: new BN(0),
+        }
+
+        async function sellQuote(e) {
+            let liquidityPool = await fetchLiquidityPool(C.toString(), program)
+
+            let y = (e) => e.mul(k.feeBasisPoints).div(new BN(1e4))
+            // if (e.eq(new BN(0)) || !sellQuote) return new BN(0);
+
+            let a = e
+                .mul(liquidityPool.virtualSolReserves)
+                .div(liquidityPool.virtualTokenReserves.add(e))
+
+            let r = y(a)
+
+            return a.sub(r)
+        }
+
+        let el = new BN(Math.floor(parseFloat(sell_value) || 0).toString()).mul(
+            new BN('1000000'),
+        )
+
+        a = await sellQuote(el)
+        // console.log(el.toNumber(), a.toNumber())
+
+        let total = a.sub(a.mul(new BN(Math.floor(10 * j))).div(new BN(1e3)))
+
+        console.log(total)
+
+        let sellTx = await program.methods
+            .sell(el, total)
+            .accounts({
+                global: O,
+                feeRecipient: feeRecipient,
+                mint: mintaddy,
+                bondingCurve: C,
+                associatedBondingCurve: B,
+                associatedUser: r,
+                user: walletProvider.publicKey,
+                systemProgram: new PublicKey(
+                    '11111111111111111111111111111111',
+                ),
+                tokenProgram: new PublicKey(
+                    'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+                ),
+                rent: new PublicKey(
+                    'SysvarRent111111111111111111111111111111111',
+                ),
+            })
+            .transaction();
+            sellTx.feePayer = walletProvider.publicKey;
+            sellTx.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
         
-//         const SELLSLIPPAGE = 10
-//         const totalvaluenum = tokenAmount
-//         let sell_value = totalvaluenum.toString()
+            const signature = await walletProvider.signAndSendTransaction(sellTx);
+        console.log('Sell transaction signature: ', sellTx)
+        return {
+            error: false,
+            data: sellTx,
+            success: true,
+        }
+    } catch (error) {
+        console.log('error while selling tokens', error)
+        return {
+            error: error.message,
+            data: null,
+            success: false,
+        }
+    }
+}
 
-//         console.log('Owner balance: ' + sell_value)
-//         const connection = new web3.Connection(
-//             web3.clusterApiUrl('devnet', true),
-//             'confirmed',
-//         )
-//         console.log('connection', connection)
-//         const mintaddy = new web3.PublicKey(taddress)
+async function fetchLiquidityPool1(pda, program) {
+    try {
+        const liquidityPool = await program.account.someAccountType.fetch(pda);
+        return liquidityPool;
+    } catch (error) {
+        console.error('Error fetching liquidity pool:', error);
+        throw new Error('Liquidity pool account not found or is not initialized.');
+    }
+}
 
-//         const programId = new web3.PublicKey(
-//             'hp3TJUpe3y1KX9h3UYEpE4NgccMTt58fEN1VgxYDMNX',
-//         )
-//         const feeRecipient = new web3.PublicKey(
-//             'GTwY38pfmivyecwZtevaT14N3WDHMQebrrWjt2i48E29',
-//         )
-//         const provider = new AnchorProvider(connection, wallet, {
-//             commitment: 'confirmed',
-//         })
-//         const program = new Program(idl, programId, provider)
+const TokenPriceCalculations = async (taddress, amount , isSolToToken ) => {
 
-//         const [S] = web3.PublicKey.findProgramAddressSync(
-//             [Buffer.from('mint-authority')],
-//             programId,
-//         )
-//         const [C] = web3.PublicKey.findProgramAddressSync(
-//             [Buffer.from('bonding-curve'), mintaddy.toBuffer()],
-//             programId,
-//         )
-
-//         console.log('Mint authority: ' + S.toBase58())
-
-//         console.log('Bonding curve: ' + C.toBase58())
-
-//         const B = b(mintaddy, C, !0)
-
-//         const MPL_TOKEN_METADATA_PROGRAM_ID =
-//             'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
-
-//         const E = new web3.PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID)
-//         const [O] = web3.PublicKey.findProgramAddressSync(
-//             [Buffer.from('global')],
-//             programId,
-//         )
-
-//         const r = b(mintaddy, wallet.publicKey, !1)
-
-//         let a = new BN(0)
-//         let v = 0
-//         let j = SELLSLIPPAGE // slippage
-//         let k = {
-//             feeBasisPoints: new BN(0),
-//         }
-
-//         async function sellQuote(e) {
-//             let liquidityPool = await fetchLiquidityPool(C.toString(), program)
-
-//             let y = (e) => e.mul(k.feeBasisPoints).div(new BN(1e4))
-//             // if (e.eq(new BN(0)) || !sellQuote) return new BN(0);
-
-//             let a = e
-//                 .mul(liquidityPool.virtualSolReserves)
-//                 .div(liquidityPool.virtualTokenReserves.add(e))
-
-//             let r = y(a)
-
-//             return a.sub(r)
-//         }
-
-//         let el = new BN(Math.floor(parseFloat(sell_value) || 0).toString()).mul(
-//             new BN('1000000'),
-//         )
-
-//         a = await sellQuote(el)
-//         // console.log(el.toNumber(), a.toNumber())
-
-//         let total = a.sub(a.mul(new BN(Math.floor(10 * j))).div(new BN(1e3)))
-
-//         console.log(total)
-
-//         let sellTx = await program.methods
-//             .sell(el, total)
-//             .accounts({
-//                 global: O,
-//                 feeRecipient: feeRecipient,
-//                 mint: mintaddy,
-//                 bondingCurve: C,
-//                 associatedBondingCurve: B,
-//                 associatedUser: r,
-//                 user: wallet.publicKey,
-//                 systemProgram: new web3.PublicKey(
-//                     '11111111111111111111111111111111',
-//                 ),
-//                 tokenProgram: new web3.PublicKey(
-//                     'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-//                 ),
-//                 rent: new web3.PublicKey(
-//                     'SysvarRent111111111111111111111111111111111',
-//                 ),
-//             })
-//             .rpc()
-
-//         console.log('Sell transaction signature: ', sellTx)
-//         return {
-//             error: false,
-//             data: sellTx,
-//             success: true,
-//         }
-//     } catch (error) {
-//         console.log('error while selling tokens', error)
-//         return {
-//             error: error.message,
-//             data: null,
-//             success: false,
-//         }
-//     }
-// }
-
-
-const TokenPriceCalculations = async (taddress, amount, isSolToToken) => {
-
-
+    
     window.Buffer = buffer.Buffer
     const tokenAddress = new PublicKey(taddress)
-    const programId = new PublicKey(
-        '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
-    )
-
-    const program = new Program(IDL1, programId, provider)
+            const programId = new PublicKey(
+            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
+        )
+       
+        const program = new Program(IDL1, programId, provider)
     const data = await retrieveTokenInfo(program, programId, tokenAddress);
-
+    
     const virtualSolReserves = BigInt(data?.virtualSolReserves);
     const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
 
     const k = virtualSolReserves * virtualTokenReserves;
 
-    if (isSolToToken) {
-        const oneSOLInLamports = BigInt(Math.floor(amount * LAMPORTS_PER_SOL));
-        console.log("sol in lamports", oneSOLInLamports);
-        // Constant product (k)
+    if(isSolToToken){
+    const oneSOLInLamports =BigInt(Math.floor(amount * LAMPORTS_PER_SOL));
+console.log("sol in lamports",oneSOLInLamports);
+    // Constant product (k)
+   
+    // Tokens per 1 SOL
+    const buyTokensAgainstSol = Number(
+        virtualTokenReserves - (k / (virtualSolReserves + oneSOLInLamports))
+    );
+    const sellTokensAgainstSol = Number(        
+        (k / (virtualSolReserves - oneSOLInLamports)) - virtualTokenReserves
+    );
 
-        // Tokens per 1 SOL
-        const buyTokensAgainstSol = Number(
-            virtualTokenReserves - (k / (virtualSolReserves + oneSOLInLamports))
-        );
-        const sellTokensAgainstSol = Number(
-            (k / (virtualSolReserves - oneSOLInLamports)) - virtualTokenReserves
-        );
+    // Buy price in SOL
+    const tokenPriceInLamport = (oneSOLInLamports * virtualSolReserves) / virtualTokenReserves;
+    const tokenPriceInSol = Number(tokenPriceInLamport) / 1_000_000_000;
 
-        // Buy price in SOL
-        const tokenPriceInLamport = (oneSOLInLamports * virtualSolReserves) / virtualTokenReserves;
-        const tokenPriceInSol = Number(tokenPriceInLamport) / 1_000_000_000;
+    // Sell price in SOL
+    const tokenPriceInLamportSell = (oneSOLInLamports * virtualSolReserves) / (virtualTokenReserves + oneSOLInLamports);
+    const tokenPriceInSolSell = Number(tokenPriceInLamportSell) / 1_000_000_000;
+    const    tokensbuy = buyTokensAgainstSol/1000000
+    const tokensell = sellTokensAgainstSol/1000000
 
-        // Sell price in SOL
-        const tokenPriceInLamportSell = (oneSOLInLamports * virtualSolReserves) / (virtualTokenReserves + oneSOLInLamports);
-        const tokenPriceInSolSell = Number(tokenPriceInLamportSell) / 1_000_000_000;
-        const tokensbuy = buyTokensAgainstSol / 1000000
-        const tokensell = sellTokensAgainstSol / 1000000
+    console.log({
+        tokenPriceInSol,
+        sellTokenPriceInSol: tokenPriceInSolSell,
+        tokensbuy,
+        tokensell
+    });
 
-        console.log({
-            tokenPriceInSol,
-            sellTokenPriceInSol: tokenPriceInSolSell,
-            tokensbuy,
-            tokensell
-        });
-
-        return {
-            tokenPriceInSol,
-            sellTokenPriceInSol: tokenPriceInSolSell,
-            tokensbuy,
-            tokensell
-        };
-    } else {
-        const tokenAmountBN = BigInt(Math.floor(amount * 1_000_000)); // Assuming 6 decimal tokens
+    return {
+        tokenPriceInSol,
+        sellTokenPriceInSol: tokenPriceInSolSell,
+        tokensbuy,
+        tokensell
+    };
+}else{
+    const tokenAmountBN = BigInt(Math.floor(amount * 1_000_000)); // Assuming 6 decimal tokens
         console.log("Tokens in smallest unit:", tokenAmountBN);
 
         // SOL price for given tokens
-        const buySolAgainstTokens = Math.abs(Number(
+        const buySolAgainstTokens =Math.abs( Number(
             virtualSolReserves - (k / (virtualTokenReserves - tokenAmountBN))
         ));
         const sellSolAgainstTokens = Math.abs(Number(
@@ -443,7 +475,7 @@ const TokenPriceCalculations = async (taddress, amount, isSolToToken) => {
             tokensbuy: buySolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
             tokensell: sellSolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
         };
-    }
+}
 };
 
 
@@ -455,13 +487,13 @@ const TokenPriceCalculations = async (taddress, amount, isSolToToken) => {
 //         console.log("ammunt",tokenamt);
 
 //         window.Buffer = buffer.Buffer
-
+      
 //         //console.log('connection', connection)
 
 //         const programId = new PublicKey(
 //             '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
 //         )
-
+       
 //         const program = new Program(IDL1, programId, provider)
 //         const tokenAddress = new PublicKey(taddress)
 //         console.log("info-usessss",program,tokenAddress,programId)
@@ -478,7 +510,7 @@ const TokenPriceCalculations = async (taddress, amount, isSolToToken) => {
 //             (tokenAmountBN * virtualSolReserves) / 
 //         (virtualTokenReserves - tokenAmountBN)
 //         );
-
+        
 //         // Sell price calculation
 //         const tokenPriceInLamportSell = (
 //             (tokenAmountBN * virtualSolReserves) / 
@@ -499,12 +531,12 @@ const TokenPriceCalculations = async (taddress, amount, isSolToToken) => {
 //            parseFloat(oneSOLTokenAmount * virtualSolReserves) / 
 //             parseFloat(virtualTokenReserves + oneSOLTokenAmount)
 //         );
-
+      
 //         const consttokenPriceInLamportSell = (
 //             (oneSOLTokenAmount * virtualSolReserves) / 
 //             (virtualTokenReserves - oneSOLTokenAmount)
 //         );
-
+        
 //         const consttokenPriceInSol = convertScientificToDecimal(
 //             parseFloat(consttokenPriceInLamport) / 1_000_000_000
 //         );
@@ -575,23 +607,23 @@ const TokenPriceCalculations = async (taddress, amount, isSolToToken) => {
 const reteriveTokenDetails = async (walletProvider, taddress) => {
     try {
         window.Buffer = buffer.Buffer
-        console.log("provider", walletProvider);
+        console.log("provider",walletProvider);
         const programId = new PublicKey(
             '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
         )
         const program = new Program(IDL1, programId, provider)
-        console.log("program", program.account.bondingCurve);
+        console.log("program",program.account.bondingCurve);
         const tokenAddress = new PublicKey(taddress)
-        console.log("tokenAddress", tokenAddress);
+        console.log("tokenAddress",tokenAddress);
         const [C] = PublicKey.findProgramAddressSync(
             [Buffer.from('bonding-curve'), tokenAddress.toBuffer()],
             programId,
         )
-        console.log("c", C)
-
+        console.log("c",C)
+        
 
         const r = await program.account.bondingCurve.fetch(C)
-        console.log("r", r)
+        console.log("r",r)
 
         const {
             virtualTokenReserves,
@@ -600,7 +632,7 @@ const reteriveTokenDetails = async (walletProvider, taddress) => {
             tokenTotalSupply,
             complete = false, // Default value if not present
         } = r
-
+        
 
         // Convert BN objects to strings
         const virtualTokenReservesStr = virtualTokenReserves.toString()
@@ -627,8 +659,8 @@ const reteriveTokenDetails = async (walletProvider, taddress) => {
 
 }
 
-const retrieveTokenInfo = async (program, programId, mintaddy) => {
-
+ const retrieveTokenInfo = async (program, programId, mintaddy) => {
+   
     window.Buffer = buffer.Buffer
     const [C] = PublicKey.findProgramAddressSync(
         [Buffer.from('bonding-curve'), mintaddy.toBuffer()],
@@ -636,7 +668,7 @@ const retrieveTokenInfo = async (program, programId, mintaddy) => {
     )
 
     const r = await program.account.bondingCurve.fetch(C)
-    console.log("rrrrrr", r)
+console.log("rrrrrr",r)
     const {
         virtualTokenReserves,
         virtualSolReserves,
@@ -690,8 +722,8 @@ function convertScientificToDecimal(scientificNotation) {
         exponent < 0
             ? '0.' + '0'.repeat(Math.abs(exponent) - 1) + coefficient.replace('.', '')
             : coefficient.slice(0, exponent + 1) +
-            (coefficient.length > exponent + 1 ?
-                '.' + coefficient.slice(exponent + 1) : '')
+              (coefficient.length > exponent + 1 ? 
+                  '.' + coefficient.slice(exponent + 1) : '')
     ).replace(/\.?0+$/, '');
 
     // Return the adjusted coefficient with sign
@@ -704,4 +736,4 @@ function tokenToSmallestUnit(tokenAmount, decimals) {
     return tokenAmount * Math.pow(10, decimals)
 }
 
-export { buy, sell, reteriveTokenDetails, TokenPriceCalculations, convertScientificToDecimal }
+export { buy, sell, reteriveTokenDetails,TokenPriceCalculations }

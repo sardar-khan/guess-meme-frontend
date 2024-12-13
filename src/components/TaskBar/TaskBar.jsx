@@ -5,11 +5,13 @@ import rock from '../../assets/icons/rock.png';
 import { NavLink } from 'react-router-dom';
 import ConnectButton from '../../web3/ConnectButton';
 import { viewUserprofile } from '../../utils/api';
+import { useAppKitAccount } from '@reown/appkit/react';
 
 const TaskBar = () => {
     const [currentTime, setCurrentTime] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [userProfileData, setUserProfileData] = useState();
+    const { isConnected } = useAppKitAccount()
 
     const updateTime = () => {
         const now = new Date();
@@ -90,13 +92,16 @@ const TaskBar = () => {
                             >
                                 👁️ Reveals
                             </NavLink>
-                            <NavLink
-                                to={`/userprofile/${userProfileData?._id}`}
-                                className={({ isActive }) => navLinkClass(isActive)}
-                                onClick={() => setIsDropdownOpen(false)}
-                            >
-                                User profile
-                            </NavLink>
+
+                            {isConnected &&
+                                <NavLink
+                                    to={`/userprofile/${userProfileData?._id}`}
+                                    className={({ isActive }) => navLinkClass(isActive)}
+                                    onClick={() => setIsDropdownOpen(false)}
+                                >
+                                    User profile
+                                </NavLink>
+                            }
                         </div>
                     </div>
                 )}

@@ -79,8 +79,8 @@ function Buy_createTransactionInstruction(
   
 
 async function fetchLiquidityPool(_str,program1) {
-   // return await program1.account.bondingCurve.fetch(_str);
-    return await connection.getAccountInfo(_str);
+   return await program1.account.bondingCurve.fetch(_str);
+  //  return await connection.getAccountInfo(_str);
 
 }
 
@@ -136,6 +136,7 @@ async function fetchPrice(purchaseAmount, hasLiquidity, bonding_curve) {
         return tokensReceivedWithoutLiquidity;
     }
 }
+
 
 export {
     b,

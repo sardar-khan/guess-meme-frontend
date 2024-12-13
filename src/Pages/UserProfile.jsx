@@ -15,7 +15,7 @@ import img from '../assets/images/Group 159.png'
 
 import userprofileImg from '../assets/images/userprofile.png'
 import Follwoing from '../components/Follwoing'
-import { CheckFollow, getNotifications, toggleFollow, ViewUser, viewUserprofile } from '../utils/api'
+import { CheckFollow, getNotifications, resetNotificationsCount, toggleFollow, ViewUser, viewUserprofile } from '../utils/api'
 import { useAppKitAccount } from '@reown/appkit/react'
 import Notifications from '../components/Notifications'
 
@@ -66,25 +66,24 @@ const UserProfile = () => {
     console.log("userProfileData", userProfileData)
     console.log("showUserData", showUserData)
 
+    const fetchUserProfile = async () => {
+        try {
+            // First, fetch user profile data
+            const data = await ViewUser(id);
+
+            // Call viewUserprofile function as well
+
+            setProfileState({ data: showUserData ? userProfileData : data, loading: false, error: null });
+        } catch (err) {
+            // Handle errors in case of failure
+            setProfileState({
+                data: null,
+                loading: false,
+                error: err.message || 'Failed to fetch user data',
+            });
+        }
+    };
     useEffect(() => {
-        const fetchUserProfile = async () => {
-            try {
-                // First, fetch user profile data
-                const data = await ViewUser(id);
-
-                // Call viewUserprofile function as well
-
-                setProfileState({ data: showUserData ? userProfileData : data, loading: false, error: null });
-            } catch (err) {
-                // Handle errors in case of failure
-                setProfileState({
-                    data: null,
-                    loading: false,
-                    error: err.message || 'Failed to fetch user data',
-                });
-            }
-        };
-
         fetchUserProfile();
     }, []);
 
@@ -143,6 +142,24 @@ const UserProfile = () => {
 
 
 
+
+    const handleNotificationCount = async (tabId) => {
+        tabId === 'notification' ? handleNotificationReCount() : console.log('Tab id not match')
+    }
+
+
+    const handleNotificationReCount = async () => {
+        try {
+            const response = await resetNotificationsCount();
+            if (response.status === 200) {
+                // fetchUserProfile()
+                console.log("notification Recount", response.message);
+
+            }
+        } catch (error) {
+            console.error("notification Recount", error);
+        }
+    }
 
 
     return (
@@ -206,12 +223,14 @@ const UserProfile = () => {
                                 return (
                                     <button
                                         key={tab.id}
-                                        className={`PixelOperator w-fit px-2 py-1 rounded-lg font-semibold border border-[#7539F4] ${activeTab === tab.id
-                                                ? 'bg-[#7539F4] text-white'
-                                                : 'bg-white border-[#7539F4] text-[#000]'
+                                        className={`relative PixelOperator w-fit px-2 py-1 rounded-lg font-semibold border border-[#7539F4] ${activeTab === tab.id
+                                            ? 'bg-[#7539F4] text-white'
+                                            : 'bg-white border-[#7539F4] text-[#000]'
                                             }`}
-                                        onClick={() => setActiveTab(tab.id)}
+                                        onClick={() => { setActiveTab(tab.id); handleNotificationCount(tab.id) }}
                                     >
+
+                                        {tab.id === 'notification' && profileState?.data?.data?.user?.unread_notifications > 0 && <span span className='absolute text-white font-semibold flex justify-center items-center p-2 right-0 top-0 bg-red-600 w-[10px] h-[10px] mt-[-7px] mr-[-7px] rounded-full'>{profileState?.data?.data?.user?.unread_notifications}</span>}
                                         {tab.label}
                                     </button>
                                 );

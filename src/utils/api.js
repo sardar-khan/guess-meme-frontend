@@ -340,3 +340,14 @@ export const getNotifications = async () => {
         throw error;
     }
 };
+
+
+export const resetNotificationsCount = async () => {
+    try {
+        const response = await apiInstance.get(`/user/reset-notification-count`);
+        return response.data;
+    } catch (error) {
+        console.error('Error getting notifications:', error);
+        throw error;
+    }
+};

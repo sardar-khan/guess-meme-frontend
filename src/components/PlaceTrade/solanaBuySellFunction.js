@@ -150,9 +150,9 @@ async function buy(walletProvider, amount, mintaddy) {
 }
 
 
-async function sell(walletProvider) {
+async function sell(walletProvider, amount,mintaddy) {
     const totalvaluenum = 50;
-    let sell_value = totalvaluenum.toString();
+    let sell_value = amount.toString();
     const programId = new PublicKey("7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh");
     const program = new Program(IDL1, programId, walletProvider);
 
@@ -192,22 +192,18 @@ async function sell(walletProvider) {
     };
 
     async function sellQuote(e) {
-        let liquidityPool = await fetchLiquidityPool(C, program);
-        console.log(liquidityPool.data, "pool")
-        const decodedPool = decodeLiquidityPool(liquidityPool.data);
-        console.log(decodedPool, "Decoded Liquidity Pool", decodedPool.virtualSolReserves.toString(), decodedPool.virtualTokenReserves.toString());
+        let liquidityPool = await fetchLiquidityPool(C.toString(), program)
 
-
-        let y = (e) => e.mul(k.feeBasisPoints).div(new BN(1e4));
+        let y = (e) => e.mul(k.feeBasisPoints).div(new BN(1e4))
         // if (e.eq(new BN(0)) || !sellQuote) return new BN(0);
 
         let a = e
-            .mul(decodedPool.virtualSolReserves)
-            .div(decodedPool.virtualTokenReserves.add(e));
+            .mul(liquidityPool.virtualSolReserves)
+            .div(liquidityPool.virtualTokenReserves.add(e))
 
-        let r = y(a);
+        let r = y(a)
 
-        return a.sub(r);
+        return a.sub(r)
     }
 
     let el = new BN(Math.floor(parseFloat(sell_value) || 0).toString()).mul(
@@ -248,6 +244,135 @@ async function sell(walletProvider) {
 
     console.log("Transaction signature", signature);
 }
+
+//  const sellCoin = async (
+//     wallet.
+//     tokenAmount,
+//     taddress,
+// ) => {
+//     try {
+//         window.Buffer = buffer.Buffer
+        
+//         const SELLSLIPPAGE = 10
+//         const totalvaluenum = tokenAmount
+//         let sell_value = totalvaluenum.toString()
+
+//         console.log('Owner balance: ' + sell_value)
+//         const connection = new web3.Connection(
+//             web3.clusterApiUrl('devnet', true),
+//             'confirmed',
+//         )
+//         console.log('connection', connection)
+//         const mintaddy = new web3.PublicKey(taddress)
+
+//         const programId = new web3.PublicKey(
+//             'hp3TJUpe3y1KX9h3UYEpE4NgccMTt58fEN1VgxYDMNX',
+//         )
+//         const feeRecipient = new web3.PublicKey(
+//             'GTwY38pfmivyecwZtevaT14N3WDHMQebrrWjt2i48E29',
+//         )
+//         const provider = new AnchorProvider(connection, wallet, {
+//             commitment: 'confirmed',
+//         })
+//         const program = new Program(idl, programId, provider)
+
+//         const [S] = web3.PublicKey.findProgramAddressSync(
+//             [Buffer.from('mint-authority')],
+//             programId,
+//         )
+//         const [C] = web3.PublicKey.findProgramAddressSync(
+//             [Buffer.from('bonding-curve'), mintaddy.toBuffer()],
+//             programId,
+//         )
+
+//         console.log('Mint authority: ' + S.toBase58())
+
+//         console.log('Bonding curve: ' + C.toBase58())
+
+//         const B = b(mintaddy, C, !0)
+
+//         const MPL_TOKEN_METADATA_PROGRAM_ID =
+//             'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+
+//         const E = new web3.PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID)
+//         const [O] = web3.PublicKey.findProgramAddressSync(
+//             [Buffer.from('global')],
+//             programId,
+//         )
+
+//         const r = b(mintaddy, wallet.publicKey, !1)
+
+//         let a = new BN(0)
+//         let v = 0
+//         let j = SELLSLIPPAGE // slippage
+//         let k = {
+//             feeBasisPoints: new BN(0),
+//         }
+
+//         async function sellQuote(e) {
+//             let liquidityPool = await fetchLiquidityPool(C.toString(), program)
+
+//             let y = (e) => e.mul(k.feeBasisPoints).div(new BN(1e4))
+//             // if (e.eq(new BN(0)) || !sellQuote) return new BN(0);
+
+//             let a = e
+//                 .mul(liquidityPool.virtualSolReserves)
+//                 .div(liquidityPool.virtualTokenReserves.add(e))
+
+//             let r = y(a)
+
+//             return a.sub(r)
+//         }
+
+//         let el = new BN(Math.floor(parseFloat(sell_value) || 0).toString()).mul(
+//             new BN('1000000'),
+//         )
+
+//         a = await sellQuote(el)
+//         // console.log(el.toNumber(), a.toNumber())
+
+//         let total = a.sub(a.mul(new BN(Math.floor(10 * j))).div(new BN(1e3)))
+
+//         console.log(total)
+
+//         let sellTx = await program.methods
+//             .sell(el, total)
+//             .accounts({
+//                 global: O,
+//                 feeRecipient: feeRecipient,
+//                 mint: mintaddy,
+//                 bondingCurve: C,
+//                 associatedBondingCurve: B,
+//                 associatedUser: r,
+//                 user: wallet.publicKey,
+//                 systemProgram: new web3.PublicKey(
+//                     '11111111111111111111111111111111',
+//                 ),
+//                 tokenProgram: new web3.PublicKey(
+//                     'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+//                 ),
+//                 rent: new web3.PublicKey(
+//                     'SysvarRent111111111111111111111111111111111',
+//                 ),
+//             })
+//             .rpc()
+
+//         console.log('Sell transaction signature: ', sellTx)
+//         return {
+//             error: false,
+//             data: sellTx,
+//             success: true,
+//         }
+//     } catch (error) {
+//         console.log('error while selling tokens', error)
+//         return {
+//             error: error.message,
+//             data: null,
+//             success: false,
+//         }
+//     }
+// }
+
 
 const TokenPriceCalculations = async (taddress, amount, isSolToToken) => {
 

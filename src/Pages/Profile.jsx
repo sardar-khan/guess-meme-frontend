@@ -76,7 +76,7 @@ const Profile = () => {
                                 <ToggleButton label="Hide Coins Purchases:" />
                                 <ToggleButton label="Hide Deployed Chain:" />
                                 <ToggleButton label="Notifications:" /> 
-                               <div className='flex flex-col sm:flex-row sm:items-center items-start gap-4'>
+                               {/* <div className='flex flex-col sm:flex-row sm:items-center items-start gap-4'>
                                     <label className='formLabel min-w-auto md:min-w-[150px] text-right'>Trust Score:</label>
                                     <div className='w-full'>
                                         <div className='w-full flex flex-col items-center bg-[#7E78AA] p-1'>
@@ -86,7 +86,7 @@ const Profile = () => {
                                             <h5 className='PixelOperatorbold text-[12px] md:text-[13px] mt-1'>{profile.trustScore}/100</h5>
                                         </div>
                                     </div>
-                                </div>
+                                </div> */}
                                 {/* Use the correct profile object */}
                                 <InputField label="Member Since:" value={formattedDate} disabled={true} />
                                 <div className='pl-0 md:pl-[165px]'>

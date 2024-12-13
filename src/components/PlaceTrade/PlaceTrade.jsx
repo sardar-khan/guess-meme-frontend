@@ -228,10 +228,10 @@ const PlaceTrade = ({ coinData }) => {
         console.log("Purchase successful");
       }
       else if (blockchainType === "SOL" && coinData?.status === "deployed" && tradeType === 'sell') {
-        const SellSuccess = await sell(walletProvider, amount,tokenAddress_mint);
+        const SellSuccess = await sell(walletProvider, amount, tokenAddress_mint);
       }
 
-      else if (blockchainType === "SOL" && coinData?.status === 'created') {
+      else if (blockchainType === "SOL" && coinData?.status === 'created' && tradeType === 'buy') {
 
         let deductSOL = await handleLaunchToken(amount);
 
@@ -258,7 +258,7 @@ const PlaceTrade = ({ coinData }) => {
 
       }
 
-      else if (blockchainType === "ETH" && coinData?.status === 'deployed') {
+      else if (blockchainType === "ETH" && coinData?.status === 'deployed' && tradeType === 'buy') {
         console.log("ETH and deployed")
         const tokenAddress = coinData?.token_address;
         console.log("tokenAddress", tokenAddress)
@@ -312,7 +312,7 @@ const PlaceTrade = ({ coinData }) => {
         }
       }
 
-      else if (blockchainType === "ETH" && coinData?.status === 'created') {
+      else if (blockchainType === "ETH" && coinData?.status === 'created' && tradeType === 'buy') {
 
         let deductETH = await handleLaunchTokenE();
         console.log("deductETH", deductETH)

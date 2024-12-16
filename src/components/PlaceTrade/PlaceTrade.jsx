@@ -227,8 +227,18 @@ const PlaceTrade = ({ coinData }) => {
         }
         console.log("Purchase successful");
       }
+
       else if (blockchainType === "SOL" && coinData?.status === "deployed" && tradeType === 'sell') {
         const SellSuccess = await sell(walletProvider, amount, tokenAddress_mint);
+        console.log("SellSuccess", SellSuccess)
+        if (SellSuccess?.success) {
+          setAmount('')
+          setSolAmount('')
+          setTokenToBuy('')
+          toast.success("Successfully Sell")
+        } else {
+          toast.error("Error during selling try again")
+        }
       }
 
       else if (blockchainType === "SOL" && coinData?.status === 'created' && tradeType === 'buy') {
@@ -279,6 +289,7 @@ const PlaceTrade = ({ coinData }) => {
         }
         console.log("response buyTokensOnBlockchain", response)
         if (response?.success) {
+          setAmount('')
           toast.success(
             `${tradeType === "buy" ? "buy" : "sell"} transaction successful`
           );
@@ -315,6 +326,7 @@ const PlaceTrade = ({ coinData }) => {
       else if (blockchainType === "ETH" && coinData?.status === 'created' && tradeType === 'buy') {
         console.log("ETH ****** created ****** buy")
         let deductETH = await handleLaunchTokenE();
+        setAmount('')
         console.log("deductETH", deductETH)
         if (deductETH) {
           setAmount('')

@@ -5,7 +5,7 @@ import ChatRoom from '../components/ChatRoom/ChatRoom';
 import TradesTable from '../components/Tables/TradesTable';
 import HoldersTable from '../components/Tables/HoldersTable';
 import CandlestickComboChart from '../components/Charts/CandlestickComboChart';
-import PlaceTrade from '../components/PlaceTrade/PlaceTrade';
+import { useAppKitProvider } from '@reown/appkit/react';
 import logoSmall from '../assets/icons/logoSmall.png';
 import { toast } from 'react-toastify';
 import { kingoftheHill_progress, viewCoin } from '../utils/api';
@@ -114,7 +114,7 @@ const Threads = () => {
                     <ChatRoom coinData={coinData} />
                 </div>
                 <div className='flex flex-col gap-6 w-full lg:w-[30%]'>
-                    {coinData && <PlaceTrade coinData={coinData} />}
+                    {coinData  && <PlaceTrade coinData={coinData} />}
                     <TradesTable />
                     <HoldersTable />
                     <Progress title="Bonding curve progress" progress={coinData?.bonding_curve_progress} />

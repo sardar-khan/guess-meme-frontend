@@ -26,8 +26,8 @@ import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 // eslint-disable-next-line react/prop-types
 const PlaceTrade = ({ coinData }) => {
-  console.log("placeTrade COin data", coinData)
-  console.log("placeTrade COin data token_address", coinData?.token_address)
+  //console.log("placeTrade COin data", coinData)
+  //console.log("placeTrade COin data token_address", coinData?.token_address)
 
   // const tokenAddress_mint = coinData?.token_address ? new PublicKey(coinData.token_address) : null;
   let tokenAddress_mint = null;
@@ -116,9 +116,9 @@ const PlaceTrade = ({ coinData }) => {
     // }
   };
 
+console.log("Wallet-provvv",walletProvider);
 
-
-  console.log("tokenToBuy", tokenToBuy)
+  //console.log("tokenToBuy", tokenToBuy)
   // calculate remaining token and maxtoken buy value
   const remaningAndMaxbuyTokens = async (tokenAddress) => {
     if (!walletProvider) {
@@ -550,8 +550,8 @@ const PlaceTrade = ({ coinData }) => {
   const getUserBalances = async () => {
     try {
       if (!coinData?.token_address) { return }
-
-
+console.log("wallet-provider-in-blnc",walletProvider)
+console.log("Connnection",connection);
       //user-sol-balance
       const balance = await connection.getBalance(walletProvider.publicKey)
 
@@ -562,7 +562,7 @@ const PlaceTrade = ({ coinData }) => {
         await connection.getParsedTokenAccountsByOwner(walletProvider.publicKey, {
           mint: tokenMintAddress,
         })
-      console.log('tokens', tokenAccounts)
+      console.log('tokens about to cook', tokenAccounts)
       let tokenBalance
       if (tokenAccounts?.value?.length > 0) {
         tokenBalance =
@@ -592,11 +592,12 @@ const PlaceTrade = ({ coinData }) => {
 
 
   useEffect(() => {
-    getUserBalances()
-    if (coinData?.token_address) {
+   
+    if (coinData?.token_address && walletProvider) {
+      getUserBalances()
       remaningAndMaxbuyTokens(coinData?.token_address)
     }
-  }, [amount, coinData, wallet, tokenToBuy])
+  }, [amount, coinData, wallet, tokenToBuy,walletProvider])
 
 
   // buy sell calculations from the blockcahin-solana

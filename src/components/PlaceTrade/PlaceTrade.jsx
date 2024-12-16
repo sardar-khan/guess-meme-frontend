@@ -32,7 +32,7 @@ const PlaceTrade = ({ coinData }) => {
   // const tokenAddress_mint = coinData?.token_address ? new PublicKey(coinData.token_address) : null;
   let tokenAddress_mint = null;
 
-  if (coinData?.token_address) {
+  if (coinData?.token_address && blockchainType === 'SOL') {
     try {
       tokenAddress_mint = new PublicKey(coinData?.token_address);
     } catch (error) {
@@ -84,7 +84,6 @@ const PlaceTrade = ({ coinData }) => {
     hash: hash,
   });
 
-  const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
   // console.log("coinDataPlaceTrade", coinData?.token_address)
   // console.log("coinDataPlaceTrade data", coinData)
@@ -210,7 +209,7 @@ console.log("Wallet-provvv",walletProvider);
             type: tradeType,
             transaction_hash: buySuccess,
           });
-
+          console.log("apiResponse", apiResponse)
           if (apiResponse?.status === 201) {
             toast.success(`Transction Successfull: ${buySuccess}`)
             // toast.success(
@@ -227,8 +226,18 @@ console.log("Wallet-provvv",walletProvider);
         }
         console.log("Purchase successful");
       }
+
       else if (blockchainType === "SOL" && coinData?.status === "deployed" && tradeType === 'sell') {
         const SellSuccess = await sell(walletProvider, amount, tokenAddress_mint);
+        console.log("SellSuccess", SellSuccess)
+        if (SellSuccess?.success) {
+          setAmount('')
+          setSolAmount('')
+          setTokenToBuy('')
+          toast.success("Successfully Sell")
+        } else {
+          toast.error("Error during selling try again")
+        }
       }
 
       else if (blockchainType === "SOL" && coinData?.status === 'created' && tradeType === 'buy') {
@@ -279,6 +288,7 @@ console.log("Wallet-provvv",walletProvider);
         }
         console.log("response buyTokensOnBlockchain", response)
         if (response?.success) {
+          setAmount('')
           toast.success(
             `${tradeType === "buy" ? "buy" : "sell"} transaction successful`
           );
@@ -295,7 +305,7 @@ console.log("Wallet-provvv",walletProvider);
             transaction_hash: response?.transactionHash
           });
 
-          if (apiResponse?.status === 200) {
+          if (apiResponse?.status === 201) {
             toast.success(
               `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
             );
@@ -313,8 +323,9 @@ console.log("Wallet-provvv",walletProvider);
       }
 
       else if (blockchainType === "ETH" && coinData?.status === 'created' && tradeType === 'buy') {
-
+        console.log("ETH ****** created ****** buy")
         let deductETH = await handleLaunchTokenE();
+        setAmount('')
         console.log("deductETH", deductETH)
         if (deductETH) {
           setAmount('')
@@ -731,11 +742,15 @@ console.log("Connnection",connection);
                               //  value={solAmount : }
                               onChange={(e) => {
                                 const value = e.target.value;
-                                if (!value || Number(value) >= 0) {
-                                  // setAmount(value);
-                                  handleAmount(value)
+                                if (blockchainType === 'SOL') {
+                                  if (!value || Number(value) >= 0) {
+                                    handleAmount(value);
+                                  }
+                                } else {
+                                  setAmount(value);
                                 }
                               }}
+
                               className="w-full px-2 py-3 pr-4"
                             />
 
@@ -748,7 +763,7 @@ console.log("Connnection",connection);
                                 src={
                                   showSOGs
                                     ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`
-                                    : solImg
+                                    : (blockchainType === 'SOL' ? solImg : ethImg)
                                 }
                                 className="w-[30px] mr-7 rounded-full"
                               />

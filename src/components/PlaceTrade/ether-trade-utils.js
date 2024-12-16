@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import abi from "../../web3/abi.json";
 
 // Contract Address
-const CONTRACT_ADDRESS = "0x72a62b40ae25ddc6d4bc7d3087ce21769087dac0";
+const CONTRACT_ADDRESS = "0x93C27bA75a1480ac1a7aE7ea9887D5Ee8AFf6942";
 
 // Connect to the factory contract
 export const getFactoryContract = async () => {
@@ -14,30 +14,35 @@ export const getFactoryContract = async () => {
   const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
 
   const signer = provider.getSigner(); // Get the connected signer from MetaMask
-  const factoryContract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer, {gasLimit:10000000});
+  const factoryContract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer, { gasLimit: 10000000 });
   return factoryContract;
 };
 
 // Function to buy tokens
+
 export const buyTokensOnBlockchain = async (tokenAddress, amount) => {
   try {
     if (!tokenAddress || !ethers.utils.isAddress(tokenAddress)) {
       throw new Error(`Invalid token address: ${tokenAddress}`);
     }
 
+    // Ensure `amount` is in the correct format
+    const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18); // Assuming the token has 18 decimals
+
     const factoryContract = await getFactoryContract();
 
     console.log("Fetching quote and fee...");
-    const payableAmount = await factoryContract.buyQuote(tokenAddress, amount);
-    const fee = await factoryContract.calculateBuyFee(tokenAddress, amount);
+    const payableAmount = await factoryContract.buyQuote(tokenAddress, formattedAmount);
+    const fee = await factoryContract.calculateBuyFee(tokenAddress, formattedAmount);
 
+    // Add payableAmount and fee
     const ethToPay = ethers.BigNumber.from(payableAmount).add(
       ethers.BigNumber.from(fee)
     );
     console.log("Total ETH to pay:", ethers.utils.formatEther(ethToPay));
 
     console.log("Executing buy transaction...");
-    const tx = await factoryContract.buyTokens(tokenAddress, amount, {
+    const tx = await factoryContract.buyTokens(tokenAddress, formattedAmount, {
       value: ethToPay,
     });
     await tx.wait();
@@ -50,7 +55,39 @@ export const buyTokensOnBlockchain = async (tokenAddress, amount) => {
   }
 };
 
+// export const buyTokensOnBlockchain = async (tokenAddress, amount) => {
+//   try {
+//     if (!tokenAddress || !ethers.utils.isAddress(tokenAddress)) {
+//       throw new Error(`Invalid token address: ${tokenAddress}`);
+//     }
+
+//     const factoryContract = await getFactoryContract();
+
+//     console.log("Fetching quote and fee...");
+//     const payableAmount = await factoryContract.buyQuote(tokenAddress, amount);
+//     const fee = await factoryContract.calculateBuyFee(tokenAddress, amount);
+
+//     const ethToPay = ethers.BigNumber.from(payableAmount).add(
+//       ethers.BigNumber.from(fee)
+//     );
+//     console.log("Total ETH to pay:", ethers.utils.formatEther(ethToPay));
+
+//     console.log("Executing buy transaction...");
+//     const tx = await factoryContract.buyTokens(tokenAddress, amount, {
+//       value: ethToPay,
+//     });
+//     await tx.wait();
+
+//     console.log("Buy transaction successful:", tx.hash);
+//     return { success: true, transactionHash: tx.hash };
+//   } catch (error) {
+//     console.error("Error buying tokens on blockchain:", error);
+//     return { success: false, error: error.message };
+//   }
+// };
+
 // Function to sell tokens
+
 export const sellTokensOnBlockchain = async (tokenAddress, amount) => {
   try {
     const factoryContract = await getFactoryContract();

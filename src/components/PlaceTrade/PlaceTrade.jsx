@@ -23,6 +23,7 @@ import SetSlipPage from "../Modals/SetSlipPage";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 
+const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
 // eslint-disable-next-line react/prop-types
 const PlaceTrade = ({ coinData }) => {
@@ -115,7 +116,7 @@ const PlaceTrade = ({ coinData }) => {
     // }
   };
 
-console.log("Wallet-provvv",walletProvider);
+  console.log("Wallet-provvv", walletProvider);
 
   //console.log("tokenToBuy", tokenToBuy)
   // calculate remaining token and maxtoken buy value
@@ -234,10 +235,31 @@ console.log("Wallet-provvv",walletProvider);
           setAmount('')
           setSolAmount('')
           setTokenToBuy('')
-          toast.success("Successfully Sell")
+          // toast.success("Successfully Sell")
+          const apiResponse = await BuyToken({
+            account_type: 'solana',
+            amount: parseFloat(amount),
+            token_amount: 1,
+            token_id: id,
+            type: tradeType,
+            transaction_hash: SellSuccess?.data?.recentBlockhash,
+          });
+          console.log("apiResponse", apiResponse)
+          if (apiResponse?.status === 201) {
+            toast.success(`Transction Successfull: ${SellSuccess?.data?.recentBlockhash}`)
+            // toast.success(
+            // `${tradeType === "buy" ? "buy" : "sell"} saved successfully`);
+            dispatch(fetchTrades(id)); // Fetch updated trades
+
+          } else {
+            throw new Error(
+              `Failed to record ${tradeType} trade in the backend`
+            );
+          }
         } else {
           toast.error("Error during selling try again")
         }
+
       }
 
       else if (blockchainType === "SOL" && coinData?.status === 'created' && tradeType === 'buy') {
@@ -351,7 +373,6 @@ console.log("Wallet-provvv",walletProvider);
         }
 
       }
-
 
       else {
         // Non-ETH blockchain logic
@@ -561,8 +582,8 @@ console.log("Wallet-provvv",walletProvider);
   const getUserBalances = async () => {
     try {
       if (!coinData?.token_address) { return }
-console.log("wallet-provider-in-blnc",walletProvider)
-console.log("Connnection",connection);
+      console.log("wallet-provider-in-blnc", walletProvider)
+      console.log("Connnection", connection);
       //user-sol-balance
       const balance = await connection.getBalance(walletProvider.publicKey)
 
@@ -603,12 +624,12 @@ console.log("Connnection",connection);
 
 
   useEffect(() => {
-   
+
     if (coinData?.token_address && walletProvider) {
       getUserBalances()
       remaningAndMaxbuyTokens(coinData?.token_address)
     }
-  }, [amount, coinData, wallet, tokenToBuy,walletProvider])
+  }, [amount, coinData, wallet, tokenToBuy, walletProvider])
 
 
   // buy sell calculations from the blockcahin-solana
@@ -682,7 +703,7 @@ console.log("Connnection",connection);
                         ? "bg-[#4ADE80] text-[#202020]"
                         : "bg-[#1F2937] text-[gray]"
                         }`}
-                      onClick={() => setTradeType("buy")}
+                      onClick={() => { setTradeType("buy"); setAmount(''); setSolAmount('') }}
                     >
                       Buy
                     </button>
@@ -691,7 +712,7 @@ console.log("Connnection",connection);
                         ? "bg-[#F87171] text-white"
                         : "bg-[#1F2937] text-[gray]"
                         }`}
-                      onClick={() => { setTradeType("sell"); setShowSOGs(true) }}
+                      onClick={() => { setTradeType("sell"); setShowSOGs(true); setAmount(''); setSolAmount('') }}
                     >
                       Sell
                     </button>
@@ -845,7 +866,7 @@ console.log("Connnection",connection);
                   </div>
                 }
 
-                {tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && <p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? blockchainType : coinData?.name}</p>}
+                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && <p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? blockchainType : coinData?.name}</p>}
 
                 {amountError.error && <p className="text-red-700 mt-2 ml-3">{amountError.reason}</p>}
 

@@ -5,11 +5,11 @@ import ChatRoom from '../components/ChatRoom/ChatRoom';
 import TradesTable from '../components/Tables/TradesTable';
 import HoldersTable from '../components/Tables/HoldersTable';
 import CandlestickComboChart from '../components/Charts/CandlestickComboChart';
-import { useAppKitProvider } from '@reown/appkit/react';
 import logoSmall from '../assets/icons/logoSmall.png';
 import { toast } from 'react-toastify';
 import { kingoftheHill_progress, viewCoin } from '../utils/api';
 import Progress from '../components/Progress';
+import PlaceTrade from '../components/PlaceTrade/PlaceTrade';
 
 const Threads = () => {
     const { id } = useParams();
@@ -62,7 +62,7 @@ const Threads = () => {
         });
     };
 
-   
+
 
     return (
         <div className='py-10 px-4 !pb-[100px] md:p-10'>
@@ -114,11 +114,12 @@ const Threads = () => {
                     <ChatRoom coinData={coinData} />
                 </div>
                 <div className='flex flex-col gap-6 w-full lg:w-[30%]'>
-                    {coinData  && <PlaceTrade coinData={coinData} />}
-                    <TradesTable />
-                    <HoldersTable />
+                    {coinData && <PlaceTrade coinData={coinData} />}
                     <Progress title="Bonding curve progress" progress={coinData?.bonding_curve_progress} />
                     <Progress title="Guess master" progress={kingoftheHill} />
+                    <TradesTable />
+                    <HoldersTable />
+
                 </div>
             </div>
         </div>

@@ -9,11 +9,39 @@ import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import DirectBuy from './DirectBuy';
 import ConnectButton from '../web3/ConnectButton';
+// import Pusher from 'pusher';
+import Pusher from 'pusher-js';
+
 
 const Navbar = () => {
     const isOn = useSelector((state) => state.animation.isOn);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+
+
+    useEffect(() => {
+        // Configure Pusher client
+        const pusher = new Pusher('c2c6e8d77a411d6cc315', {
+            cluster: 'ap2',
+        });
+
+        // Subscribe to the channel
+        const channel = pusher.subscribe('trades-channel');
+
+        // Listen to events
+        channel.bind('trade-initiated', (data) => {
+            setNotifications((prev) => [...prev, data.message]);
+        });
+
+        // Cleanup on unmount
+        return () => {
+            channel.unbind_all();
+            channel.unsubscribe();
+        };
+    }, []);
+
+    console.log("notificationsPusher", notifications)
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);

@@ -224,10 +224,10 @@ const ChatRoom = ({ coinData }) => {
                                 </div>
                                 <div className="flex gap-1">
                                     {item?.image !== null && item?.image !== "" && (
-                                        <div className="w-[128px] h-full max-h-[128px]">
+                                        <div className="w-[128px] h-full max-h-[128px] ">
                                             <img
                                                 src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${item?.image}`}
-                                                className="w-full h-full"
+                                                className="max-h-[128px]"
                                                 alt=""
                                             />
                                         </div>

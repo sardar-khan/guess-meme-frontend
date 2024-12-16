@@ -57,6 +57,7 @@ const ReferralModal = ({ isOpen, onClose, onSubmit, threadID, fetchThreadData })
             });
             console.log("Comment data", data)
             toast.success(data?.message);
+            setImageUrl('');
             fetchThreadData();
             setComment('')
             onClose();
@@ -75,6 +76,10 @@ const ReferralModal = ({ isOpen, onClose, onSubmit, threadID, fetchThreadData })
         fileInputRef.current.click();
     };
 
+    const handleRemoveImage = () => {
+        setImage(null);
+        setImageUrl(null);
+    };
 
 
     if (!isOpen) return null;
@@ -99,26 +104,62 @@ const ReferralModal = ({ isOpen, onClose, onSubmit, threadID, fetchThreadData })
                 ></textarea>
 
                 {/* Image Upload */}
-                <div
-                    className='border-dashed border-2 border-gray-300 rounded-md mt-3 p-2 text-center cursor-pointer'
-                    onDrop={handleImageDrop}
-                    onDragOver={(e) => e.preventDefault()}
-                    onClick={handleUploadAreaClick}
-                >
-                    <p className='Inter text-lg'>Drag & Drop an image here, or click to upload</p>
-                    <input
-                        type="file"
-                        className='hidden'
-                        accept="image/*"
-                        ref={fileInputRef}
-                        onChange={handleImageUpload}
-                    />
-                    {image && (
-                        <p className='Inter mt-2 text-sm text-gray-600'>
-                            Selected file: {image.name}
-                        </p>
+                <div className="mt-3">
+                    {!imageUrl ? (
+                        // Show Drag-and-Drop Area
+                        <div
+                            className="border-dashed border-2 border-gray-300 rounded-md p-2 text-center cursor-pointer"
+                            onDrop={handleImageDrop}
+                            onDragOver={(e) => e.preventDefault()}
+                            onClick={handleUploadAreaClick}
+                        >
+                            <p className="Inter text-lg">Drag & Drop an image here, or click to upload</p>
+                            <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                ref={fileInputRef}
+                                onChange={handleImageUpload}
+                            />
+                            {image && (
+                                <p className="Inter mt-2 text-sm text-gray-600">
+                                    Selected file: {image.name}
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        <div
+                            className="border-dashed border-2 border-gray-300 rounded-md p-2 text-center cursor-pointer"
+                            onDrop={handleImageDrop}
+                            onDragOver={(e) => e.preventDefault()}
+                            onClick={handleUploadAreaClick}
+                        >
+                            <div className="text-center flex flex-col">
+                                <div className='w-fit mx-auto'>
+                                    <img
+                                        src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${imageUrl}`}
+                                        alt="Uploaded Preview"
+                                        className="rounded-md border border-gray-300 h-[100px]"
+                                    />
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        ref={fileInputRef}
+                                        onChange={handleImageUpload}
+                                    />
+                                </div>
+                                {/* <button
+                                onClick={handleRemoveImage}
+                                className="mt-3 px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
+                            >
+                                Remove Image
+                            </button> */}
+                            </div>
+                        </div>
                     )}
                 </div>
+
 
                 {/* Buttons */}
                 <div className='flex justify-end mt-4 gap-3'>

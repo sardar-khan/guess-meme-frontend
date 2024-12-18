@@ -100,15 +100,15 @@ const HighchartsReactNew = () => {
 
     return (
         <div className="chart-container" style={{ backgroundColor: '#231930', padding: '10px' }}>
-            {error ? (
+            {/* {error ? (
                 <div style={{ color: 'red' }}>{error}</div>
-            ) : (
-                <HighchartsReact
-                    highcharts={Highcharts}
-                    constructorType="stockChart"
-                    options={options}
-                />
-            )}
+            ) : ( */}
+            <HighchartsReact
+                highcharts={Highcharts}
+                constructorType="stockChart"
+                options={options}
+            />
+            {/* )} */}
         </div>
     );
 };
@@ -204,7 +204,7 @@ export default HighchartsReactNew;
 //         <div className="chart-container" style={{ backgroundColor: '#231930', padding: '10px' }}>
 //             <HighchartsReact
 //                 highcharts={Highcharts}
-//                 constructorType="stockChart" 
+//                 constructorType="stockChart"
 //                 options={options}
 //             />
 //         </div>

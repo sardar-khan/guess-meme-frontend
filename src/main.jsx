@@ -9,6 +9,7 @@ import { Provider } from 'react-redux';
 import store from './app/store.jsx';
 import PusherProvider from './context/PusherContext.jsx';
 import { Web3ModalProvider } from './web3/Web3Provider.jsx';
+import { NotificationProvider } from './context/NotificationContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -17,7 +18,11 @@ createRoot(document.getElementById('root')).render(
         <PusherProvider>
           <Web3ModalProvider>
             <WalletApi>
-              <App />
+              <NotificationProvider>
+                
+                <App />
+              
+              </NotificationProvider>
             </WalletApi>
           </Web3ModalProvider>
         </PusherProvider>

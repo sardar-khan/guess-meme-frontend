@@ -4,6 +4,8 @@ import LaunchCard from './LaunchCard';
 import { fetchCoins, selectDeployedCoins, selectCreatedCoins, selectFilteredCoins } from '../features/coinSlice';
 import AnimationToggle from './AnimationToggle';
 import Pusher from 'pusher-js';
+import { useNotificationContext } from '../context/NotificationContext';
+import PusherLaunchCard from './PusherLaunchCard';
 
 const AllLaunchs = () => {
     const dispatch = useDispatch();
@@ -14,10 +16,23 @@ const AllLaunchs = () => {
     const [activeTab, setActiveTab] = useState('AllLaunches');
     const [sortOption, setSortOption] = useState('');
 
+    const { createNotifications } = useNotificationContext();
+    const hasCreateNotificationData = Object.keys(createNotifications).length > 0;
+    const checkNewPusherTokenStatus = createNotifications?.status;
 
-    const [pusherNewToken, setPusherNewToken] = useState();
 
 
+    // if (hasCreateNotificationData) {
+    //     filteredCoins.unshift(createNotifications);
+
+    //     checkNewPusherTokenStatus === 'deployed' ? deployedCoins.unshift(createNotifications) : checkNewPusherTokenStatus === 'created' ? createdCoins.unshift(createNotifications) : ""
+
+
+    // }
+
+    // const [pusherNewToken, setPusherNewToken] = useState({});
+
+    console.log("createNotifications", createNotifications)
     console.log("errorerrorerror", error)
     console.log("filteredCoins", filteredCoins)
     console.log("deployedCoins", deployedCoins)
@@ -35,42 +50,77 @@ const AllLaunchs = () => {
         dispatch(fetchCoins(e.target.value));
     };
 
+    // useEffect(() => {
+    //     // Configure Pusher client
+    //     const pusher = new Pusher(`c2c6e8d77a411d6cc315`, {
+    //         cluster: `ap2`,
+    //     });
+
+    //     // Subscribe to the channel
+    //     const coinchannal = pusher.subscribe('coin-created-channel');
+
+    //     coinchannal.bind('coin-created', (data) => {
+
+    //         console.log("Puser New Coin Created:", data);
+
+    //         setPusherNewToken({
+    //             user_name: data.user_name,
+    //             action: data.action,
+    //             coin_photo: data.coin_photo,
+    //             date: data.date,
+    //             replies: data.replies,
+    //             ticker: data.ticker,
+    //             token_id: data.token_id,
+    //         });
+
+    //     });
 
 
-    useEffect(() => {
-        // Configure Pusher client
-        const pusher = new Pusher(`c2c6e8d77a411d6cc315`, {
-            cluster: `ap2`,
-        });
+    //     return () => {
+    //         coinchannal.unbind_all();
+    //         coinchannal.unsubscribe();
+    //     };
+    // }, [pusherNewToken]);
 
-        // Subscribe to the channel
-        const coinchannal = pusher.subscribe('coin-created-channel');
+    // useEffect(() => {
+    //     // Configure Pusher client
+    //     const pusher = new Pusher(`c2c6e8d77a411d6cc315`, {
+    //         cluster: `ap2`,
+    //     });
 
-        coinchannal.bind('coin-created', (data) => {
+    //     // Subscribe to the channel
+    //     const coinchannal = pusher.subscribe('coin-created-channel');
 
-            console.log("Puser New Coin Created:", data);
-            setPusherNewToken({
-                user_name: data.user_name,
-                action: data.action,
-                coin_photo: data.coin_photo,
-                token_address: data.token_address,
-                user_image: data.user_image,
-                date: date,
-                replies: replies,
-                ticker: ticker,
-                token_id: token_id,
-            });
+    //     coinchannal.bind('coin-created', (data) => {
 
-        });
+    //         console.log("Puser New Coin Created:", data);
+    //         // data.unshift(newObject);
+    //         // deployedCoins
+    //         // createdCoins            
+    //         // filteredCoins
 
 
-        return () => {
-            coinchannal.unbind_all();
-            coinchannal.unsubscribe();
-        };
-    }, []);
 
-    console.log("pusherNewToken", pusherNewToken)
+    //         setPusherNewToken({
+    //             user_name: data.user_name,
+    //             action: data.action,
+    //             coin_photo: data.coin_photo,
+    //             date: data.date,
+    //             replies: data.replies,
+    //             ticker: data.ticker,
+    //             token_id: data.token_id,
+    //         });
+
+    //     });
+
+
+    //     return () => {
+    //         coinchannal.unbind_all();
+    //         coinchannal.unsubscribe();
+    //     };
+    // }, [pusherNewToken]);
+
+    console.log("pusherNewToken", createNotifications)
 
     return (
         <div className='p-2 md:p-4 !pb-[150px]'>
@@ -122,9 +172,21 @@ const AllLaunchs = () => {
                             filteredCoins.length === 0 ? (
                                 <div>No data found</div>
                             ) : (
-                                filteredCoins.map((coin, index) => (
-                                    <LaunchCard key={index} setSpace="medium" coinData={coin} />
-                                ))
+                                <>
+                                    {Object.keys(createNotifications).length > 0 && (
+                                        <PusherLaunchCard pusherData={createNotifications} />
+                                    )}
+                                    {/* {filteredCoins.map((coin, index) => (
+                                        <LaunchCard key={index} coinData={coin} />
+                                    ))} */}
+                                    {
+                                        filteredCoins.map((coin, index) => (
+                                            createNotifications.token_id !== coin?.coin?._id ? (
+                                                <LaunchCard key={index} setSpace="medium" coinData={coin} />
+                                            ) : null
+                                        ))
+                                    }
+                                </>
                             )
                         )}
                         {status === 'failed' && <div>No Coin Found</div>}
@@ -138,9 +200,15 @@ const AllLaunchs = () => {
                                 deployedCoins.length === 0 ? (
                                     <div>No data found</div>
                                 ) : (
-                                    deployedCoins.map((coin, index) => (
-                                        <LaunchCard key={index} setSpace="medium" coinData={coin} />
-                                    ))
+                                    <>
+                                        {Object.keys(createNotifications).length > 0 && createNotifications.status === "deployed" && (
+                                            <PusherLaunchCard pusherData={createNotifications} />
+                                        )}
+                                        {
+                                            deployedCoins.map((coin, index) => (
+                                                <LaunchCard key={index} setSpace="medium" coinData={coin} />
+                                            ))}
+                                    </>
                                 )
                             )}
                         {status === 'failed' && <div>Error: {error}</div>}
@@ -154,9 +222,22 @@ const AllLaunchs = () => {
                                 createdCoins.length === 0 ? (
                                     <div>No data found</div>
                                 ) : (
-                                    createdCoins.map((coin, index) => (
-                                        <LaunchCard key={index} setSpace="medium" coinData={coin} />
-                                    ))
+                                    <>
+                                        {Object.keys(createNotifications).length > 0 && createNotifications.status === "created" && (
+                                            <PusherLaunchCard pusherData={createNotifications} />
+                                        )}
+                                        {
+                                            createdCoins.map((coin, index) => (
+                                                createNotifications.token_id !== coin?.coin?._id ? (
+                                                    <LaunchCard key={index} setSpace="medium" coinData={coin} />
+                                                ) : null
+                                            ))
+                                        }
+                                        {/* {
+                                            createdCoins.map((coin, index) => (
+                                                <LaunchCard key={index} setSpace="medium" coinData={coin} />
+                                            ))} */}
+                                    </>
                                 )
                             )}
                         {status === 'failed' && <div>Error: {error}</div>}

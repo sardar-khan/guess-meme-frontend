@@ -86,7 +86,7 @@ const PlaceTrade = ({ coinData }) => {
   });
 
 
-  // console.log("coinDataPlaceTrade", coinData?.token_address)
+  console.log("coinDataPlaceTrade", coinData)
   // console.log("coinDataPlaceTrade data", coinData)
 
   //console.log("wallet-provider",walletProvider.publicKey);
@@ -289,7 +289,7 @@ const PlaceTrade = ({ coinData }) => {
 
       }
 
-      else if (blockchainType === "ETH" && coinData?.status === 'deployed' && tradeType === 'buy') {
+      else if (blockchainType === "ETH" && coinData?.status === 'deployed') {
         console.log("ETH and deployed")
         const tokenAddress = coinData?.token_address;
         console.log("tokenAddress", tokenAddress)
@@ -308,7 +308,9 @@ const PlaceTrade = ({ coinData }) => {
         else if (tradeType === "sell") {
           response = await sellTokensOnBlockchain(tokenAddress, amount);
         }
+
         console.log("response buyTokensOnBlockchain", response)
+
         if (response?.success) {
           setAmount('')
           toast.success(
@@ -373,6 +375,15 @@ const PlaceTrade = ({ coinData }) => {
         }
 
       }
+
+
+      // else if (blockchainType === "ETH" && coinData?.status === 'deployed' && tradeType === 'sell') {
+      //   console.log("ETH ****** deployed ****** sell")
+      //   let sellEthtokens = await sellTokensOnBlockchain(tokenAddress, amount);
+      //   // setAmount('')
+      //   console.log("sellEthtokens", sellEthtokens)
+
+      // }
 
       else {
         // Non-ETH blockchain logic
@@ -687,6 +698,21 @@ const PlaceTrade = ({ coinData }) => {
 
     console.log("perctageSet", perctageSet, userBalance?.tokenBalance)
   }
+
+  const handleSell = async () => {
+
+    try {
+      const res = await sellTokensOnBlockchain(tokenAddress, 1);
+      // setResponse(res);
+      console.log("Sell response:", res);
+    } catch (error) {
+      console.error("Error during sell transaction:", error);
+      alert("Failed to sell tokens. Check console for more details.");
+    } finally {
+    }
+  };
+
+
   // console.log("tokenToBuytokenToBuy", tokenToBuy)
   return (
     <div className="border flex justify-center items-center w-full ">
@@ -877,6 +903,12 @@ const PlaceTrade = ({ coinData }) => {
                 >
                   <span>{isLoading ? "Processing..." : "Trade"}</span>
                 </button>
+                {/* <button
+                  className="themeBtn Inter w-fit mt-5 mx-auto"
+                  onClick={handleSell}
+                >
+                  <span>Sell</span>
+                </button> */}
               </div>
             </div>
           </div>

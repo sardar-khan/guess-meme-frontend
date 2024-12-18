@@ -89,6 +89,7 @@ export const buyTokensOnBlockchain = async (tokenAddress, amount) => {
 // Function to sell tokens
 
 export const sellTokensOnBlockchain = async (tokenAddress, amount) => {
+  amount = 0.00001
   try {
     const factoryContract = await getFactoryContract();
     const signer = factoryContract.signer; // Retrieve the signer from the contract

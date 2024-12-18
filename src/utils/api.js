@@ -351,3 +351,15 @@ export const resetNotificationsCount = async () => {
         throw error;
     }
 };
+
+
+// http://localhost:5000/trade/lastest-data
+export const getLatestNotifications = async () => {
+    try {
+        const response = await apiInstance.get(`/trade/lastest-data`);
+        return response.data;
+    } catch (error) {
+        console.error('Error getting latest notifications:', error);
+        throw error;
+    }
+};

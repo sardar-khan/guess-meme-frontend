@@ -32,7 +32,7 @@ const CandlestickComboChart = () => {
 
     // Transform the graphdata into the series format for the candlestick chart
     const series = [{
-        name: 'Candle',
+        name: 'Candlestick Data',
         data: coinData?.data.map(item => ({
             x: new Date(item.time).getTime(),
             y: [item.open, item.high, item.low, item.close] // Candlestick format

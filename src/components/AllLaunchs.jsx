@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import LaunchCard from './LaunchCard';
 import { fetchCoins, selectDeployedCoins, selectCreatedCoins, selectFilteredCoins } from '../features/coinSlice';
 import AnimationToggle from './AnimationToggle';
+import Pusher from 'pusher-js';
 
 const AllLaunchs = () => {
     const dispatch = useDispatch();
@@ -12,6 +13,11 @@ const AllLaunchs = () => {
     const filteredCoins = useSelector(selectFilteredCoins);
     const [activeTab, setActiveTab] = useState('AllLaunches');
     const [sortOption, setSortOption] = useState('');
+
+
+    const [pusherNewToken, setPusherNewToken] = useState();
+
+
     console.log("errorerrorerror", error)
     console.log("filteredCoins", filteredCoins)
     console.log("deployedCoins", deployedCoins)
@@ -28,6 +34,43 @@ const AllLaunchs = () => {
         setSortOption(e.target.value);
         dispatch(fetchCoins(e.target.value));
     };
+
+
+
+    useEffect(() => {
+        // Configure Pusher client
+        const pusher = new Pusher(`c2c6e8d77a411d6cc315`, {
+            cluster: `ap2`,
+        });
+
+        // Subscribe to the channel
+        const coinchannal = pusher.subscribe('coin-created-channel');
+
+        coinchannal.bind('coin-created', (data) => {
+
+            console.log("Puser New Coin Created:", data);
+            setPusherNewToken({
+                user_name: data.user_name,
+                action: data.action,
+                coin_photo: data.coin_photo,
+                token_address: data.token_address,
+                user_image: data.user_image,
+                date: date,
+                replies: replies,
+                ticker: ticker,
+                token_id: token_id,
+            });
+
+        });
+
+
+        return () => {
+            coinchannal.unbind_all();
+            coinchannal.unsubscribe();
+        };
+    }, []);
+
+    console.log("pusherNewToken", pusherNewToken)
 
     return (
         <div className='p-2 md:p-4 !pb-[150px]'>

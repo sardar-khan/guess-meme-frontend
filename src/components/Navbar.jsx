@@ -11,37 +11,105 @@ import DirectBuy from './DirectBuy';
 import ConnectButton from '../web3/ConnectButton';
 // import Pusher from 'pusher';
 import Pusher from 'pusher-js';
+import { getLatestNotifications } from '../utils/api';
 
 
 const Navbar = () => {
     const isOn = useSelector((state) => state.animation.isOn);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [notifications, setNotifications] = useState([]);
+    const [notifications, setNotifications] = useState({});
+    const [createNotifications, setCreateNotifications] = useState({});
+    const [latestnotifications, setLatestNotifications] = useState([]);
+
+
+    const formatDate = (dateString) => {
+        if (!dateString) return ""; // Handle undefined or null case
+        const date = new Date(dateString);
+        const day = String(date.getUTCDate()).padStart(2, "0");
+        const month = String(date.getUTCMonth() + 1).padStart(2, "0"); // Month starts from 0
+        const year = String(date.getUTCFullYear()).slice(-2); // Get last two digits of year
+        return `${day}/${month}/${year}`;
+    };
+
+
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                const data = await getLatestNotifications();
+                setLatestNotifications(data?.data);
+            } catch (err) {
+                console.log("Failed to fetch notifications. Please try again later.");
+            }
+        };
+
+        fetchNotifications();
+    }, []);
+    console.log("latestnotifications", latestnotifications)
+
+
 
 
     useEffect(() => {
         // Configure Pusher client
-        const pusher = new Pusher('c2c6e8d77a411d6cc315', {
-            cluster: 'ap2',
+        const pusher = new Pusher(`c2c6e8d77a411d6cc315`, {
+            cluster: `ap2`,
         });
 
         // Subscribe to the channel
         const channel = pusher.subscribe('trades-channel');
+        const coinchannal = pusher.subscribe('coin-created-channel');
 
-        // Listen to events
-        channel.bind('trade-initiated', (data) => {
-            setNotifications((prev) => [...prev, data.message]);
+        coinchannal.bind('coin-created', (data) => {
+            console.log("Coin pusher Data Received:", data);
+            setCreateNotifications({
+                user_name: data.user_name,
+                action: data.action,
+                coin_photo: data.coin_photo,
+                token_address: data.token_address,
+                user_image: data.user_image,
+                date: date,
+                replies: replies,
+                ticker: ticker,
+                token_id: token_id,
+            });
+
         });
 
-        // Cleanup on unmount
+        channel.bind('trade-initiated', (data) => {
+            // Log the payload to confirm it's an object
+            console.log("Trade Data Received:", data);
+
+            // Extract specific fields from the payload
+            // const notificationMessage = `${data.user_name} initiated ${data.action}`;
+
+            // Update state to include the new notification
+            // setNotifications((prev) => [...prev, notificationMessage]);
+            // setNotifications(notificationMessage);
+            setNotifications({
+                user_name: data.user_name,
+                action: data.action,
+                coin_photo: data.coin_photo,
+                token_address: data.token_address,
+                user_image: data.user_image,
+            });
+
+        });
+
+
         return () => {
             channel.unbind_all();
             channel.unsubscribe();
+            coinchannal.unbind_all();
+            coinchannal.unsubscribe();
         };
-    }, []);
+    }, [notifications, latestnotifications]);
 
     console.log("notificationsPusher", notifications)
+    console.log("createNotificationsPusher", createNotifications)
+
+    const hasNotificationData = Object.keys(notifications).length > 0;
+    const hasCreateNotificationData = Object.keys(createNotifications).length > 0;
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -69,22 +137,26 @@ const Navbar = () => {
                     </Link>
 
                     <div className='flex items-center gap-1'>
+                        {/* +mnO Buy 23 SOl of climber */}
 
                         <div class={`${isOn ? 'element-to-shake' : ''} PixelOperatorbold flex items-center gap-1 p-2 text-sm font-semibold rounded bg-white max-[930px]:hidden`}>
-                            <img src={img} class="w-[12px] h-[12px] rounded-full" alt="" />
-                            <Link class="hover:underline" href="/view/undefined">+mnO</Link>
-                            Buy
-                            <Link class="hover:underline" href="/">23 SOl</Link>
-                            of climber
-                            <img src={img} class="w-[12px] h-[12px] rounded-full" alt="" />
+                            <img src={!hasNotificationData ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.coin_photo}` : notifications?.coin_photo} class="w-[12px] h-[12px] rounded-full" alt="" />
+                            <Link class="hover:underline" href="/view/undefined">{!hasNotificationData ? latestnotifications?.latestTrade?.user_name : notifications?.user_name}</Link>
+                            {/* Buy */}
+                            <Link class="hover:underline" href="/">{!hasNotificationData ? latestnotifications?.latestTrade?.action : notifications?.action}</Link>
+                            {/* of climber */}
+                            <img src={!hasNotificationData ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.user_name}` : notifications?.user_name} class="w-[12px] h-[12px] rounded-full" alt="" />
                         </div>
-                        <div class={`${isOn ? 'element-to-shake' : ''} PixelOperatorbold flex items-center gap-1 p-2 text-sm font-semibold rounded text-white bg-[#5F16BC] max-[930px]:hidden`}>
-                            <img src={img} class="w-[12px] h-[12px] rounded-full" alt="" />
-                            <Link class="hover:underline" href="/view/undefined">GhSAMy</Link>
 
-                            <Link class="hover:underline" href="/">created Melony</Link>
-                            on 07/03/24
-                            <img src={img} class="w-[12px] h-[12px] rounded-full" alt="" />
+
+                        <div class={`${isOn ? 'element-to-shake' : ''} PixelOperatorbold flex items-center gap-1 p-2 text-sm font-semibold rounded text-white bg-[#5F16BC] max-[930px]:hidden`}>
+                            <img src={!hasCreateNotificationData ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.user_profile}` : createNotifications?.coin_photo} class="w-[12px] h-[12px] rounded-full" alt="" />
+                            <Link class="hover:underline" href="/view/undefined">
+                                {!hasCreateNotificationData ? latestnotifications?.latestTrade?.user_name : createNotifications?.user_name}
+                            </Link>
+                            {/* <Link>{latestnotifications?.latestCoin?.action}</Link> */}
+                            on {formatDate(!hasCreateNotificationData ? latestnotifications?.latestCoin?.date : createNotifications?.date)}
+                            <img src={!hasCreateNotificationData ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.coin_photo}` : createNotifications?.user_name} class="w-[12px] h-[12px] rounded-full" alt="" />
                         </div>
 
                     </div>

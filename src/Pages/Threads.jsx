@@ -10,6 +10,9 @@ import { toast } from 'react-toastify';
 import { kingoftheHill_progress, viewCoin } from '../utils/api';
 import Progress from '../components/Progress';
 import PlaceTrade from '../components/PlaceTrade/PlaceTrade';
+import LightweightCandlestickChart from '../components/Charts/LightweightCandlestickChart ';
+import AdvancedTradingViewChart from '../components/Charts/AdvancedTradingViewChart';
+import HighchartsReactNew from '../components/Charts/HighchartsReactNew';
 
 const Threads = () => {
     const { id } = useParams();
@@ -110,7 +113,11 @@ const Threads = () => {
                             </div>
                         </div>
                     </div>
-                    <CandlestickComboChart />
+                    {/* <CandlestickComboChart /> */}
+                    <HighchartsReactNew />
+                    {/* <LightweightCandlestickChart /> */}
+                    {/* <AdvancedTradingViewChart symbol="BINANCE:ETHUSDT" /> */}
+
                     <ChatRoom coinData={coinData} />
                 </div>
                 <div className='flex flex-col gap-6 w-full lg:w-[30%]'>

@@ -58,7 +58,7 @@ const ReferralModal = ({ isOpen, onClose, onSubmit, threadID, fetchThreadData })
             console.log("Comment data", data)
             toast.success(data?.message);
             setImageUrl('');
-            fetchThreadData();
+            // fetchThreadData();
             setComment('')
             onClose();
         } catch (error) {

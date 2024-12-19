@@ -6,6 +6,7 @@ const NotificationContext = createContext();
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState({});
     const [createNotifications, setCreateNotifications] = useState({});
+    const [pusherThread, setPusherThread] = useState({});
 
     useEffect(() => {
         // Configure Pusher client
@@ -13,9 +14,11 @@ export const NotificationProvider = ({ children }) => {
             cluster: 'ap2',
         });
 
+
         // Subscribe to the channels
         const channel = pusher.subscribe('trades-channel');
         const coinChannel = pusher.subscribe('coin-created-channel');
+        const threadsChannel = pusher.subscribe('threads-channel');
 
         // Handle coin-created event
         coinChannel.bind('coin-created', (data) => {
@@ -49,17 +52,32 @@ export const NotificationProvider = ({ children }) => {
             });
         });
 
+        // Handle coin-created event
+        threadsChannel.bind('new-reply', (data) => {
+            console.log("threads Pusher Data Received:", data);
+            setPusherThread({
+                user_name: data.user_name,
+                user_profile: data.user_profile,
+                token_id: data.token_id,
+                thread_id: data.thread_id,
+                text: data.text,
+                created_at: data.created_at,
+            });
+        });
+
         // Cleanup on unmount
         return () => {
             channel.unbind_all();
             channel.unsubscribe();
             coinChannel.unbind_all();
             coinChannel.unsubscribe();
+            threadsChannel.unbind_all();
+            threadsChannel.unsubscribe();
         };
     }, []);
 
     return (
-        <NotificationContext.Provider value={{ notifications, createNotifications }}>
+        <NotificationContext.Provider value={{ notifications, createNotifications, pusherThread }}>
             {children}
         </NotificationContext.Provider>
     );

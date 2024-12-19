@@ -11,6 +11,7 @@ import { Web3ModalProvider } from '../../web3/Web3Provider'
 import { useAppKitAccount } from '@reown/appkit/react'
 import { Icon } from '@iconify/react/dist/iconify.js'
 import { checkLikeStatus, toggleLike } from '../../utils/api'
+import { useNotificationContext } from '../../context/NotificationContext'
 // import { fetchCoins, selectCoinById } from '../../features/coinSlice';
 
 const ChatRoom = ({ coinData }) => {
@@ -30,6 +31,11 @@ const ChatRoom = ({ coinData }) => {
 
     console.log("coinDatacoinData", coinData)
 
+
+    const { pusherThread } = useNotificationContext();
+    const hasPusherThread = Object.keys(pusherThread).length > 0;
+    // const checkNewPusherTokenStatus = createNotifications?.status;
+    console.log("pusherThread", pusherThread)
 
     const fetchLikeStatuses = async () => {
         if (threads?.data) {
@@ -245,6 +251,78 @@ const ChatRoom = ({ coinData }) => {
                             </div>
 
                         ))}
+                        {
+                            hasPusherThread && (
+                                <div
+                                    // id={`like-icon-${item._id}`}
+                                    className={`color-transition secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]`}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <img
+                                            src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${pusherThread?.user_profile}`}
+                                            alt=""
+                                        />
+                                        <Link
+                                            // to={`/userprofile/${item?.user_id?._id}`}
+                                            className="Inter text-black text-[10px] font-semibold p-[2px] rounded-md bg-[#8E8DC7] cursor-pointer hover:underline"
+                                        >
+                                            {pusherThread?.user_name}
+                                        </Link>
+                                        <p className="Inter text-[#343434] text-[10px] font-semibold">
+                                            {new Date(pusherThread?.created_at).toLocaleString("en-US", {
+                                                month: "numeric",
+                                                day: "numeric",
+                                                year: "numeric",
+                                                hour: "numeric",
+                                                minute: "numeric",
+                                                second: "numeric",
+                                                hour12: true,
+                                            })}
+                                        </p>
+                                        <p
+                                            className="flex items-center gap-1 Inter text-[#343434] text-[10px] font-semibold cursor-pointer hover:underline"
+                                        // onClick={() => handletoggleLike(item?._id)}
+                                        >
+                                            <Icon
+                                            // icon={`${likeStatuses[item._id] ? "mdi:cards-heart" : "mdi:cards-heart-outline"
+                                            //     }`}
+                                            // style={{
+                                            //     fontSize: "15px",
+                                            //     color: likeStatuses[item._id] ? "red" : "#343434",
+                                            // }}
+                                            />
+                                            {/* <span>{item?.totalLikes}</span> */}
+                                        </p>
+                                        <p
+                                            className="Inter text-[#343434] text-[10px] font-semibold cursor-pointer hover:underline"
+                                            onClick={() => handleReplyId(pusherThread?.thread_id)}
+                                        >
+                                            {pusherThread?.thread_id} [reply]
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        {/* {item?.image !== null && item?.image !== "" && (
+                                            <div className="w-[128px] h-full max-h-[128px] ">
+                                                <img
+                                                    src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${item?.image}`}
+                                                    className="max-h-[128px]"
+                                                    alt=""
+                                                />
+                                            </div>
+                                        )} */}
+
+                                        <div className="w-[calc(100%-128px)] pl-2">
+                                            <p className="Inter text-sm font-medium text-[#000000]">
+                                                <span className="text-[#4225ff] text-base font-extrabold">
+                                                    {/* {item?.reply_id} */}
+                                                </span>{" "}
+                                                {pusherThread?.text}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        }
 
                     </div>
                     :

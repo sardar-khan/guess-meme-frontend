@@ -20,6 +20,8 @@ const Threads = () => {
     const [kingoftheHill, setKingoftheHill] = useState();
     const [isDisabled, setIsDisabled] = useState(false);
 
+    
+
     useEffect(() => {
         const fetchCoinData = async () => {
             try {
@@ -64,8 +66,6 @@ const Threads = () => {
             toast.error('Failed to copy text!');
         });
     };
-
-
 
     return (
         <div className='py-10 px-4 !pb-[100px] md:p-10'>

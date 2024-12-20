@@ -13,14 +13,16 @@ import PlaceTrade from '../components/PlaceTrade/PlaceTrade';
 import LightweightCandlestickChart from '../components/Charts/LightweightCandlestickChart ';
 import AdvancedTradingViewChart from '../components/Charts/AdvancedTradingViewChart';
 import HighchartsReactNew from '../components/Charts/HighchartsReactNew';
+import { useNotificationContext } from '../context/NotificationContext';
 
 const Threads = () => {
     const { id } = useParams();
     const [coinData, setCoinData] = useState(null);
     const [kingoftheHill, setKingoftheHill] = useState();
     const [isDisabled, setIsDisabled] = useState(false);
+    const { pusherAfterTrade } = useNotificationContext();
 
-    
+
 
     useEffect(() => {
         const fetchCoinData = async () => {
@@ -122,8 +124,8 @@ const Threads = () => {
                 </div>
                 <div className='flex flex-col gap-6 w-full lg:w-[30%]'>
                     {coinData && <PlaceTrade coinData={coinData} />}
-                    <Progress title="Bonding curve progress" progress={coinData?.bonding_curve_progress} />
-                    <Progress title="Guess master" progress={kingoftheHill} />
+                    <Progress title="Bonding curve progress" progress={coinData?.bonding_curve_progress} pusherProgress={pusherAfterTrade?.bonding_curve_percentage} />
+                    <Progress title="Guess master" progress={kingoftheHill} pusherProgress={pusherAfterTrade?.king_of_the_hill_per} />
                     <TradesTable />
                     <HoldersTable />
 

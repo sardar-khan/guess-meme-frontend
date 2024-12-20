@@ -6,7 +6,8 @@ const NotificationContext = createContext();
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState({});
     const [createNotifications, setCreateNotifications] = useState({});
-    const [pusherThread, setPusherThread] = useState({});
+    const [pusherThread, setPusherThread] = useState([]);
+    const [pusherAfterTrade, setPusherAfterTrade] = useState();
 
     useEffect(() => {
         // Configure Pusher client
@@ -19,6 +20,7 @@ export const NotificationProvider = ({ children }) => {
         const channel = pusher.subscribe('trades-channel');
         const coinChannel = pusher.subscribe('coin-created-channel');
         const threadsChannel = pusher.subscribe('threads-channel');
+        const tradeChannel = pusher.subscribe('percentage-chanel');
 
         // Handle coin-created event
         coinChannel.bind('coin-created', (data) => {
@@ -55,15 +57,16 @@ export const NotificationProvider = ({ children }) => {
         // Handle coin-created event
         threadsChannel.bind('new-reply', (data) => {
             console.log("threads Pusher Data Received:", data);
-            setPusherThread({
-                user_name: data.user_name,
-                user_profile: data.user_profile,
-                token_id: data.token_id,
-                thread_id: data.thread_id,
-                text: data.text,
-                created_at: data.created_at,
-            });
+            setPusherThread((prevThreads) => [...prevThreads, data]);
         });
+
+        // Handle coin-created event
+        tradeChannel.bind('new-percentage', (data) => {
+            console.log("pusherAfterTrade Pusher Data Received:", data);
+            setPusherAfterTrade(data);
+            // setPusherAfterTrade((prevTrades) => [...prevTrades, data]);
+        });
+
 
         // Cleanup on unmount
         return () => {
@@ -73,11 +76,13 @@ export const NotificationProvider = ({ children }) => {
             coinChannel.unsubscribe();
             threadsChannel.unbind_all();
             threadsChannel.unsubscribe();
+            tradeChannel.unsubscribe();
+            tradeChannel.unbind_all();
         };
     }, []);
 
     return (
-        <NotificationContext.Provider value={{ notifications, createNotifications, pusherThread }}>
+        <NotificationContext.Provider value={{ notifications, createNotifications, pusherThread, pusherAfterTrade }}>
             {children}
         </NotificationContext.Provider>
     );

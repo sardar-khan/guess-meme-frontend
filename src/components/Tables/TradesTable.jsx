@@ -3,16 +3,20 @@ import { Link, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTrades } from '../../features/tradesSlice';
 import logoSmall from '../../assets/icons/logoSmall.png';
+import { useNotificationContext } from '../../context/NotificationContext';
 
 const TradesTable = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const { trades, loading, error } = useSelector((state) => state.trades);
-    console.log("trades",trades)
+    console.log("trades", trades)
+    const { pusherAfterTrade } = useNotificationContext();
+    // latestTrades
 
     useEffect(() => {
         dispatch(fetchTrades(id));
-    }, [dispatch, id]);
+        // }, [dispatch, id]);
+    }, []);
 
     if (loading) return <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>;
     if (error) return <div>No Data Found</div>;
@@ -30,7 +34,9 @@ const TradesTable = () => {
                     </tr>
                 </thead>
                 <tbody className='Inter text-left'>
-                    {trades.slice(0, 3).map((trade) => (
+                    {/* {trades.slice(0, 3).map((trade) => ( */}
+                    {/* (pusherAfterTrade || trades) */}
+                    {(pusherAfterTrade ? pusherAfterTrade?.latestTrades?.data : trades).slice(0, 3).map((trade) => (
                         <tr key={trade._id} className='border border-[#FFF] text-xs'>
                             <td className="px-4 py-4">
                                 <Link to={`/userprofile/${trade?.account?._id}`} className='flex items-center gap-1 ml-[-8px]'>

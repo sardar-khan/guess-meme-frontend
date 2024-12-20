@@ -50,75 +50,7 @@ const AllLaunchs = () => {
         dispatch(fetchCoins(e.target.value));
     };
 
-    // useEffect(() => {
-    //     // Configure Pusher client
-    //     const pusher = new Pusher(`c2c6e8d77a411d6cc315`, {
-    //         cluster: `ap2`,
-    //     });
 
-    //     // Subscribe to the channel
-    //     const coinchannal = pusher.subscribe('coin-created-channel');
-
-    //     coinchannal.bind('coin-created', (data) => {
-
-    //         console.log("Puser New Coin Created:", data);
-
-    //         setPusherNewToken({
-    //             user_name: data.user_name,
-    //             action: data.action,
-    //             coin_photo: data.coin_photo,
-    //             date: data.date,
-    //             replies: data.replies,
-    //             ticker: data.ticker,
-    //             token_id: data.token_id,
-    //         });
-
-    //     });
-
-
-    //     return () => {
-    //         coinchannal.unbind_all();
-    //         coinchannal.unsubscribe();
-    //     };
-    // }, [pusherNewToken]);
-
-    // useEffect(() => {
-    //     // Configure Pusher client
-    //     const pusher = new Pusher(`c2c6e8d77a411d6cc315`, {
-    //         cluster: `ap2`,
-    //     });
-
-    //     // Subscribe to the channel
-    //     const coinchannal = pusher.subscribe('coin-created-channel');
-
-    //     coinchannal.bind('coin-created', (data) => {
-
-    //         console.log("Puser New Coin Created:", data);
-    //         // data.unshift(newObject);
-    //         // deployedCoins
-    //         // createdCoins            
-    //         // filteredCoins
-
-
-
-    //         setPusherNewToken({
-    //             user_name: data.user_name,
-    //             action: data.action,
-    //             coin_photo: data.coin_photo,
-    //             date: data.date,
-    //             replies: data.replies,
-    //             ticker: data.ticker,
-    //             token_id: data.token_id,
-    //         });
-
-    //     });
-
-
-    //     return () => {
-    //         coinchannal.unbind_all();
-    //         coinchannal.unsubscribe();
-    //     };
-    // }, [pusherNewToken]);
 
     console.log("pusherNewToken", createNotifications)
 
@@ -169,26 +101,26 @@ const AllLaunchs = () => {
                     <>
                         {/* {status === 'loading' && <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>} */}
                         {status === 'succeeded' && (
-                            filteredCoins.length === 0 ? (
+                            filteredCoins.length === 0 && Object.keys(createNotifications).length === 0 ? (
                                 <div>No data found</div>
                             ) : (
                                 <>
-                                    {Object.keys(createNotifications).length > 0 && (
+                                    {Object.keys(createNotifications).length > 0 && sortOption === '' && (
                                         <PusherLaunchCard pusherData={createNotifications} />
                                     )}
-                                    {/* {filteredCoins.map((coin, index) => (
-                                        <LaunchCard key={index} coinData={coin} />
-                                    ))} */}
-                                    {
-                                        filteredCoins.map((coin, index) => (
-                                            createNotifications.token_id !== coin?.coin?._id ? (
-                                                <LaunchCard key={index} setSpace="medium" coinData={coin} />
-                                            ) : null
-                                        ))
-                                    }
+
+                                    {filteredCoins
+                                        .filter((coin) =>
+                                            Object.keys(createNotifications).length === 0 ||
+                                            createNotifications.token_id !== coin?.coin?._id
+                                        )
+                                        .map((coin, index) => (
+                                            <LaunchCard key={index} setSpace="medium" coinData={coin} />
+                                        ))}
                                 </>
                             )
                         )}
+
                         {status === 'failed' && <div>No Coin Found</div>}
                     </>
                 )}

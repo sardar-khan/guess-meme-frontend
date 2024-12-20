@@ -252,9 +252,11 @@ const ChatRoom = ({ coinData }) => {
 
                         ))}
                         {
-                            hasPusherThread && (
+                            hasPusherThread &&
+                            pusherThread?.map((pusherThread, index) => (
                                 <div
-                                    // id={`like-icon-${item._id}`}
+                                    key={index}
+                                    id={`like-icon-${pusherThread?.newThread?._id}`}
                                     className={`color-transition secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]`}
                                 >
                                     <div className="flex items-center gap-2">
@@ -263,13 +265,13 @@ const ChatRoom = ({ coinData }) => {
                                             alt=""
                                         />
                                         <Link
-                                            // to={`/userprofile/${item?.user_id?._id}`}
+                                            to={`/userprofile/${pusherThread?.newThread?._id}`}
                                             className="Inter text-black text-[10px] font-semibold p-[2px] rounded-md bg-[#8E8DC7] cursor-pointer hover:underline"
                                         >
                                             {pusherThread?.user_name}
                                         </Link>
                                         <p className="Inter text-[#343434] text-[10px] font-semibold">
-                                            {new Date(pusherThread?.created_at).toLocaleString("en-US", {
+                                            {new Date(pusherThread?.newThread?.createdAt).toLocaleString("en-US", {
                                                 month: "numeric",
                                                 day: "numeric",
                                                 year: "numeric",
@@ -281,47 +283,47 @@ const ChatRoom = ({ coinData }) => {
                                         </p>
                                         <p
                                             className="flex items-center gap-1 Inter text-[#343434] text-[10px] font-semibold cursor-pointer hover:underline"
-                                        // onClick={() => handletoggleLike(item?._id)}
+                                            onClick={() => handletoggleLike(pusherThread?.newThread?._id)}
                                         >
                                             <Icon
-                                            // icon={`${likeStatuses[item._id] ? "mdi:cards-heart" : "mdi:cards-heart-outline"
-                                            //     }`}
-                                            // style={{
-                                            //     fontSize: "15px",
-                                            //     color: likeStatuses[item._id] ? "red" : "#343434",
-                                            // }}
+                                                icon={`${likeStatuses[pusherThread?.newThread?._id] ? "mdi:cards-heart" : "mdi:cards-heart-outline"
+                                                    }`}
+                                                style={{
+                                                    fontSize: "15px",
+                                                    color: likeStatuses[pusherThread?.newThread?._id] ? "red" : "#343434",
+                                                }}
                                             />
                                             {/* <span>{item?.totalLikes}</span> */}
                                         </p>
                                         <p
                                             className="Inter text-[#343434] text-[10px] font-semibold cursor-pointer hover:underline"
-                                            onClick={() => handleReplyId(pusherThread?.thread_id)}
+                                            onClick={() => handleReplyId(pusherThread?.newThread?.thread_id)}
                                         >
-                                            {pusherThread?.thread_id} [reply]
+                                            {pusherThread?.newThread?.thread_id} [reply]
                                         </p>
                                     </div>
                                     <div className="flex gap-1">
-                                        {/* {item?.image !== null && item?.image !== "" && (
+                                        {pusherThread?.newThread?.image !== null && pusherThread?.newThread?.image !== "" && (
                                             <div className="w-[128px] h-full max-h-[128px] ">
                                                 <img
-                                                    src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${item?.image}`}
+                                                    src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${pusherThread?.newThread?.image}`}
                                                     className="max-h-[128px]"
                                                     alt=""
                                                 />
                                             </div>
-                                        )} */}
+                                        )}
 
                                         <div className="w-[calc(100%-128px)] pl-2">
                                             <p className="Inter text-sm font-medium text-[#000000]">
                                                 <span className="text-[#4225ff] text-base font-extrabold">
-                                                    {/* {item?.reply_id} */}
+                                                    {pusherThread?.newThread?.reply_id}
                                                 </span>{" "}
-                                                {pusherThread?.text}
+                                                {pusherThread?.newThread?.text}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
-                            )
+                            ))
                         }
 
                     </div>

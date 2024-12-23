@@ -307,37 +307,37 @@ const UserProfile = () => {
                         </>
                     }
                     {activeTab === 'followers' &&
-                        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                        <div className='grid grid-cols-1 sm:grid-cols-1 gap-3'>
 
                             {profileState?.data?.data?.followers.length === 0 ?
                                 <div className='PixelOperator text-2xl text-center'>
                                     No Followers
                                 </div>
                                 :
-                                <>
+                                <div className='mx-auto w-full'>
                                     {profileState?.data?.data?.followers?.map((followers, index) => (
                                         <SmallCardWrapper>
                                             <Followers followers={followers} followerLength={profileState?.data?.data?.followers.length} />
                                         </SmallCardWrapper>
                                     ))}
-                                </>
+                                </div>
                             }
                         </div>
                     }
                     {activeTab === 'following' &&
-                        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                        <div className='grid grid-cols-1 sm:grid-cols-1 gap-3'>
                             {profileState?.data?.data?.following.length === 1 ?
                                 <div className='PixelOperator text-2xl'>
                                     No Following
                                 </div>
                                 :
-                                <>
+                                <div className='mx-auto w-full'>
                                     {profileState?.data?.data?.followers?.map((followers, index) => (
                                         <SmallCardWrapper>
                                             <Follwoing Follwoing={followers} FollwoingLength={profileState?.data?.data?.following.length} />
                                         </SmallCardWrapper>
                                     ))}
-                                </>
+                                </div>
                             }
                         </div>
                     }

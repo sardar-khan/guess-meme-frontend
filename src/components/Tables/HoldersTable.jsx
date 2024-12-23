@@ -4,6 +4,7 @@ import { getTopHolders, viewCoins } from '../../utils/api';
 import copy from '../../assets/icons/copy.png';
 import Loader from '../Loader';
 import { toast } from 'react-toastify';
+import { useNotificationContext } from '../../context/NotificationContext';
 
 const HoldersTable = () => {
     const { id } = useParams();
@@ -13,6 +14,7 @@ const HoldersTable = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [disabledCopy, setDisabledCopy] = useState({});
+    const { pusherAfterTrade } = useNotificationContext();
 
     useEffect(() => {
         const fetchHolders = async () => {
@@ -79,7 +81,7 @@ const HoldersTable = () => {
                     </tr>
                 </thead>
                 <tbody className='Inter text-left'>
-                    {holders.map((holder, index) => (
+                    {(pusherAfterTrade ? pusherAfterTrade?.topHolders?.data : holders).map((holder, index) => (
                         <tr key={index} className='border border-[#FFF] text-xs'>
                             <td className="px-4 py-4">
                                 <div className='flex items-center gap-1'>

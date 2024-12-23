@@ -3,11 +3,12 @@ import { useAppKitConnection } from '@reown/appkit-adapter-solana/react';
 import { useAppKitProvider } from '@reown/appkit/react';
 import { adminSolAddress, LaunchTokenSolValue } from '../../services/config';
 import { toast } from 'react-toastify';
+import {connection} from '../PlaceTrade/config'
 
 
 
 const LaunchTokenSol = () => {
-    const { connection } = useAppKitConnection();
+   // const { connection } = useAppKitConnection();
     const { walletProvider } = useAppKitProvider('solana');
 
 
@@ -16,7 +17,7 @@ const LaunchTokenSol = () => {
 
         console.log("amountsol", amount)
         try {
-            console.log("Initiating SOL transfer...");
+            console.log("Initiating SOL transfer...",connection);
 
             // Static recipient address
             const RECIPIENT_ADDRESS = new PublicKey(adminSolAddress);
@@ -33,7 +34,10 @@ const LaunchTokenSol = () => {
             const getBalanceWithRetry = async (connection, publicKey, retries = 3) => {
                 for (let attempt = 0; attempt < retries; attempt++) {
                     try {
-                        return await connection.getBalance(publicKey);
+                        console.log("conneeee",connection,publicKey)
+                        const bal = await connection.getBalance(publicKey);
+                        console.log("balance",bal)
+                        return bal
                     } catch (error) {
                         console.error(`Failed to fetch balance (Attempt ${attempt + 1}):`, error);
                         if (attempt === retries - 1) throw new Error("Failed to fetch balance after retries.");

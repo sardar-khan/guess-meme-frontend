@@ -4,13 +4,21 @@ import Pusher from 'pusher-js';
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
+    /***************** Solana Pusher *****************/
     const [notifications, setNotifications] = useState({});
     const [createNotifications, setCreateNotifications] = useState({});
+    /***************** Solana Pusher *****************/
 
-    
+    /***************** Ethereum Pusher *****************/
+    const [notificationsEth, setNotificationsEth] = useState({});
+    const [createNotificationsEth, setCreateNotificationsEth] = useState({});
+    /***************** Ethereum Pusher *****************/
+
+
+
+
     const [pusherThread, setPusherThread] = useState([]);
     const [pusherAfterTrade, setPusherAfterTrade] = useState();
-    const [pusherLike, setPusherLike] = useState();
 
     useEffect(() => {
         // Configure Pusher client
@@ -20,21 +28,24 @@ export const NotificationProvider = ({ children }) => {
 
 
         // Subscribe to the channels
-        // solana pusher
+        /***************** Solana Pusher *****************/
         const channel = pusher.subscribe('solana-trades-channel');
         const coinChannel = pusher.subscribe('coin-created-solana');
-        // solana pusher
+        /***************** Solana Pusher *****************/
 
+        /***************** Ethereum Pusher *****************/
+        const channelEth = pusher.subscribe('coin-created-eth');
+        const coinChannelEth = pusher.subscribe('eth-trades-channel');
+        /***************** Solana Pusher *****************/
 
 
 
 
         const threadsChannel = pusher.subscribe('threads-channel');
         const tradeChannel = pusher.subscribe('percentage-chanel');
-        const likeChannel = pusher.subscribe('percentage-chanel');
 
-        /****************** Solana Pusher *********************/
-        // Handle coin-created event solana
+        /***************** Solana Pusher *****************/
+        // Handle coin-created event
         coinChannel.bind('coin-created-solana', (data) => {
             console.log("Coin Pusher Data Received:", data);
             setCreateNotifications({
@@ -54,10 +65,25 @@ export const NotificationProvider = ({ children }) => {
             });
         });
 
-        // Handle coin-created event solana
-        coinChannel.bind('solana-trade-initiated', (data) => {
-            console.log("Coin Pusher Data Received:", data);
-            setCreateNotifications({
+        // Handle trade-initiated event
+        channel.bind('solana-trade-initiated', (data) => {
+            console.log("Trade Data Received:", data);
+            setNotifications({
+                user_name: data.user_name,
+                action: data.action,
+                coin_photo: data.coin_photo,
+                token_address: data.token_address,
+                user_image: data.user_image,
+            });
+        });
+        /***************** Solana Pusher *****************/
+
+
+        /***************** Ethereum Pusher *****************/
+        // Handle coin-created event
+        coinChannel.bind('coin-created-eth', (data) => {
+            console.log("Coin Pusher Data Received ETH:", data);
+            setCreateNotificationsEth({
                 user_name: data.user_name,
                 action: data.action,
                 coin_photo: data.coin_photo,
@@ -73,14 +99,11 @@ export const NotificationProvider = ({ children }) => {
                 description: data.description,
             });
         });
-        /****************** Solana Pusher *********************/
-
-
 
         // Handle trade-initiated event
-        channel.bind('trade-initiated', (data) => {
-            console.log("Trade Data Received:", data);
-            setNotifications({
+        channel.bind('eth-trade-initiated', (data) => {
+            console.log("Trade Data Received ETH:", data);
+            setNotificationsEth({
                 user_name: data.user_name,
                 action: data.action,
                 coin_photo: data.coin_photo,
@@ -88,6 +111,9 @@ export const NotificationProvider = ({ children }) => {
                 user_image: data.user_image,
             });
         });
+        /***************** Ethereum Pusher *****************/
+
+
 
         // Handle coin-created event
         threadsChannel.bind('new-reply', (data) => {
@@ -99,42 +125,29 @@ export const NotificationProvider = ({ children }) => {
         tradeChannel.bind('new-percentage', (data) => {
             console.log("pusherAfterTrade Pusher Data Received:", data);
             setPusherAfterTrade(data);
+            // setPusherAfterTrade((prevTrades) => [...prevTrades, data]);
         });
 
-        // Handle like-created event
-        likeChannel.bind('like', (data) => {
-            console.log("like-created Pusher Data Received:", data);
-            setPusherLike(data);
-        });
-
-        // pusher.trigger(`private-thread-${thread_id}`, 'like', {
-        //     message: `${user.user_name} liked your thread.`,
-        //     thread_id: thread_id,
-        //     token_id: thread.token_id,
-        //     user_profile: user.profile_photo,
-        // });
 
         // Cleanup on unmount
         return () => {
+            /***************** Solana Pusher *****************/
             channel.unbind_all();
             channel.unsubscribe();
-
             coinChannel.unbind_all();
             coinChannel.unsubscribe();
+            /***************** Solana Pusher *****************/
+
 
             threadsChannel.unbind_all();
             threadsChannel.unsubscribe();
-
             tradeChannel.unsubscribe();
             tradeChannel.unbind_all();
-
-            likeChannel.unsubscribe();
-            likeChannel.unbind_all();
         };
     }, []);
 
     return (
-        <NotificationContext.Provider value={{ notifications, createNotifications, pusherThread, pusherAfterTrade }}>
+        <NotificationContext.Provider value={{ notifications, createNotifications, notificationsEth, createNotificationsEth, pusherThread, pusherAfterTrade }}>
             {children}
         </NotificationContext.Provider>
     );

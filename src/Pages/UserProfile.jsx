@@ -26,6 +26,7 @@ const UserProfile = () => {
     const [showUserData, setShowUserData] = useState(false);
     const [checkFollow, setCheckFollow] = useState();
     const [notifications, setNotifications] = useState();
+    const [notificationsTab, setNotificationsTab] = useState('notification');
     const [userID, setUserID] = useState();
     const [userProfileData, setUserProfileData] = useState();
     const { isConnected } = useAppKitAccount()
@@ -153,6 +154,7 @@ const UserProfile = () => {
             const response = await resetNotificationsCount();
             if (response.status === 200) {
                 // fetchUserProfile()
+                setNotificationsTab("")
                 console.log("notification Recount", response.message);
 
             }
@@ -230,7 +232,7 @@ const UserProfile = () => {
                                         onClick={() => { setActiveTab(tab.id); handleNotificationCount(tab.id) }}
                                     >
 
-                                        {tab.id === 'notification' && profileState?.data?.data?.user?.unread_notifications > 0 && <span span className='absolute text-white font-semibold flex justify-center items-center p-2 right-0 top-0 bg-red-600 w-[10px] h-[10px] mt-[-7px] mr-[-7px] rounded-full'>{profileState?.data?.data?.user?.unread_notifications}</span>}
+                                        {tab.id === 'notification' && notificationsTab === 'notification' && profileState?.data?.data?.user?.unread_notifications > 0 && <span span className='absolute text-white font-semibold flex justify-center items-center p-2 right-0 top-0 bg-red-600 w-[10px] h-[10px] mt-[-7px] mr-[-7px] rounded-full'>{profileState?.data?.data?.user?.unread_notifications}</span>}
                                         {tab.label}
                                     </button>
                                 );

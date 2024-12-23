@@ -6,8 +6,8 @@ import { useNavigate } from "react-router-dom";
 
 const WindowDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const blockChain = localStorage.getItem("blockchain")
   const navigate = useNavigate()
+  const blockChain = localStorage.getItem("blockchain")
   const [selectedOption, setSelectedOption] = useState(blockChain === null ? localStorage.setItem("blockchain", "SOL") : blockChain);
 
   const dropdownRef = useRef(null);

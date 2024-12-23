@@ -9,16 +9,20 @@ import PusherLaunchCard from './PusherLaunchCard';
 
 const AllLaunchs = () => {
     const dispatch = useDispatch();
+    const isOn = useSelector((state) => state.animation.isOn);
     const { coins, status, error } = useSelector((state) => state.coins);
     const deployedCoins = useSelector(selectDeployedCoins);
     const createdCoins = useSelector(selectCreatedCoins);
     const filteredCoins = useSelector(selectFilteredCoins);
     const [activeTab, setActiveTab] = useState('AllLaunches');
     const [sortOption, setSortOption] = useState('');
+    const blockChain = localStorage.getItem("blockchain")
 
-    const { createNotifications } = useNotificationContext();
-    const hasCreateNotificationData = Object.keys(createNotifications).length > 0;
-    const checkNewPusherTokenStatus = createNotifications?.status;
+    const { createNotifications, createNotificationsEth } = useNotificationContext();
+    const createNotificationWithBlockChain = blockChain === "SOL" ? createNotifications : createNotificationsEth;
+
+    const hasCreateNotificationData = Object.keys(createNotificationWithBlockChain).length > 0;
+    const checkNewPusherTokenStatus = createNotificationWithBlockChain?.status;
 
 
 
@@ -32,7 +36,7 @@ const AllLaunchs = () => {
 
     // const [pusherNewToken, setPusherNewToken] = useState({});
 
-    console.log("createNotifications", createNotifications)
+    console.log("createNotificationWithBlockChain", createNotificationWithBlockChain)
     console.log("errorerrorerror", error)
     console.log("filteredCoins", filteredCoins)
     console.log("deployedCoins", deployedCoins)
@@ -52,7 +56,7 @@ const AllLaunchs = () => {
 
 
 
-    console.log("pusherNewToken", createNotifications)
+    console.log("pusherNewToken", createNotificationWithBlockChain)
 
     return (
         <div className='p-2 md:p-4 !pb-[150px]'>
@@ -101,18 +105,18 @@ const AllLaunchs = () => {
                     <>
                         {/* {status === 'loading' && <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>} */}
                         {status === 'succeeded' && (
-                            filteredCoins.length === 0 && Object.keys(createNotifications).length === 0 ? (
+                            filteredCoins.length === 0 && Object.keys(createNotificationWithBlockChain).length === 0 ? (
                                 <div>No data found</div>
                             ) : (
                                 <>
-                                    {Object.keys(createNotifications).length > 0 && sortOption === '' && (
-                                        <PusherLaunchCard pusherData={createNotifications} />
+                                    {Object.keys(createNotificationWithBlockChain).length > 0 && sortOption === '' && (
+                                        <PusherLaunchCard pusherData={createNotificationWithBlockChain} />
                                     )}
 
                                     {filteredCoins
                                         .filter((coin) =>
-                                            Object.keys(createNotifications).length === 0 ||
-                                            createNotifications.token_id !== coin?.coin?._id
+                                            Object.keys(createNotificationWithBlockChain).length === 0 ||
+                                            createNotificationWithBlockChain.token_id !== coin?.coin?._id
                                         )
                                         .map((coin, index) => (
                                             <LaunchCard key={index} setSpace="medium" coinData={coin} />
@@ -133,8 +137,8 @@ const AllLaunchs = () => {
                                     <div>No data found</div>
                                 ) : (
                                     <>
-                                        {Object.keys(createNotifications).length > 0 && createNotifications.status === "deployed" && (
-                                            <PusherLaunchCard pusherData={createNotifications} />
+                                        {Object.keys(createNotificationWithBlockChain).length > 0 && createNotificationWithBlockChain.status === "deployed" && (
+                                            <PusherLaunchCard pusherData={createNotificationWithBlockChain} />
                                         )}
                                         {
                                             deployedCoins.map((coin, index) => (
@@ -155,12 +159,12 @@ const AllLaunchs = () => {
                                     <div>No data found</div>
                                 ) : (
                                     <>
-                                        {Object.keys(createNotifications).length > 0 && createNotifications.status === "created" && (
-                                            <PusherLaunchCard pusherData={createNotifications} />
+                                        {Object.keys(createNotificationWithBlockChain).length > 0 && createNotificationWithBlockChain.status === "created" && (
+                                            <PusherLaunchCard pusherData={createNotificationWithBlockChain} />
                                         )}
                                         {
                                             createdCoins.map((coin, index) => (
-                                                createNotifications.token_id !== coin?.coin?._id ? (
+                                                createNotificationWithBlockChain.token_id !== coin?.coin?._id ? (
                                                     <LaunchCard key={index} setSpace="medium" coinData={coin} />
                                                 ) : null
                                             ))

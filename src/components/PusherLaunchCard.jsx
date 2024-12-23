@@ -1,16 +1,18 @@
 import React from 'react'
 import CardImg from '../assets/images/card 1.png'
 import { Link } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 const PusherLaunchCard = ({ pusherData }) => {
     console.log("pusherData", pusherData)
     // console.log("coinDataLaunch", coinData)
     // console.log("CoinID", coinData?.coin?._id)
     const blockchainType = localStorage.getItem('blockchain')
+    const isOn = useSelector((state) => state.animation.isOn);
 
     return (
         // <Link to='' className='relative mt-2'>
-        <Link to={`/trade/${pusherData?.token_id}`} className='relative mt-2'>
+        <Link to={`/trade/${pusherData?.token_id}`} className={` ${isOn ? 'element-to-shake' : ''} relative mt-2`}>
             <div className='absolute top-0 left-0 h-[5px] w-full bg-white'></div>
             <div className='absolute top-0 left-0 h-full w-[5px] bg-white'></div>
             <div className='absolute bottom-[1px] right-[1px] z-10 h-[98%] w-[8px] bg-[#7D73BF]'></div>

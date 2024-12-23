@@ -8,11 +8,10 @@ const Notifications = ({ notification }) => {
                 <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${notification?.user_profile}`} className='' alt="" />
             </div>
             <div className='text-center ml-2'>
-                {/* <h5 className='text-left PixelOperatorbold text-base mt-1'>ssss</h5> */}
                 <p className='text-left text-base'>{notification?.message}</p>
             </div>
         </div>
     )
 }
 
-export default Notifications
+export default Notifications;

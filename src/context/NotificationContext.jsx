@@ -20,6 +20,13 @@ export const NotificationProvider = ({ children }) => {
     const [pusherThread, setPusherThread] = useState([]);
     const [pusherAfterTrade, setPusherAfterTrade] = useState();
 
+    const [pusherLike, setPusherLike] = useState([]);
+    const [pusherFollow, setPusherFollow] = useState([]);
+    const [pusherNotificationThread, setPusherNotificationThread] = useState([]);
+
+
+
+
     useEffect(() => {
         // Configure Pusher client
         const pusher = new Pusher('c2c6e8d77a411d6cc315', {
@@ -36,15 +43,19 @@ export const NotificationProvider = ({ children }) => {
         /***************** Ethereum Pusher *****************/
         const channelEth = pusher.subscribe('coin-created-eth');
         const coinChannelEth = pusher.subscribe('eth-trades-channel');
-        /***************** Solana Pusher *****************/
-
+        /***************** Ethereum Pusher *****************/
 
 
 
         const threadsChannel = pusher.subscribe('threads-channel');
         const tradeChannel = pusher.subscribe('percentage-chanel');
 
-        /***************** Solana Pusher *****************/
+
+        const likeChannel = pusher.subscribe('like-pusher');
+        const followChannel = pusher.subscribe('follow-user');
+        const threadNotificationChannel = pusher.subscribe('threads-channel');
+        
+
         // Handle coin-created event
         coinChannel.bind('coin-created-solana', (data) => {
             console.log("Coin Pusher Data Received:", data);
@@ -81,7 +92,7 @@ export const NotificationProvider = ({ children }) => {
 
         /***************** Ethereum Pusher *****************/
         // Handle coin-created event
-        coinChannel.bind('coin-created-eth', (data) => {
+        coinChannelEth.bind('coin-created-eth', (data) => {
             console.log("Coin Pusher Data Received ETH:", data);
             setCreateNotificationsEth({
                 user_name: data.user_name,
@@ -101,7 +112,7 @@ export const NotificationProvider = ({ children }) => {
         });
 
         // Handle trade-initiated event
-        channel.bind('eth-trade-initiated', (data) => {
+        channelEth.bind('eth-trade-initiated', (data) => {
             console.log("Trade Data Received ETH:", data);
             setNotificationsEth({
                 user_name: data.user_name,
@@ -129,6 +140,24 @@ export const NotificationProvider = ({ children }) => {
         });
 
 
+
+        // Handle like event
+        likeChannel.bind('like', (data) => {
+            setPusherLike((prevLike) => [...prevLike, data]);
+            console.log("like Pusher Data Received:", data);
+        });
+        // Handle follow event
+        followChannel.bind('follow', (data) => {
+            setPusherFollow((prevFollow) => [...prevFollow, data]);
+            console.log("Follow Pusher Data Received:", data);
+        });
+        // Handle coin-created event
+        threadNotificationChannel.bind('reply', (data) => {
+            console.log("threads Notification Pusher Data Received:", data);
+            setPusherNotificationThread((prevThreads) => [...prevThreads, data]);
+        });
+
+
         // Cleanup on unmount
         return () => {
             /***************** Solana Pusher *****************/
@@ -138,16 +167,44 @@ export const NotificationProvider = ({ children }) => {
             coinChannel.unsubscribe();
             /***************** Solana Pusher *****************/
 
+            /***************** Ethereum Pusher *****************/
+            channelEth.unbind_all();
+            channelEth.unsubscribe();
+            coinChannelEth.unbind_all();
+            coinChannelEth.unsubscribe();
+            /***************** Ethereum Pusher *****************/
+
 
             threadsChannel.unbind_all();
             threadsChannel.unsubscribe();
             tradeChannel.unsubscribe();
             tradeChannel.unbind_all();
+
+
+            /***************** Like Follow Comment Pusher *****************/
+            likeChannel.unsubscribe();
+            likeChannel.unbind_all();
+            followChannel.unsubscribe();
+            followChannel.unbind_all();
+            threadNotificationChannel.unsubscribe();
+            threadNotificationChannel.unbind_all();
+            /***************** Like Follow Comment Pusher *****************/
+
         };
     }, []);
 
     return (
-        <NotificationContext.Provider value={{ notifications, createNotifications, notificationsEth, createNotificationsEth, pusherThread, pusherAfterTrade }}>
+        <NotificationContext.Provider value={{
+            notifications,
+            createNotifications,
+            notificationsEth,
+            createNotificationsEth,
+            pusherThread,
+            pusherAfterTrade,
+            pusherLike,
+            pusherFollow,
+            pusherNotificationThread
+        }}>
             {children}
         </NotificationContext.Provider>
     );

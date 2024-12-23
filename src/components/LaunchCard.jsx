@@ -22,14 +22,18 @@ const LaunchCard = ({ key, setSpace, coinData, topCoins }) => {
                 <div className='h-[200px] w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-b-[#FFFFFF] border-r-[#FFFFFF]'>
                     <div className={`flex p-[5px] h-[200px] w-full justify-between gap-1 border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff0] border-r-[#fff0]`}>
 
-                        <div className={`${'w-[150px] h-[full]'}`}>
-                            {coinData?.coin?.image ?
-                                <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.coin?.image}`} className='w-full' alt="" />
-                                :
-                                <img src={CardImg} className='w-full h-full' alt="" />
-                                // <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.coin?.image}`} className='w-full' alt="" />
-                            }
+                        <div className="w-full max-w-[150px] h-[180px]  flex justify-start items-start">
+                            {coinData?.coin?.image ? (
+                                <img
+                                    src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.coin?.image}`}
+                                    className="w-full max-h-[180px] object-cover "
+                                    alt=""
+                                />
+                            ) : (
+                                <img src={CardImg} className="w-full h-full object-cover" alt="" />
+                            )}
                         </div>
+
 
                         <div className={`relative bg-white w-[calc(100%-100px)] sm:w-[calc(100%-150px)] min-h-full border-[3px] border-b-[4px] border-r-[4px] border-[#353535] border-b-[#CBC7E5] border-r-[#CBC7E5] after:absolute after:h-[1px] after:w-full after:top-0 after:left-0 after:bg-[white]`}>
                             <div className={`flex flex-col justify-between p-[5px] md:p-[8px] min-h-full border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff] border-r-[#fff]`}>

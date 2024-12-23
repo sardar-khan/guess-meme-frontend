@@ -161,10 +161,13 @@ const ChatRoom = ({ coinData }) => {
                         </p>
 
                     </div>
-                    <div className='flex gap-1'>
+                    <div className='flex gap-1 mt-2'>
                         {coin?.coin?.image !== null && (
-                            <div className='w-[128px] h-full max-h-[128px]'>
-                                <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`} className='w-full h-full' alt="" />
+                            <div className='w-full max-w-[150px] flex justify-start items-start'>
+                                <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`}
+                                    //  className='w-full h-full object-cover'
+                                    className="w-full max-h-[180px] object-cover "
+                                    alt="" />
                             </div>
                         )}
                         <div className="pl-3 w-[calc(100%-128px)]">
@@ -259,7 +262,7 @@ const ChatRoom = ({ coinData }) => {
                                     id={`like-icon-${pusherThread?.newThread?._id}`}
                                     className={`color-transition secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]`}
                                 >
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 ">
                                         <img
                                             src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${pusherThread?.user_profile}`}
                                             alt=""

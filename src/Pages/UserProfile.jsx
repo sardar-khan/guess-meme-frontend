@@ -18,6 +18,8 @@ import Follwoing from '../components/Follwoing'
 import { CheckFollow, getNotifications, resetNotificationsCount, toggleFollow, ViewUser, viewUserprofile } from '../utils/api'
 import { useAppKitAccount } from '@reown/appkit/react'
 import Notifications from '../components/Notifications'
+import { useNotificationContext } from '../context/NotificationContext'
+
 
 const UserProfile = () => {
     const { id } = useParams();
@@ -30,6 +32,12 @@ const UserProfile = () => {
     const [userID, setUserID] = useState();
     const [userProfileData, setUserProfileData] = useState();
     const { isConnected } = useAppKitAccount()
+
+    const { pusherLike, pusherFollow, pusherNotificationThread } = useNotificationContext();
+
+    console.log("pusherLike", pusherLike)
+    console.log("pusherFollow", pusherFollow)
+    console.log("pusherNotificationThread", pusherNotificationThread)
 
     const tabs = [
         { id: 'coins created', label: 'Coins Created' },
@@ -297,6 +305,26 @@ const UserProfile = () => {
                                 </div>
                                 :
                                 <>
+                                    {pusherLike.length > 0 &&
+                                        pusherLike.map((pushernNotification, index) => (
+                                            <SmallCardWrapper>
+                                                <Notifications key={index} notification={pushernNotification} />
+                                            </SmallCardWrapper>
+                                        ))}
+
+                                    {pusherFollow.length > 0 &&
+                                        pusherFollow.map((pushernNotification, index) => (
+                                            <SmallCardWrapper>
+                                                <Notifications key={index} notification={pushernNotification} />
+                                            </SmallCardWrapper>
+                                        ))}
+                                    {pusherNotificationThread.length > 0 &&
+                                        pusherNotificationThread.map((pushernNotification, index) => (
+                                            <SmallCardWrapper>
+                                                <Notifications key={index} notification={pushernNotification} />
+                                            </SmallCardWrapper>
+                                        ))}
+
                                     {notifications.map((notification, index) => (
                                         <SmallCardWrapper>
                                             <Notifications key={index} notification={notification} />

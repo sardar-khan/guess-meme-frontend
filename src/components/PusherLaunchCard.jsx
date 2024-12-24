@@ -1,18 +1,45 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import CardImg from '../assets/images/card 1.png'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useNotificationContext } from '../context/NotificationContext'
 
 const PusherLaunchCard = ({ pusherData }) => {
-    console.log("pusherData", pusherData)
-    // console.log("coinDataLaunch", coinData)
-    // console.log("CoinID", coinData?.coin?._id)
-    const blockchainType = localStorage.getItem('blockchain')
     const isOn = useSelector((state) => state.animation.isOn);
+
+    const { notifications, createNotifications, notificationsEth, createNotificationsEth } = useNotificationContext();
+
+    const triggerAnimation = notifications || createNotifications || notificationsEth || createNotificationsEth !== "" || undefined || null || [] || {}
+    console.log("triggerAnimation", triggerAnimation)
+    const [isShaking, setIsShaking] = useState(false);
+
+    const handleAnimationEnd = () => {
+        setIsShaking(false);
+    };
+    console.log("pusherData", pusherData)
+
+
+    const blockchainType = localStorage.getItem('blockchain')
+
+
+
+    useEffect(() => {
+        if (isOn && Object.keys(triggerAnimation).length > 0 && !isShaking) {
+            setIsShaking(true);
+        }
+    }, [isOn, triggerAnimation, isShaking]);
+
+    const animationClass = isShaking ? 'element-to-shake' : '';
+
 
     return (
         // <Link to='' className='relative mt-2'>
-        <Link to={`/trade/${pusherData?.token_id}`} className={` ${isOn ? 'element-to-shake' : ''} relative mt-2`}>
+        <Link to={`/trade/${pusherData?.token_id}`}
+            // className={` ${isOn ? 'element-to-shake' : ''} relative mt-2`}
+            className={` ${animationClass} relative mt-2`}
+            onAnimationEnd={handleAnimationEnd}
+            onAnimationStart={() => setIsShaking(true)}
+        >
             <div className='absolute top-0 left-0 h-[5px] w-full bg-white'></div>
             <div className='absolute top-0 left-0 h-full w-[5px] bg-white'></div>
             <div className='absolute bottom-[1px] right-[1px] z-10 h-[98%] w-[8px] bg-[#7D73BF]'></div>

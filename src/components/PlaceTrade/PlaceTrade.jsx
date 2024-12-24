@@ -166,8 +166,22 @@ const PlaceTrade = ({ coinData }) => {
   }, [isConfirming, isConfirmed, hash])
 
   //console.log("solAmount",solAmount)
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const handleTrade = async () => {
+    setIsButtonDisabled(true);
+
+    setTimeout(() => {
+      setIsButtonDisabled(false);
+    }, 2000);
+
+    setIsLoading(true);
+
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+
     if (isConnected) {
       // if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
       //   toast.error("Please enter a valid amount");
@@ -186,17 +200,10 @@ const PlaceTrade = ({ coinData }) => {
 
       if (blockchainType === "SOL" && coinData?.status === "deployed" && tradeType === 'buy') {
         console.log("coinData?.status", coinData?.status)
-        //30680580
-        //38709677.419355
-        console.log("token to buy xox",tokenToBuy,solAmount);
+        console.log("token to buy xox", tokenToBuy, solAmount);
         const buySuccess = await buy(walletProvider, tokenToBuy, tokenAddress_mint);
         // toast.success(`Transction Successfull: ${buySuccess}`)
 
-        // if (buySuccess) {
-        //   toast.success(`Transction Successfull: ${buySuccess}`)
-        // console.log("buySuccess", buySuccess)
-
-        // }
         if (buySuccess) {
           console.log("buySuccess", buySuccess)
           setAmount('')
@@ -230,9 +237,11 @@ const PlaceTrade = ({ coinData }) => {
       }
 
       else if (blockchainType === "SOL" && coinData?.status === "deployed" && tradeType === 'sell') {
+
         const sellTrxHash = await sell(walletProvider, amount, tokenAddress_mint);
-        console.log("SellSuccess", SellSuccess)
-        if (SellSuccess?.success) {
+        console.log("sellTrxHash", sellTrxHash)
+
+        if (sellTrxHash?.success) {
           setAmount('')
           setSolAmount('')
           setTokenToBuy('')
@@ -240,14 +249,15 @@ const PlaceTrade = ({ coinData }) => {
           const apiResponse = await BuyToken({
             account_type: 'solana',
             amount: parseFloat(amount), // no of tokens to be deducted
-            token_amount: parseFloat(solAmount), // amount of sol to be received 
+            token_amount: parseFloat(solAmount).toFixed(10), // amount of sol to be received 
             token_id: id,
             type: tradeType,
-            transaction_hash: sellTrxHash,
+            transaction_hash: sellTrxHash?.data,
           });
           console.log("apiResponse", apiResponse)
           if (apiResponse?.status === 201) {
-            toast.success(`Transction Successfull: ${SellSuccess?.data?.recentBlockhash}`)
+            toast.success(`Transction Successfull: ${sellTrxHash?.data}`)
+            // toast.success(`Transction Successfull: ${SellSuccess?.data?.recentBlockhash}`)
             // toast.success(
             // `${tradeType === "buy" ? "buy" : "sell"} saved successfully`);
             dispatch(fetchTrades(id)); // Fetch updated trades
@@ -258,7 +268,7 @@ const PlaceTrade = ({ coinData }) => {
             );
           }
         } else {
-          toast.error("Error during selling try again")
+          toast.error(`${sellTrxHash?.error}`)
         }
 
       }
@@ -443,7 +453,7 @@ const PlaceTrade = ({ coinData }) => {
     }
   }
 
- 
+
   //calculate token values for buy
   const handleAmount = async (val) => {
     // setAmount(val)
@@ -734,7 +744,7 @@ const PlaceTrade = ({ coinData }) => {
                     >
                       Buy
                     </button>
-                   {coinData?.status!="created" && <button
+                    {coinData?.status != "created" && <button
                       className={`text-[16px] SegoeUi font-semibold text-center w-full px-3 py-2 rounded ${tradeType === "sell"
                         ? "bg-[#F87171] text-white"
                         : "bg-[#1F2937] text-[gray]"
@@ -750,7 +760,7 @@ const PlaceTrade = ({ coinData }) => {
                     {tradeType === 'buy' ?
                       <span
                         className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
-                        onClick={coinData?.status==="deployed"&& handleSwitchClick}
+                        onClick={coinData?.status === "deployed" && handleSwitchClick}
                       >
                         {showSOGs ? `Switch to ${blockchainType}` : `Switch to ${coinData?.name}`}
                       </span>
@@ -792,7 +802,7 @@ const PlaceTrade = ({ coinData }) => {
                                 const value = e.target.value;
                                 if (blockchainType === 'SOL') {
                                   if (!value || Number(value) >= 0) {
-                                    coinData?.status ==="created" ? setAmount(value) :   handleAmount(value);
+                                    coinData?.status === "created" ? setAmount(value) : handleAmount(value);
                                   }
                                 } else {
                                   setAmount(value);
@@ -833,7 +843,7 @@ const PlaceTrade = ({ coinData }) => {
                                 const value = e.target.value;
                                 if (!value || Number(value) >= 0) {
                                   // setAmount(value);
-                                handleAmountSell(value)
+                                  handleAmountSell(value)
                                 }
                               }}
                               className="w-full px-2 py-3 pr-4"
@@ -900,7 +910,7 @@ const PlaceTrade = ({ coinData }) => {
                 <button
                   className="themeBtn Inter w-fit mt-5 mx-auto"
                   onClick={handleTrade}
-                  disabled={isLoading || amountError.error}
+                  disabled={isLoading || amountError.error || isButtonDisabled}
                 >
                   <span>{isLoading ? "Processing..." : "Trade"}</span>
                 </button>

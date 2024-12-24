@@ -160,8 +160,8 @@ textarea:focus {
 }
 
 .element-to-shake {
-  animation: shake 0.5s ease-in-out infinite;
-  background-color: white;
+  animation: shake 0.5s ease-in-out 2;
+  /* background-color: white; */
 }
 
 

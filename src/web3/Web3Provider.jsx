@@ -42,9 +42,11 @@ export function Web3ModalProvider({ children }) {
   };
 
   // 3. Set the networks
+  const blockChain = localStorage.getItem("blockchain");
   const networks = [
-    polygonAmoy,
-    solanaDevnet,
+    // polygonAmoy,
+    // solanaDevnet,
+    blockChain === "SOL" ? solanaDevnet : polygonAmoy,
   ];
   // const ethnetworks =[
   //   polygonAmoy

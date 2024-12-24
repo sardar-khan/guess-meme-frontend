@@ -31,6 +31,14 @@ const Navbar = () => {
     console.log("notificationWithBlockChain", createNotificationWithBlockChain)
     //////////////////////// Pusher////////////////////////
 
+    const triggerAnimation = notifications || createNotifications || notificationsEth || createNotificationsEth !== "" || undefined || null || [] || {}
+    console.log("triggerAnimation", triggerAnimation)
+    const [isShaking, setIsShaking] = useState(false);
+    const handleAnimationEnd = () => {
+        setIsShaking(false);
+    };
+
+
 
     const formatDate = (dateString) => {
         if (!dateString) return ""; // Handle undefined or null case
@@ -75,7 +83,16 @@ const Navbar = () => {
     const openDirectModal = () => {
         setIsModalOpen(true);
         setIsMenuOpen(false)
-    };
+    };;
+
+    useEffect(() => {
+        if (isOn && Object.keys(triggerAnimation).length > 0 && !isShaking) {
+            setIsShaking(true);
+        }
+    }, [isOn, triggerAnimation, isShaking]);
+
+    const animationClass = isShaking ? 'element-to-shake' : '';
+
 
 
     return (
@@ -89,9 +106,12 @@ const Navbar = () => {
                     </Link>
 
                     <div className='flex items-center gap-1'>
-                        {/* +mnO Buy 23 SOl of climber */}
-
-                        <div class={`${isOn ? 'element-to-shake' : ''} PixelOperatorbold flex items-center gap-1 p-2 text-sm font-semibold rounded bg-white max-[930px]:hidden`}>
+                        
+                        <div
+                            className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-sm font-semibold rounded bg-white max-[930px]:hidden`}
+                            onAnimationEnd={handleAnimationEnd}
+                            onAnimationStart={() => setIsShaking(true)}
+                        >
                             <img src={!hasNotificationData ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.coin_photo}` : notificationWithBlockChain?.coin_photo} class="w-[12px] h-[12px] rounded-full" alt="" />
                             <Link class="hover:underline" href="/view/undefined">{!hasNotificationData ? latestnotifications?.latestTrade?.user_name : notificationWithBlockChain?.user_name}</Link>
                             {/* Buy */}
@@ -101,7 +121,11 @@ const Navbar = () => {
                         </div>
 
 
-                        <div class={`${isOn ? 'element-to-shake' : ''} PixelOperatorbold flex items-center gap-1 p-2 text-sm font-semibold rounded text-white bg-[#5F16BC] max-[930px]:hidden`}>
+                        <div
+                            className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-sm font-semibold rounded bg-white max-[930px]:hidden`}
+                            onAnimationEnd={handleAnimationEnd} 
+                            onAnimationStart={() => setIsShaking(true)} 
+                        >
                             <img src={!hasCreateNotificationData || hasCreateNotificationData === undefined ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.user_profile}` : createNotificationWithBlockChain?.coin_photo} class="w-[12px] h-[12px] rounded-full" alt="" />
                             <Link class="hover:underline" href="/view/undefined">
                                 {!hasCreateNotificationData ? latestnotifications?.latestTrade?.user_name : createNotificationWithBlockChain?.user_name}

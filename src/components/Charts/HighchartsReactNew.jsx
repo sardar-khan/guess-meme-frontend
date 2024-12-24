@@ -46,6 +46,8 @@ const HighchartsReactNew = () => {
         const fetchChartData = async () => {
             try {
                 const response = await axios.get(`${apiUrl}trade/graph-data?token_id=${id}`);
+                console.log("chartData response:", response);
+
                 const formattedData = response.data?.data?.map(item => [
                     new Date(item.time).getTime(), // x-axis time
                     item.open, // Open price
@@ -68,6 +70,7 @@ const HighchartsReactNew = () => {
 
         fetchChartData();
     }, [id]);
+    console.log("chartData:", chartData);
 
     const options = {
         rangeSelector: {

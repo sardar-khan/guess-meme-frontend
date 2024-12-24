@@ -27,7 +27,7 @@ const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
 // eslint-disable-next-line react/prop-types
 const PlaceTrade = ({ coinData }) => {
-  //console.log("placeTrade COin data", coinData)
+  console.log("placeTrade COin data", coinData)
   //console.log("placeTrade COin data token_address", coinData?.token_address)
 
   // const tokenAddress_mint = coinData?.token_address ? new PublicKey(coinData.token_address) : null;
@@ -188,6 +188,7 @@ const PlaceTrade = ({ coinData }) => {
         console.log("coinData?.status", coinData?.status)
         //30680580
         //38709677.419355
+        console.log("token to buy xox",tokenToBuy,solAmount);
         const buySuccess = await buy(walletProvider, tokenToBuy, tokenAddress_mint);
         // toast.success(`Transction Successfull: ${buySuccess}`)
 
@@ -204,8 +205,8 @@ const PlaceTrade = ({ coinData }) => {
 
           const apiResponse = await BuyToken({
             account_type: 'solana',
-            amount: parseFloat(amount),
-            token_amount: 1,
+            amount: parseFloat(tokenToBuy),
+            token_amount: parseFloat(solAmount),
             token_id: id,
             type: tradeType,
             transaction_hash: buySuccess,
@@ -229,7 +230,7 @@ const PlaceTrade = ({ coinData }) => {
       }
 
       else if (blockchainType === "SOL" && coinData?.status === "deployed" && tradeType === 'sell') {
-        const SellSuccess = await sell(walletProvider, amount, tokenAddress_mint);
+        const sellTrxHash = await sell(walletProvider, amount, tokenAddress_mint);
         console.log("SellSuccess", SellSuccess)
         if (SellSuccess?.success) {
           setAmount('')
@@ -238,11 +239,11 @@ const PlaceTrade = ({ coinData }) => {
           // toast.success("Successfully Sell")
           const apiResponse = await BuyToken({
             account_type: 'solana',
-            amount: parseFloat(amount),
-            token_amount: 1,
+            amount: parseFloat(amount), // no of tokens to be deducted
+            token_amount: parseFloat(solAmount), // amount of sol to be received 
             token_id: id,
             type: tradeType,
-            transaction_hash: SellSuccess?.data?.recentBlockhash,
+            transaction_hash: sellTrxHash,
           });
           console.log("apiResponse", apiResponse)
           if (apiResponse?.status === 201) {
@@ -270,7 +271,7 @@ const PlaceTrade = ({ coinData }) => {
           const apiResponse = await BuyToken({
             account_type: 'solana',
             amount: parseFloat(amount),
-            token_amount: 1,
+            token_amount: 0,
             token_id: id,
             type: tradeType,
           });
@@ -442,7 +443,7 @@ const PlaceTrade = ({ coinData }) => {
     }
   }
 
-
+ 
   //calculate token values for buy
   const handleAmount = async (val) => {
     // setAmount(val)
@@ -733,7 +734,7 @@ const PlaceTrade = ({ coinData }) => {
                     >
                       Buy
                     </button>
-                    <button
+                   {coinData?.status!="created" && <button
                       className={`text-[16px] SegoeUi font-semibold text-center w-full px-3 py-2 rounded ${tradeType === "sell"
                         ? "bg-[#F87171] text-white"
                         : "bg-[#1F2937] text-[gray]"
@@ -741,7 +742,7 @@ const PlaceTrade = ({ coinData }) => {
                       onClick={() => { setTradeType("sell"); setShowSOGs(true); setAmount(''); setSolAmount('') }}
                     >
                       Sell
-                    </button>
+                    </button>}
 
                   </div>
 
@@ -749,7 +750,7 @@ const PlaceTrade = ({ coinData }) => {
                     {tradeType === 'buy' ?
                       <span
                         className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
-                        onClick={handleSwitchClick}
+                        onClick={coinData?.status==="deployed"&& handleSwitchClick}
                       >
                         {showSOGs ? `Switch to ${blockchainType}` : `Switch to ${coinData?.name}`}
                       </span>
@@ -791,7 +792,7 @@ const PlaceTrade = ({ coinData }) => {
                                 const value = e.target.value;
                                 if (blockchainType === 'SOL') {
                                   if (!value || Number(value) >= 0) {
-                                    handleAmount(value);
+                                    coinData?.status ==="created" ? setAmount(value) :   handleAmount(value);
                                   }
                                 } else {
                                   setAmount(value);
@@ -832,7 +833,7 @@ const PlaceTrade = ({ coinData }) => {
                                 const value = e.target.value;
                                 if (!value || Number(value) >= 0) {
                                   // setAmount(value);
-                                  handleAmountSell(value)
+                                handleAmountSell(value)
                                 }
                               }}
                               className="w-full px-2 py-3 pr-4"

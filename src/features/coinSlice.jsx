@@ -3,8 +3,9 @@ import { viewCoins } from '../utils/api';
 
 export const fetchCoins = createAsyncThunk('coins/fetchCoins', async (sortBy) => {
     const response = await viewCoins(sortBy);
-    return response.data;
+    return response; 
 });
+
 
 
 const coinSlice = createSlice({
@@ -24,7 +25,7 @@ const coinSlice = createSlice({
         },
         sortCoins: (state, action) => {
             state.status = 'loading';
-            fetchCoins(action.payload);
+            fetchCoins(action.payload); // This will be called directly, but the response handling will be in extraReducers
         }
     },
     extraReducers: (builder) => {
@@ -34,8 +35,8 @@ const coinSlice = createSlice({
             })
             .addCase(fetchCoins.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.coins = action.payload;
-                state.filteredCoins = action.payload;
+                state.coins = action.payload.data; // Access the data from the response
+                state.filteredCoins = action.payload.data; // Update filteredCoins
             })
             .addCase(fetchCoins.rejected, (state, action) => {
                 state.status = 'failed';
@@ -45,6 +46,7 @@ const coinSlice = createSlice({
 });
 
 export const { searchCoins, sortCoins } = coinSlice.actions;
+
 
 export const selectCoinById = (state, id) =>
     state.coins.coins.find((coin) => coin.coin?._id === id);

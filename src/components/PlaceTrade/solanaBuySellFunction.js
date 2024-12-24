@@ -380,10 +380,10 @@ async function sellcoin(walletProvider, amount, mintaddy) {
             sellTx.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
         
             const signature = await walletProvider.signAndSendTransaction(sellTx);
-        console.log('Sell transaction signature: ', sellTx)
+       // console.log('Sell transaction signature: ', sellTx,signature)
         return {
             error: false,
-            data: sellTx,
+            data: signature,
             success: true,
         }
     } catch (error) {

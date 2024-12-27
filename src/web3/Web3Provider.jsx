@@ -42,16 +42,13 @@ export function Web3ModalProvider({ children }) {
   };
 
   // 3. Set the networks
-  const blockChain = localStorage.getItem("blockchain");
+  // const blockChain = localStorage.getItem("blockchain");
+  // blockChain === "SOL" ? solanaDevnet : polygonAmoy;
   const networks = [
-    // blockChain === "SOL" ? solanaDevnet : polygonAmoy,
     polygonAmoy,
     solanaDevnet,
   ];
-  // const ethnetworks =[
-  //   polygonAmoy
-  // ]
-  //const networks =   block_chain == "ETH" ? networks :ethnetworks;
+
   // 4. Create Wagmi Adapter
   const wagmiAdapter = new WagmiAdapter({
     networks,

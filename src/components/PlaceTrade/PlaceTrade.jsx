@@ -320,13 +320,13 @@ const PlaceTrade = ({ coinData }) => {
           response = await sellTokensOnBlockchain(tokenAddress, amount);
         }
 
-        console.log("response buyTokensOnBlockchain", response)
+        console.log("response sellTokensOnBlockchain", response)
 
         if (response?.success) {
           setAmount('')
-          toast.success(
-            `${tradeType === "buy" ? "buy" : "sell"} transaction successful`
-          );
+          // toast.success(
+          //   `${tradeType === "buy" ? "buy" : "Sell"} transaction successful`
+          // );
 
           // Update backend after successful blockchain transaction
           const type = blockchainType.toLowerCase() === 'eth' ? 'ethereum' : ''
@@ -342,7 +342,9 @@ const PlaceTrade = ({ coinData }) => {
 
           if (apiResponse?.status === 201) {
             toast.success(
-              `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
+              `${tradeType === "buy" ? "Buy" : "Sell"} Transaction successful`
+              // `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
+              
             );
             dispatch(fetchTrades(id)); // Fetch updated trades
           } else {
@@ -350,7 +352,8 @@ const PlaceTrade = ({ coinData }) => {
               `Failed to record ${tradeType} trade in the backend`
             );
           }
-        } else {
+        }
+        else {
           throw new Error(
             response?.error || `Failed to ${tradeType} tokens on blockchain`
           );
@@ -842,8 +845,8 @@ const PlaceTrade = ({ coinData }) => {
                               onChange={(e) => {
                                 const value = e.target.value;
                                 if (!value || Number(value) >= 0) {
-                                  // setAmount(value);
-                                  handleAmountSell(value)
+                                  setAmount(value);
+                                  // handleAmountSell(value)
                                 }
                               }}
                               className="w-full px-2 py-3 pr-4"

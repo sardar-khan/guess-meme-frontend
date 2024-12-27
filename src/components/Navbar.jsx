@@ -108,7 +108,7 @@ const Navbar = () => {
                     <div className='flex items-center gap-1'>
                         
                         <div
-                            className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-sm font-semibold rounded bg-white max-[930px]:hidden`}
+                            className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-xs font-semibold rounded bg-white max-[930px]:hidden`}
                             onAnimationEnd={handleAnimationEnd}
                             onAnimationStart={() => setIsShaking(true)}
                         >
@@ -122,7 +122,7 @@ const Navbar = () => {
 
 
                         <div
-                            className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-sm font-semibold rounded bg-white max-[930px]:hidden`}
+                            className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-xs font-semibold rounded bg-white max-[930px]:hidden`}
                             onAnimationEnd={handleAnimationEnd} 
                             onAnimationStart={() => setIsShaking(true)} 
                         >

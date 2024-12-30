@@ -105,7 +105,7 @@ const Navbar = () => {
                         <h2 className='PixelOperatorbold text-white font-extrabold !text-[28px]'>Guess.Meme</h2>
                     </Link>
 
-                    <div className='flex items-center gap-1'>
+                    {/* <div className='flex items-center gap-1'>
                         
                         <div
                             className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-xs font-semibold rounded bg-white max-[930px]:hidden`}
@@ -114,9 +114,7 @@ const Navbar = () => {
                         >
                             <img src={!hasNotificationData ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.coin_photo}` : notificationWithBlockChain?.coin_photo} class="w-[12px] h-[12px] rounded-full" alt="" />
                             <Link class="hover:underline" href="/view/undefined">{!hasNotificationData ? latestnotifications?.latestTrade?.user_name : notificationWithBlockChain?.user_name}</Link>
-                            {/* Buy */}
                             <Link class="hover:underline" href="/">{!hasNotificationData ? latestnotifications?.latestTrade?.action : notificationWithBlockChain?.action}</Link>
-                            {/* of climber */}
                             <img src={!hasNotificationData ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.user_name}` : notificationWithBlockChain?.user_name} class="w-[12px] h-[12px] rounded-full" alt="" />
                         </div>
 
@@ -135,7 +133,103 @@ const Navbar = () => {
                             <img src={!hasCreateNotificationData ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.coin_photo}` : createNotificationWithBlockChain?.user_name} class="w-[12px] h-[12px] rounded-full" alt="" />
                         </div>
 
+                    </div> */}
+                    <div className="flex items-center gap-1">
+                        <div
+                            className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-xs font-semibold rounded bg-white max-[930px]:hidden`}
+                            onAnimationEnd={handleAnimationEnd}
+                            onAnimationStart={() => setIsShaking(true)}
+                        >
+                            <img
+                                src={
+                                    !hasNotificationData
+                                        ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.coin_photo
+                                        }`
+                                        : notificationWithBlockChain?.coin_photo
+                                }
+                                className="w-[12px] h-[12px] rounded-full"
+                                alt=""
+                            />
+                            <Link
+                                className="hover:underline truncate max-w-[150px]"
+                                href="/view/undefined"
+                            >
+                                {!hasNotificationData
+                                    ? latestnotifications?.latestTrade?.user_name
+                                    : notificationWithBlockChain?.user_name}
+                            </Link>
+                            <Link
+                                className="hover:underline truncate max-w-[150px]"
+                                href="/"
+                            >
+                                {!hasNotificationData
+                                    ? latestnotifications?.latestTrade?.action
+                                    : notificationWithBlockChain?.action}
+                            </Link>
+                            <img
+                                src={
+                                    !hasNotificationData
+                                        ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.user_name
+                                        }`
+                                        : notificationWithBlockChain?.user_name
+                                }
+                                className="w-[12px] h-[12px] rounded-full"
+                                alt=""
+                            />
+                        </div>
+
+                        <div
+                            className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-xs font-semibold rounded bg-white max-[930px]:hidden`}
+                            onAnimationEnd={handleAnimationEnd}
+                            onAnimationStart={() => setIsShaking(true)}
+                        >
+                            <img
+                                src={
+                                    !hasCreateNotificationData || hasCreateNotificationData === undefined
+                                        ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.user_profile
+                                        }`
+                                        : createNotificationWithBlockChain?.coin_photo
+                                }
+                                className="w-[12px] h-[12px] rounded-full"
+                                alt=""
+                            />
+                            <Link
+                                className="hover:underline truncate max-w-[150px]"
+                                href="/view/undefined"
+                            >
+                                {!hasCreateNotificationData
+                                    ? latestnotifications?.latestTrade?.user_name
+                                    : createNotificationWithBlockChain?.user_name}
+                            </Link>
+                            <Link
+                                className="hover:underline truncate max-w-[150px]"
+                                href="/"
+                            >
+                                {!hasCreateNotificationData
+                                    ? latestnotifications?.latestCoin?.action
+                                    : createNotificationWithBlockChain?.action}
+                            </Link>
+                            on{" "}
+                            <span className="truncate max-w-[150px]">
+                                {formatDate(
+                                    !hasCreateNotificationData
+                                        ? latestnotifications?.latestCoin?.date
+                                        : createNotificationWithBlockChain?.date
+                                )}
+                            </span>
+                            <img
+                                src={
+                                    !hasCreateNotificationData
+                                        ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.coin_photo
+                                        }`
+                                        : createNotificationWithBlockChain?.user_name
+                                }
+                                className="w-[12px] h-[12px] rounded-full"
+                                alt=""
+                            />
+                        </div>
                     </div>
+
 
                 </div>
 

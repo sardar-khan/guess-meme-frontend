@@ -31,12 +31,15 @@ const LaunchTokens = () => {
     const [name, setName] = useState('');
     const [ticker, setTicker] = useState('');
     const [revealTime, setRevealTime] = useState('');
+    const [selectedMinutes, setSelectedMinutes] = useState(0); // Default to 0 minutes
+    // const [currentDateTime, setCurrentDateTime] = useState(new Date().toISOString().slice(0, 16));
+    const [currentDate, setCurrentDate] = useState(new Date().toISOString().slice(0, 10)); // Only the date part
+
     const [description, setDescription] = useState('');
     const [maxSupply, setMaxSupply] = useState('');
     const [imageFile, setImageFile] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
     const [fileName, setFileName] = useState('');
-    const [currentDateTime, setCurrentDateTime] = useState(new Date().toISOString().slice(0, 16));
     const [sortOption, setSortOption] = useState('');
     const { data: balanceData } = useBalance({ address });
     const { data: hash, sendTransaction } = useSendTransaction();
@@ -152,7 +155,7 @@ const LaunchTokens = () => {
                     ticker,
                     description,
                     image: imageUrl,
-                    max_supply: maxSupply,
+                    max_supply: 100,
                     twitter_link: 'https://twitter.com',
                     telegram_link: 'https://telegram.com',
                     website: 'https://website.com',
@@ -247,6 +250,44 @@ const LaunchTokens = () => {
         } else {
             setRevealTime(inputValue);
         }
+    };
+    const handleDateChange = (e) => {
+        const selectedDate = e.target.value;
+        setCurrentDate(selectedDate);
+
+        // Update revealTime if a time has already been selected
+        if (selectedMinutes > 0) {
+            const updatedTime = calculateRevealTime(selectedDate, selectedMinutes);
+            setRevealTime(updatedTime);
+        }
+    };
+    const handleTimeSelect = (minutes) => {
+        setSelectedMinutes(minutes);
+    
+        const currentTime = new Date();
+    
+        currentTime.setMinutes(currentTime.getMinutes() + minutes);
+    
+        currentTime.setHours(currentTime.getHours());
+    
+        const formattedTime = currentTime.toLocaleString(undefined, {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+        });
+    
+        setRevealTime(formattedTime);
+    };
+    
+
+
+    const calculateRevealTime = (date, minutes) => {
+        const baseDate = new Date(date);
+        const revealTime = new Date(baseDate.getTime() + minutes * 60 * 1000);
+        return revealTime.toISOString().replace("T", " ").slice(0, 16); // Format: "YYYY-MM-DD HH:MM"
     };
 
 
@@ -379,20 +420,31 @@ const LaunchTokens = () => {
 
                                     <div className="flex flex-col sm:flex-row sm:items-center items-start gap-4">
                                         <label className="formLabel min-w-auto md:min-w-[150px] text-right">*Reveal Time:</label>
-                                        <div className="h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]">
-                                            <div className="h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]">
-                                                <input
-                                                    type="datetime-local"
-                                                    value={revealTime}
-                                                    onChange={handleRevealTimeChange}
-                                                    onKeyDown={restrictYearInput} // Called on every keypress
-                                                    className="inputClassName SegoeUi px-2 py-3 w-full"
-                                                    min={currentDateTime}
-                                                />
+                                        <div className="flex flex-col gap-2 w-full">
+                                            {/* Time Selection */}
+                                            <div className="flex flex-wrap gap-2 Inter">
+                                                {[5, 15, 30, 60, 120, 1440].map((minutes) => (
+                                                    <button
+                                                        key={minutes}
+                                                        onClick={() => handleTimeSelect(minutes)}
+                                                        className={`px-4 py-2 rounded-md border ${selectedMinutes === minutes
+                                                            ? "bg-purple-600 text-white"
+                                                            : "bg-gray-200 text-gray-800"
+                                                            }`}
+                                                    >
+                                                        {minutes < 60 ? `${minutes} Min` : `${minutes / 60} Hour${minutes > 60 ? "s" : ""}`}
+                                                    </button>
+                                                ))}
                                             </div>
+
+                                            {/* Reveal Time Display */}
+                                            {revealTime && (
+                                                <div className="mt-4 Inter">
+                                                    <strong>Reveal Time:</strong> {revealTime}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-
                                     {/* <InputField label="Initial Buy:" /> */}
 
                                 </div>

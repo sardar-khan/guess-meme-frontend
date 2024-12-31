@@ -62,7 +62,8 @@ const LaunchTokens = () => {
     const [adminAddress, setAdminAddress] = useState('');
 
     useEffect(() => {
-        const interval = setInterval(() => setCurrentDateTime(new Date().toISOString().slice(0, 16)), 60000);
+        // const interval = setInterval(() => setCurrentDateTime(new Date().toISOString().slice(0, 16)), 60000);
+        const interval = setInterval(() => setCurrentDate(new Date().toISOString().slice(0, 16)), 60000);
         return () => clearInterval(interval);
     }, [adminAddress]);
 

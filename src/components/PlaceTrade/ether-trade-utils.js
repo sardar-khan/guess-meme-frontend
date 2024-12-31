@@ -20,28 +20,67 @@ export const getFactoryContract = async () => {
   return factoryContract;
 };
 
+
 // Function to buy tokens
+
+export const calculateTokenEthValues = async (tokenAddress, amount) => {
+  try {
+    const factoryContract = await getFactoryContract();
+    const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
+
+    const payableAmount = await factoryContract.buyQuote(tokenAddress, formattedAmount);
+    const fee = await factoryContract.calculateBuyFee(tokenAddress, formattedAmount);
+    console.log("payableAmount onchange", payableAmount);
+    const ethToPay = ethers.BigNumber.from(payableAmount).add(
+      ethers.BigNumber.from(fee)
+    );
+    console.log("Total ETH to pay Onchange:", ethers.utils.formatEther(ethToPay));
+    return ethers.utils.formatEther(ethToPay);
+  } catch (error) {
+    console.error("Error calculating token ETH values:", error);
+    throw error; // Rethrow if needed
+  }
+};
+
 
 export const buyTokensOnBlockchain = async (tokenAddress, amount) => {
   try {
-    if (!tokenAddress || !ethers.utils.isAddress(tokenAddress)) {
+    if (!tokenAddress || !ethers.utils.isAddress(tokenAddress) || amount == '') {
       throw new Error(`Invalid token address: ${tokenAddress}`);
     }
 
-    // Ensure `amount` is in the correct format
-    const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18); // Assuming the token has 18 decimals
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const walletAddress = await signer.getAddress();
+    const walletBalance = await provider.getBalance(walletAddress);
+
+
+    const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
 
     const factoryContract = await getFactoryContract();
 
     console.log("Fetching quote and fee...");
     const payableAmount = await factoryContract.buyQuote(tokenAddress, formattedAmount);
     const fee = await factoryContract.calculateBuyFee(tokenAddress, formattedAmount);
-
+    console.log("payableAmount", payableAmount)
     // Add payableAmount and fee
-    const ethToPay = ethers.BigNumber.from(payableAmount).add(
-      ethers.BigNumber.from(fee)
-    );
+    // const ethToPay = ethers.BigNumber.from(payableAmount).add(
+    //   ethers.BigNumber.from(fee)
+    // );
+    const ethToPay = ethers.BigNumber.from(payableAmount).add(ethers.BigNumber.from(fee));
+
     console.log("Total ETH to pay:", ethers.utils.formatEther(ethToPay));
+
+    console.log("Wallet Balance (ETH):", ethers.utils.formatEther(walletBalance));
+    console.log("ETH Required to Buy Tokens:", ethers.utils.formatEther(ethToPay));
+
+    // if (walletBalance.lt(ethToPay)) {
+    if (ethers.utils.formatEther(walletBalance) < ethers.utils.formatEther(ethToPay)) {
+      console.error("Insufficient balance to complete the transaction.");
+      return { success: false, error: "Insufficient balance." };
+      // toast.error("Insufficient balance to complete the transaction.")
+    }
+
 
     console.log("Executing buy transaction...");
     const tx = await factoryContract.buyTokens(tokenAddress, formattedAmount, {
@@ -51,6 +90,8 @@ export const buyTokensOnBlockchain = async (tokenAddress, amount) => {
 
     console.log("Buy transaction successful:", tx.hash);
     return { success: true, transactionHash: tx.hash };
+
+
   } catch (error) {
     console.error("Error buying tokens on blockchain:", error);
     return { success: false, error: error.message };

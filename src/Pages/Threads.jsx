@@ -82,14 +82,18 @@ const Threads = () => {
                         <div className='flex items-end gap-[15px] flex-wrap lg:flex-nowrap'>
                             <span className='Inter text-[#515151] font-normal text-xs'>{coinData?.name}</span>
                             <span className='Inter text-[#515151] font-normal text-xs'>Ticker: {coinData?.ticker}</span>
-                            <span className='Inter text-[#662286] font-normal text-xs'>Market cap: ${coinData?.market_cap}</span>
+                            {/* <span className='Inter text-[#662286] font-normal text-xs'>Market cap: ${coinData?.market_cap}</span> */}
+                            <span className='Inter text-[#662286] font-normal text-xs'>
+                                Market cap: ${coinData?.market_cap ? Number(coinData.market_cap).toLocaleString('en-US') : 'N/A'}
+                            </span>
+
                             <div className='flex items-end gap-2'>
                                 <span className='Inter text-[#515151] font-normal text-xs'>CA:</span>
                                 <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
                                     <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
                                         <input
                                             type="text"
-                                            value={id}
+                                            value={coinData?.token_address}
                                             name=""
                                             id=""
                                             className='w-[150px] px-2 py-1 text-xs font-normal'

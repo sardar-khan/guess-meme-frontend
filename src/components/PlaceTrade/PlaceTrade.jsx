@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 
 import { fetchTrades } from "../../features/tradesSlice";
-import { buyTokensOnBlockchain, sellTokensOnBlockchain } from "./ether-trade-utils";
+import { buyTokensOnBlockchain, calculateTokenEthValues, sellTokensOnBlockchain } from "./ether-trade-utils";
 import { wallet, mintaddy, connection } from "./config";
 import { buy, reteriveTokenDetails, sell, TokenPriceCalculations } from "./solanaBuySellFunction";
 import { useAppKitAccount } from "@reown/appkit/react";
@@ -27,6 +27,7 @@ const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
 // eslint-disable-next-line react/prop-types
 const PlaceTrade = ({ coinData }) => {
+
   console.log("placeTrade COin data", coinData)
   //console.log("placeTrade COin data token_address", coinData?.token_address)
 
@@ -51,6 +52,11 @@ const PlaceTrade = ({ coinData }) => {
   const [isSlipPageOpen, setIsSlipPageOpen] = useState(false);
   const wallet = useWallet()
   const [showSOGs, setShowSOGs] = useState(false);
+
+  // if (blockchainType === "ETH") {
+  //   setShowSOGs(true)
+  // }
+
   const [amount, setAmount] = useState("");
   const [userBalance, setUserBalance] = useState({
     tokenBalance: null,
@@ -74,6 +80,7 @@ const PlaceTrade = ({ coinData }) => {
   const [tokenToBuy, setTokenToBuy] = useState('')
   const [remaningTokens, setRemaningTokens] = useState('')
   const [solAmount, setSolAmount] = useState('')
+  const [ethAmount, setEthAmount] = useState('')
   const [isLoading, setIsLoading] = useState(false);
   const { walletProvider } = useAppKitProvider('solana');
   const [tradeType, setTradeType] = useState("buy"); // Default trade type is "buy"
@@ -90,7 +97,6 @@ const PlaceTrade = ({ coinData }) => {
   // console.log("coinDataPlaceTrade data", coinData)
 
   //console.log("wallet-provider",walletProvider.publicKey);
-
   const result = useBalance({
     address: address,
   })
@@ -102,9 +108,6 @@ const PlaceTrade = ({ coinData }) => {
     } else {
       setAmount(solAmount);
     }
-
-
-
     // if (showSOGs) {
     //   setTokenToBuy(res?.tokensbuy)
     //   setAmount(val)
@@ -154,6 +157,12 @@ const PlaceTrade = ({ coinData }) => {
     balanceData?.formatted,
     amount
   );
+
+  useEffect(() => {
+    if (blockchainType === "ETH") {
+      setShowSOGs(false)
+    }
+  }, [])
 
   useEffect(() => {
     if (isConfirmed && hash) {
@@ -344,7 +353,7 @@ const PlaceTrade = ({ coinData }) => {
             toast.success(
               `${tradeType === "buy" ? "Buy" : "Sell"} Transaction successful`
               // `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
-              
+
             );
             dispatch(fetchTrades(id)); // Fetch updated trades
           } else {
@@ -568,6 +577,31 @@ const PlaceTrade = ({ coinData }) => {
 
   }
 
+  const calculateTokenEthOnchange = async (amount) => {
+    if (isConnected) {
+      setAmountError((prevState) => ({
+        ...prevState,
+        error: false,
+        reason: '',
+      }))
+      setAmount(amount);
+      try {
+        const calculateEthValue = await calculateTokenEthValues(coinData?.token_address, amount);
+        console.log("calculateEthValue", calculateEthValue);
+        setEthAmount(calculateEthValue)
+      } catch (error) {
+        console.error("Error calculating ETH value:", error);
+      }
+    } else {
+      setAmountError((prevState) => ({
+        ...prevState,
+        error: true,
+        reason: 'Connect Wallet First',
+      }))
+
+    }
+  };
+
   //console.log("amount error",amountError)
   const handleAmountSell = async (val) => {
     // setAmount(val)
@@ -649,12 +683,27 @@ const PlaceTrade = ({ coinData }) => {
 
 
   useEffect(() => {
+    if (!amount) return;
 
+    const interval = setInterval(async () => {
+      try {
+        const calculateEthValue = await calculateTokenEthValues(coinData?.token_address, amount);
+        console.log("Polling calculateEthValue:", calculateEthValue);
+        setEthAmount(calculateEthValue);
+      } catch (error) {
+        console.error("Error during polling:", error);
+      }
+    }, 5000); // Call every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [amount, coinData?.token_address]);
+
+  useEffect(() => {
     if (coinData?.token_address && walletProvider) {
       getUserBalances()
       remaningAndMaxbuyTokens(coinData?.token_address)
     }
-  }, [amount, coinData, wallet, tokenToBuy, walletProvider])
+  }, [amount, coinData, wallet, tokenToBuy, walletProvider, ethAmount])
 
 
   // buy sell calculations from the blockcahin-solana
@@ -760,7 +809,7 @@ const PlaceTrade = ({ coinData }) => {
                   </div>
 
                   <div className="flex justify-between gap-3 px-3 pt-[35px]">
-                    {tradeType === 'buy' ?
+                    {tradeType === 'buy' && blockchainType !== 'ETH' ?
                       <span
                         className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
                         onClick={coinData?.status === "deployed" && handleSwitchClick}
@@ -770,6 +819,7 @@ const PlaceTrade = ({ coinData }) => {
                       :
                       <span></span>
                     }
+
                     <div>
                       <span
                         className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
@@ -808,7 +858,8 @@ const PlaceTrade = ({ coinData }) => {
                                     coinData?.status === "created" ? setAmount(value) : handleAmount(value);
                                   }
                                 } else {
-                                  setAmount(value);
+                                  // setAmount(value);
+                                  coinData?.status === "created" ? setAmount(value) : calculateTokenEthOnchange(value);
                                 }
                               }}
 
@@ -817,17 +868,27 @@ const PlaceTrade = ({ coinData }) => {
 
                             <div className="w-fit flex items-center gap-1 bg-white">
                               <span className="whitespace-nowrap text-black font-semibold text-sm SegoeUi">
-                                {!showSOGs ? blockchainType : coinData?.name}
+                                {!showSOGs && blockchainType !== 'ETH' ? blockchainType : coinData?.name}
                                 {/* {blockchainType === "ETH" ? "ETH" : "SOL"} */}
                               </span>
-                              <img
-                                src={
-                                  showSOGs
-                                    ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`
-                                    : (blockchainType === 'SOL' ? solImg : ethImg)
-                                }
-                                className="w-[30px] mr-7 rounded-full"
-                              />
+                              {blockchainType === 'ETH' &&
+                                <img
+                                  src={
+                                    showSOGs && `${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`
+                                  }
+                                  className="w-[30px] mr-7 rounded-full"
+                                />
+                              }
+                              {blockchainType === 'SOL' &&
+                                <img
+                                  src={
+                                    showSOGs
+                                      ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`
+                                      : (blockchainType === 'SOL' ? solImg : ethImg)
+                                  }
+                                  className="w-[30px] mr-7 rounded-full"
+                                />
+                              }
                             </div>
                           </div>
 
@@ -845,7 +906,8 @@ const PlaceTrade = ({ coinData }) => {
                               onChange={(e) => {
                                 const value = e.target.value;
                                 if (!value || Number(value) >= 0) {
-                                  setAmount(value);
+                                  // setAmount(value);
+                                  calculateTokenEthOnchange(value);
                                   // handleAmountSell(value)
                                 }
                               }}
@@ -906,7 +968,8 @@ const PlaceTrade = ({ coinData }) => {
                   </div>
                 }
 
-                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && <p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? blockchainType : coinData?.name}</p>}
+                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && blockchainType == "SOL" && <p p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? blockchainType : coinData?.name}</p>}
+                {amount != '' && <p p className="mt-2 ml-3">{ethAmount} {blockchainType}</p>}
 
                 {amountError.error && <p className="text-red-700 mt-2 ml-3">{amountError.reason}</p>}
 

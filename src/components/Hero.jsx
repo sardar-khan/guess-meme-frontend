@@ -96,7 +96,9 @@ const Hero = () => {
                 </div>
 
                 <span className='PixelOperator lightWhite text-[18px] text-center'>Marketcap</span>
-                <span className='PixelOperator text-[#FDA6FF] text-[22px]'>$ {kingOfHill?.kingOfTheHill?.market_cap}</span>
+                {/* <span className='PixelOperator text-[#FDA6FF] text-[22px]'>$ {kingOfHill?.kingOfTheHill?.market_cap}</span> */}
+                <span className='PixelOperator text-[#FDA6FF] text-[22px]'>$ {Number(kingOfHill?.kingOfTheHill?.market_cap).toLocaleString('en-US')}</span>
+                
             </div>
 
             <div className='flex items-center justify-center gap-1 w-full max-w-[516px]'>

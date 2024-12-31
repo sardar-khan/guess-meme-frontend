@@ -39,7 +39,8 @@ const LaunchCard = ({ key, setSpace, coinData, topCoins }) => {
                             <div className={`flex flex-col justify-between p-[5px] md:p-[8px] min-h-full border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff] border-r-[#fff]`}>
                                 <div>
                                     <h5 className='PixelOperatorbold text-[10px] md:text-[14px]'>Created by 💩 <Link to={`/userprofile/${coinData?.coin?.creator?._id}`} className='hover:underline'>{coinData?.coin?.creator.user_name}</Link></h5>
-                                    <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: {coinData?.coin?.market_cap}</h5>
+                                    <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: {Number(coinData?.coin?.market_cap).toLocaleString('en-US')}</h5>
+                                    {/* <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: {coinData?.coin?.market_cap}</h5> */}
                                     <div className=''>
                                         <div className='flex justify-between items-end w-full mt-[7px] md:mt-[15px]'>
                                             <h5 className='PixelOperatorbold text-[12px] md:text-[15px]'>Progress:</h5>

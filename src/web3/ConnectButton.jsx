@@ -16,7 +16,15 @@ const ConnectButton = () => {
 
     // console.log("token", localStorage.getItem('token'))
     const blockchain = localStorage.getItem('blockchain')
-    const checkBlockChain = blockchain === 'SOL' ? 'solana' : blockchain === 'ETH' ? 'ethereum' : blockchain === null ? 'solana' : 'solana';
+    // const checkBlockChain = blockchain === 'SOL' ? 'solana' : blockchain === 'ETH' ? 'ethereum' : blockchain === null ? 'solana' : 'solana';
+    const checkBlockChain = 
+    blockchain === 'SOL' ? 'solana' :
+    blockchain === 'ETH' ? 'ethereum' :
+    blockchain === 'POL' ? 'polygon' :
+    blockchain === 'BNB' ? 'bnb' :
+    blockchain === null ? 'solana' :
+    'solana';
+
 
     if (checkBlockChain === null) {
         disconnect();

@@ -9,7 +9,16 @@ const apiUrl = import.meta.env.VITE_API_URL;
 const blockchain = localStorage.getItem("blockchain")
 // const checkBlockChain = blockchain == "SOL"  ? 'solana' : 'ethereum'
 // const checkBlockChain = blockchain === 'SOL' ? 'solana' : blockchain === 'ETH' ? 'ethereum' : 'solana';
-const checkBlockChain = blockchain === 'SOL' ? 'solana' : blockchain === 'ETH' ? 'ethereum' : blockchain === null ? 'solana' : 'solana';
+// const checkBlockChain = blockchain === 'SOL' ? 'solana' : blockchain === 'ETH' ? 'ethereum' : blockchain === null ? 'solana' : 'solana';
+// const checkBlockChain = blockchain === 'SOL' ? 'solana' : blockchain === 'ETH' ? 'ethereum' : blockchain === null ? 'solana' : 'solana';
+
+const checkBlockChain =
+    blockchain === 'SOL' ? 'solana' :
+        blockchain === 'ETH' ? 'ethereum' :
+            blockchain === 'POL' ? 'polygon' :
+                blockchain === 'BNB' ? 'bnb' :
+                    blockchain === null ? 'solana' :
+                        'solana';
 
 console.log("blockchainssss", blockchain)
 const apiInstance = axios.create({

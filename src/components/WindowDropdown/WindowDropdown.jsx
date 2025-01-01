@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import "./WindowDropdown.css";
 import ethImg from "../../assets/icons/eth.svg";
 import solImg from "../../assets/icons/sol.svg";
+import polImg from "../../assets/icons/polygon.png";
+import bnbImg from "../../assets/icons/bnb.png";
 import { useNavigate } from "react-router-dom";
 
 const WindowDropdown = () => {
@@ -56,6 +58,14 @@ const WindowDropdown = () => {
           <div className="win2000-option" onClick={() => selectOption("ETH")}>
             <img src={ethImg} alt="ETH" className="dropdown-icon" />
             ETH
+          </div>
+          <div className="win2000-option" onClick={() => selectOption("POL")}>
+            <img src={polImg} alt="ETH" className="dropdown-icon" />
+            POL
+          </div>
+          <div className="win2000-option" onClick={() => selectOption("BNB")}>
+            <img src={bnbImg} alt="ETH" className="dropdown-icon" />
+            BNB
           </div>
         </div>
       )}

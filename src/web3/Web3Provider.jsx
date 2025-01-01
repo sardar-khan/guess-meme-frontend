@@ -1,87 +1,173 @@
 import { createAppKit } from "@reown/appkit/react";
-
 import { WagmiProvider } from "wagmi";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { SolanaAdapter } from "@reown/appkit-adapter-solana";
-
-import { solana, solanaTestnet, solanaDevnet, polygonAmoy } from "@reown/appkit/networks";
-import { mainnet, arbitrum, sepolia } from "@reown/appkit/networks";
-
+import { solanaDevnet, polygonAmoy } from "@reown/appkit/networks";
 import {
   SolflareWalletAdapter,
   PhantomWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
-import WalletContext from "../context/WalletContext";
 import { useEffect, useState } from "react";
 
 export function Web3ModalProvider({ children }) {
-  const [block_chain, setBlock_chain] = useState(localStorage.getItem('blockchain'))
+  const [blockChain, setBlockChain] = useState(localStorage.getItem('blockchain'));
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    setBlock_chain(localStorage.getItem('blockchain'))
-    console.log("getBlockChain", block_chain)
-  }, [block_chain, localStorage.getItem('blockchain')])
+    const chain = localStorage.getItem('blockchain');
+    setBlockChain(chain);
+    console.log("getBlockChain", chain);
+  }, [localStorage.getItem('blockchain')]);
 
-  // block_chain, setBlock_chain
-
-  // 0. Setup queryClient
   const queryClient = new QueryClient();
-
-  // 1. Get projectId from https://cloud.walletconnect.com
   const projectId = "84072b7bf8a52cbefc58fcaceae93a20";
 
-  // 2. Create a metadata object - optional
   const metadata = {
     name: "Guess.Meme",
     description: "guess meme project",
-    url: "https://guess.meme", // origin must match your domain & subdomain
+    url: "https://guess.meme",
     icons: ["https://avatars.githubusercontent.com/u/179229932"],
   };
 
-  // 3. Set the networks
-  // const blockChain = localStorage.getItem("blockchain");
-  // blockChain === "SOL" ? solanaDevnet : polygonAmoy;
-  const networks = [
-    polygonAmoy,
-    solanaDevnet,
-  ];
+  // Create adapters based on selected blockchain
+  let activeAdapter;
+  if (blockChain === "SOL") {
+    activeAdapter = new SolanaAdapter({
+      wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
+      defaultNetwork: solanaDevnet.id,
+      onConnect: () => {
+        setIsConnected(true);
+      },
+      onDisconnect: () => {
+        setIsConnected(false);
+      }
+    });
+  } else {
+    activeAdapter = new WagmiAdapter({
+      networks: [polygonAmoy],
+      projectId,
+      ssr: true,
+      defaultChainId: polygonAmoy.id,
+      features: {
+        metamask: true,
+        walletConnect: true,
+        coinbase: true,
+        phantom: false,
+        solflare: false
+      },
+      onConnect: async ({ address, connector }) => {
+        setIsConnected(true);
+        // Immediate chain switch attempt on connection
+        if (window.ethereum) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: `0x${polygonAmoy.id.toString(16)}` }],
+            });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              try {
+                await window.ethereum.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: `0x${polygonAmoy.id.toString(16)}`,
+                    chainName: 'Polygon Amoy',
+                    rpcUrls: ['https://rpc-amoy.polygon.technology'],
+                    nativeCurrency: {
+                      name: 'MATIC',
+                      symbol: 'MATIC',
+                      decimals: 18
+                    },
+                  }],
+                });
+              } catch (addError) {
+                console.error('Error adding Polygon Amoy:', addError);
+              }
+            }
+          }
+        }
+      },
+      onDisconnect: () => {
+        setIsConnected(false);
+      }
+    });
+  }
 
-  // 4. Create Wagmi Adapter
-  const wagmiAdapter = new WagmiAdapter({
-    networks,
-    projectId,
-    ssr: true,
-  });
-
-  // 2. Create Solana adapter
-  const solanaWeb3JsAdapter = new SolanaAdapter({
-    wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
-  });
-
-
-  const setAdapter = block_chain == "ETH" ? [wagmiAdapter] : [solanaWeb3JsAdapter]
-  // 5. Create modal
   const modal = createAppKit({
-    adapters: setAdapter,
-    networks,
+    adapters: [activeAdapter],
+    networks: [blockChain === "SOL" ? solanaDevnet : polygonAmoy],
     projectId,
     metadata,
-
     allWallets: "HIDE",
-
+    defaultChainId: blockChain === "ETH" ? polygonAmoy.id : solanaDevnet.id,
     features: {
       email: false,
-
       socials: false,
-      analytics: true, // Optional - defaults to your Cloud configuration
+      analytics: true,
+      walletConnect: false,
+      ...(blockChain === "SOL" ? {
+        phantom: true,
+        solflare: true,
+        metamask: false,
+        coinbase: false,
+      } : {
+        phantom: false,
+        solflare: false,
+        metamask: true,
+        coinbase: true,
+      })
     },
+    // Add disconnect options
+    disconnect: {
+      // Enable disconnect feature
+      enabled: true,
+      // Async function to handle disconnect
+      callback: async () => {
+        try {
+          await activeAdapter.disconnect();
+          setIsConnected(false);
+          // Optional: Clear any local storage or state related to the connection
+          // localStorage.removeItem('walletconnect');
+          // localStorage.removeItem('connected');
+        } catch (error) {
+          console.error('Disconnect error:', error);
+        }
+      }
+    }
   });
-  return (
-    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+
+  // Monitor ethereum chain changes
+  useEffect(() => {
+    if (blockChain === "ETH" && window.ethereum) {
+      const handleChainChanged = (chainId) => {
+        // If chain is changed to something other than Polygon Amoy, try to switch back
+        if (chainId !== `0x${polygonAmoy.id.toString(16)}`) {
+          window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${polygonAmoy.id.toString(16)}` }],
+          }).catch(console.error);
+        }
+      };
+
+      window.ethereum.on('chainChanged', handleChainChanged);
+      
+      // Cleanup listener
+      return () => {
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, [blockChain]);
+
+  return blockChain === "ETH" ? (
+    <WagmiProvider config={activeAdapter.wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
     </WagmiProvider>
+  ) : (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
   );
 }

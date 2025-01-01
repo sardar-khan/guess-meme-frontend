@@ -32,10 +32,13 @@ const ChatRoom = ({ coinData }) => {
     console.log("coinDatacoinData", coinData)
 
 
-    const { pusherThread } = useNotificationContext();
+    const { pusherThread, pusherNotificationThread } = useNotificationContext();
     const hasPusherThread = Object.keys(pusherThread).length > 0;
+    const hasPusherNotificationThread = Object.keys(pusherNotificationThread).length > 0;
     // const checkNewPusherTokenStatus = createNotifications?.status;
     console.log("pusherThread", pusherThread)
+    console.log("pusherNotificationThread", pusherNotificationThread)
+
 
     const fetchLikeStatuses = async () => {
         if (threads?.data) {

@@ -1,15 +1,10 @@
 import { createAppKit } from "@reown/appkit/react";
-
 import { WagmiProvider } from "wagmi";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { SolanaAdapter } from "@reown/appkit-adapter-solana";
-
 import { solana, solanaTestnet, solanaDevnet, polygonAmoy } from "@reown/appkit/networks";
 import { mainnet, arbitrum, sepolia } from "@reown/appkit/networks";
-
 import {
   SolflareWalletAdapter,
   PhantomWalletAdapter,

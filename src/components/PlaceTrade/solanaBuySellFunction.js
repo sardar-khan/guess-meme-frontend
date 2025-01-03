@@ -736,4 +736,14 @@ function tokenToSmallestUnit(tokenAmount, decimals) {
     return tokenAmount * Math.pow(10, decimals)
 }
 
-export { buy, sell, reteriveTokenDetails,TokenPriceCalculations }
+
+const reterieveUserSolanaBalance = async (walletProvider) => {
+    try {
+        const balance = await connection.getBalance(walletProvider.publicKey)
+        return balance
+    } catch (error) {
+        console.log('error while fetching user balance', error)
+    }
+}
+
+export { buy, sell, reteriveTokenDetails,TokenPriceCalculations,reterieveUserSolanaBalance }

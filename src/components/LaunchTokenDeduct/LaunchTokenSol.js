@@ -23,11 +23,13 @@ const LaunchTokenSol = () => {
             const RECIPIENT_ADDRESS = new PublicKey(adminSolAddress);
 
             // Amount to send (0.03 SOL)
-            const plusAmount = parseFloat(amount) + 0.03;
+            console.log("amounsssst", amount)
+            const plusAmount = Math.round((parseFloat(amount) + 0.03) * 1e9);
+            console.log("plusAmount", plusAmount);
             console.log("LaunchTokenSolValue", LaunchTokenSolValue)
 
 
-            const AMOUNT_TO_SEND = amount === undefined || null ? LaunchTokenSolValue * LAMPORTS_PER_SOL : plusAmount * LAMPORTS_PER_SOL;
+            const AMOUNT_TO_SEND = amount === undefined || null ? LaunchTokenSolValue * LAMPORTS_PER_SOL : plusAmount ;
             // const AMOUNT_TO_SEND = LaunchTokenSolValue * LAMPORTS_PER_SOL;
             console.log("AMOUNT_TO_SEND", AMOUNT_TO_SEND)
             // Check wallet balance

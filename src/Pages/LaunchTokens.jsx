@@ -5,7 +5,7 @@ import folder from '../assets/icons/Group 110.png';
 import BoxHeader from '../components/Global/BoxHeader';
 import InputField from '../components/Global/InputField';
 import TextArea from '../components/Global/TextArea';
-import { adminTokenAddress, createCoin, uploadImage } from '../utils/api';
+import { adminTokenAddress, BuyToken, createCoin, uploadImage } from '../utils/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LaunchTokenSol from '../components/LaunchTokenDeduct/LaunchTokenSol';
@@ -20,6 +20,9 @@ import { useAppKitProvider } from '@reown/appkit/react';
 
 import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
+import CreatorBuyToken from '../components/Modals/CreatorBuyTokens';
+import { reterieveUserSolanaBalance } from '../components/PlaceTrade/solanaBuySellFunction';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 const LaunchTokens = () => {
     const { connection } = useAppKitConnection();
@@ -29,9 +32,12 @@ const LaunchTokens = () => {
     const dispatch = useDispatch();
     const { address, isConnected } = useAppKitAccount();
     const [name, setName] = useState('');
+    const [userSolBalnace, setUserSolBalnace] = useState(0);
+    const [preTokenBuy, setPreTokenBuy] = useState(false);
     const [ticker, setTicker] = useState('');
     const [revealTime, setRevealTime] = useState('');
     const [selectedMinutes, setSelectedMinutes] = useState(0); // Default to 0 minutes
+    const [isModalOpen, setIsModalOpen] = useState(false);
     // const [currentDateTime, setCurrentDateTime] = useState(new Date().toISOString().slice(0, 16));
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().slice(0, 10)); // Only the date part
 
@@ -66,6 +72,19 @@ const LaunchTokens = () => {
         const interval = setInterval(() => setCurrentDate(new Date().toISOString().slice(0, 16)), 60000);
         return () => clearInterval(interval);
     }, [adminAddress]);
+
+    useEffect(() => {
+        checkUserBalance()
+    }, [preTokenBuy])
+
+    const checkUserBalance = async () => {
+        const res = await reterieveUserSolanaBalance(walletProvider)
+        
+        if (res){
+            setUserSolBalnace(res/LAMPORTS_PER_SOL);
+        }
+        
+    }
 
 
     const handleLaunchTokenE = LaunchTokenPolygon(
@@ -128,7 +147,7 @@ const LaunchTokens = () => {
 
     }, [isConfirming, isConfirmed, hash])
 
-    const handleSubmit = async () => {
+    const createToken = async () => {
         // if (!isConnected) {
         //     toast.error('Connect Wallet First')
         // }
@@ -142,7 +161,12 @@ const LaunchTokens = () => {
             const formattedRevealTime = new Date(revealTime).toISOString();
             let transactionSuccess;
             if (block_chain === 'SOL') {
-                transactionSuccess = await handleLaunchToken();
+                console.log("preTokenBuy", preTokenBuy)
+                const valinfloat  = parseFloat(preTokenBuy);
+                console.log("valinfloat", valinfloat)
+                const createandbuyAmount = valinfloat +0.03;
+                console.log("createandbuyAmount", createandbuyAmount)
+                transactionSuccess = await handleLaunchToken(createandbuyAmount);
 
                 console.log("transactionSuccess", transactionSuccess)
                 if (!transactionSuccess) {
@@ -165,12 +189,33 @@ const LaunchTokens = () => {
                     fee: 0,
                     timer: formattedRevealTime,
                 });
-
+                console.log("response-creating-token", response)
                 if (response.status === 200) {
-                    toast.success(response.message);
-                    resetForm();
-                    navigate('/');
-                    dispatch(fetchCoins(sortOption));
+                    console.log("pretokennuy", preTokenBuy)
+                        const apiResponse = await BuyToken({
+                            account_type: 'solana',
+                            amount: parseFloat(preTokenBuy),
+                            token_amount: 0,
+                            token_id: response.data._id,
+                            type: "buy",
+                        });
+                        console.log("buy response", apiResponse);
+
+                        if (apiResponse?.status === 200) {
+                            toast.success(response.message);
+                            resetForm();
+                            navigate('/');
+                            dispatch(fetchCoins(sortOption));
+                        } else {
+                            throw new Error(`Failed to ${tradeType} tokens`);
+                        }
+                    
+
+
+
+
+
+
                 } else {
                     toast.error('Failed to create coin. Please try again.');
                 }
@@ -188,6 +233,15 @@ const LaunchTokens = () => {
         }
     };
 
+    // create meme token
+    const handleSubmit = async () => {
+        // if (!name || !ticker || !imageUrl || !description || !revealTime) {
+
+        //     toast.error('Please fill in all required fields: Name, Ticker, Image, Description, and Reveal Time.');
+        //     return;
+        // }
+        setIsModalOpen(true);
+    }
 
     const createEthCoin = async ({ hash }) => {
         try {
@@ -264,13 +318,13 @@ const LaunchTokens = () => {
     };
     const handleTimeSelect = (minutes) => {
         setSelectedMinutes(minutes);
-    
+
         const currentTime = new Date();
-    
+
         currentTime.setMinutes(currentTime.getMinutes() + minutes);
-    
+
         currentTime.setHours(currentTime.getHours());
-    
+
         const formattedTime = currentTime.toLocaleString(undefined, {
             year: "numeric",
             month: "2-digit",
@@ -279,10 +333,10 @@ const LaunchTokens = () => {
             minute: "2-digit",
             hour12: false,
         });
-    
+
         setRevealTime(formattedTime);
     };
-    
+
 
 
     const calculateRevealTime = (date, minutes) => {
@@ -472,6 +526,15 @@ const LaunchTokens = () => {
                 </div>
 
             </div>
+            <CreatorBuyToken
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                tokenName={name}
+                amount={preTokenBuy}
+                setAmount={setPreTokenBuy}
+                handleLaunchToken={createToken}
+                userSolBalnace={userSolBalnace}
+            />
         </div >
     );
 };

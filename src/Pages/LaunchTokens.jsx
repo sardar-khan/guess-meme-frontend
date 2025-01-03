@@ -36,6 +36,7 @@ const LaunchTokens = () => {
     const [userSolBalnace, setUserSolBalnace] = useState(0);
     const [preTokenBuy, setPreTokenBuy] = useState(false);
     const [ticker, setTicker] = useState('');
+    const [iscreatingCoin, setIsCreatingCoin] = useState(false);
     const [revealTime, setRevealTime] = useState('');
     const [selectedMinutes, setSelectedMinutes] = useState(0); // Default to 0 minutes
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -80,18 +81,19 @@ const LaunchTokens = () => {
 
     const checkUserBalance = async () => {
         const res = await reterieveUserSolanaBalance(walletProvider)
-        
-        if (res){
-            setUserSolBalnace(res/LAMPORTS_PER_SOL);
+
+        if (res) {
+            setUserSolBalnace(res / LAMPORTS_PER_SOL);
         }
-        
+
     }
 
 
     const handleLaunchTokenE = LaunchTokenPolygon(
         address,
         sendTransaction,
-        balanceData?.formatted
+        balanceData?.formatted,
+        parseFloat(parseFloat(preTokenBuy) + 0.05)
     );
 
     // const handleImageUpload = async (e) => {
@@ -163,9 +165,9 @@ const LaunchTokens = () => {
             let transactionSuccess;
             if (block_chain === 'SOL') {
                 console.log("preTokenBuy", preTokenBuy)
-                const valinfloat  = parseFloat(preTokenBuy);
+                const valinfloat = parseFloat(preTokenBuy);
                 console.log("valinfloat", valinfloat)
-                const createandbuyAmount = valinfloat +0.03;
+                const createandbuyAmount = valinfloat + 0.03;
                 console.log("createandbuyAmount", createandbuyAmount)
                 transactionSuccess = await handleLaunchToken(createandbuyAmount);
 
@@ -193,24 +195,24 @@ const LaunchTokens = () => {
                 console.log("response-creating-token", response)
                 if (response.status === 200) {
                     console.log("pretokennuy", preTokenBuy)
-                        const apiResponse = await BuyToken({
-                            account_type: 'solana',
-                            amount: parseFloat(preTokenBuy),
-                            token_amount: 0,
-                            token_id: response.data._id,
-                            type: "buy",
-                        });
-                        console.log("buy response", apiResponse);
+                    const apiResponse = await BuyToken({
+                        account_type: 'solana',
+                        amount: parseFloat(preTokenBuy),
+                        token_amount: 0,
+                        token_id: response.data._id,
+                        type: "buy",
+                    });
+                    console.log("buy response", apiResponse);
 
-                        if (apiResponse?.status === 200) {
-                            toast.success(response.message);
-                            resetForm();
-                            navigate('/');
-                            dispatch(fetchCoins(sortOption));
-                        } else {
-                            throw new Error(`Failed to ${tradeType} tokens`);
-                        }
-                    
+                    if (apiResponse?.status === 200) {
+                        toast.success(response.message);
+                        resetForm();
+                        navigate('/');
+                        dispatch(fetchCoins(sortOption));
+                    } else {
+                        throw new Error(`Failed to ${tradeType} tokens`);
+                    }
+
 
 
 
@@ -221,14 +223,21 @@ const LaunchTokens = () => {
                     toast.error('Failed to create coin. Please try again.');
                 }
             } else {
-                transactionSuccess = await handleLaunchTokenE();
+                try {
+                    transactionSuccess = await handleLaunchTokenE();
 
-                console.log("transactionSuccess", hash)
+                    console.log("transactionSuccess", hash)
+                } catch (error) {
+                    setIsCreatingCoin(false)
+                    console.log("error while creating eth token", error)
+                }
+
 
             }
             // Step 1: First, call the handleLaunchToken function to send the transaction
 
         } catch (error) {
+            setIsCreatingCoin(false)
             toast.error('Error creating coin. Please try again.');
             console.error('Error creating coin:', error);
         }
@@ -236,11 +245,11 @@ const LaunchTokens = () => {
 
     // create meme token
     const handleSubmit = async () => {
-        // if (!name || !ticker || !imageUrl || !description || !revealTime) {
+        if (!name || !ticker || !imageUrl || !description || !revealTime) {
 
-        //     toast.error('Please fill in all required fields: Name, Ticker, Image, Description, and Reveal Time.');
-        //     return;
-        // }
+            toast.error('Please fill in all required fields: Name, Ticker, Image, Description, and Reveal Time.');
+            return;
+        }
         setIsModalOpen(true);
     }
 
@@ -267,10 +276,23 @@ const LaunchTokens = () => {
                 });
 
                 if (response.status === 200) {
-                    toast.success(response.message);
-                    resetForm();
-                    navigate('/');
-                    dispatch(fetchCoins(sortOption));
+
+                    const apiResponse = await BuyToken({
+                        account_type: 'ethereum',
+                        amount: parseFloat(preTokenBuy),
+                        token_amount: 1,
+                        token_id: response.data._id,
+                        type: "buy",
+                        transaction_hash: hash,
+                      });
+          
+                      if (apiResponse?.status === 200) {
+                        toast.success(response.message);
+                        resetForm();
+                        navigate('/');
+                        dispatch(fetchCoins(sortOption));
+                      }
+                   
                 } else {
                     toast.error('Failed to create coin. Please try again.');
                 }
@@ -513,7 +535,16 @@ const LaunchTokens = () => {
 
 
                                 <div className='mx-auto'>
-                                    <button className='themeBtn SegoeUi w-fit' onClick={handleSubmit}><span>Launch Token</span></button>
+                                    <button className='themeBtn SegoeUi w-fit'
+                                        onClick={(() => {
+
+                                            handleSubmit()
+
+                                        })}
+                                    ><span>
+                                            Launch Token
+                                        </span>
+                                    </button>
                                 </div>
 
 
@@ -534,7 +565,8 @@ const LaunchTokens = () => {
                 amount={preTokenBuy}
                 setAmount={setPreTokenBuy}
                 handleLaunchToken={createToken}
-                userSolBalnace={userSolBalnace}
+                userSolBalnace={block_chain === "SOL" ? userSolBalnace : balanceData?.formatted}
+                setIsCreatingCoin={setIsCreatingCoin}
             />
         </div >
     );

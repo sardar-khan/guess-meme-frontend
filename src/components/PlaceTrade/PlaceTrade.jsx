@@ -376,25 +376,25 @@ const PlaceTrade = ({ coinData }) => {
         console.log("deductETH", deductETH)
         if (deductETH) {
           setAmount('')
-          //   const apiResponse = await BuyToken({
-          //     account_type: 'ethereum',
-          //     amount: parseFloat(amount),
-          //     token_amount: 1,
-          //     token_id: id,
-          //     type: tradeType,
-          //     transaction_hash: deductETH,
-          //   });
+            const apiResponse = await BuyToken({
+              account_type: 'ethereum',
+              amount: parseFloat(amount),
+              token_amount: 1,
+              token_id: id,
+              type: tradeType,
+              transaction_hash: deductETH,
+            });
 
-          //   if (apiResponse?.status === 200) {
-          //     toast.success(
-          //       `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
-          //     );
-          //     dispatch(fetchTrades(id)); // Fetch updated trades
-          //   } else {
-          //     throw new Error(
-          //       `Failed to record ${tradeType} trade in the backend`
-          //     );
-          //   }
+            if (apiResponse?.status === 200) {
+              toast.success(
+                `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
+              );
+              dispatch(fetchTrades(id)); // Fetch updated trades
+            } else {
+              throw new Error(
+                `Failed to record ${tradeType} trade in the backend`
+              );
+            }
         }
 
       }

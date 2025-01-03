@@ -7,7 +7,7 @@ import HoldersTable from '../components/Tables/HoldersTable';
 import CandlestickComboChart from '../components/Charts/CandlestickComboChart';
 import logoSmall from '../assets/icons/logoSmall.png';
 import { toast } from 'react-toastify';
-import { kingoftheHill_progress, viewCoin } from '../utils/api';
+import { kingoftheHill_progress, Progress_curve_bond, viewCoin } from '../utils/api';
 import Progress from '../components/Progress';
 import PlaceTrade from '../components/PlaceTrade/PlaceTrade';
 import LightweightCandlestickChart from '../components/Charts/LightweightCandlestickChart ';
@@ -19,8 +19,10 @@ const Threads = () => {
     const { id } = useParams();
     const [coinData, setCoinData] = useState(null);
     const [kingoftheHill, setKingoftheHill] = useState();
+    const [ProgressCurveBond, setProgressCurveBond] = useState();
     const [isDisabled, setIsDisabled] = useState(false);
     const { pusherAfterTrade } = useNotificationContext();
+
 
 
 
@@ -30,6 +32,8 @@ const Threads = () => {
                 const response = await viewCoin(id);
                 console.log('Single Coin Data:', response);
                 setCoinData(response?.data);
+                fetchProgress_curve_bond(response?.data?.token_address);
+                fetchKingoftheHill_progress(response?.data?.token_address);
             } catch (error) {
                 console.error('Error fetching coin data:', error);
                 toast.error('Failed to fetch coin data.');
@@ -37,22 +41,39 @@ const Threads = () => {
         };
 
         fetchCoinData();
-    }, [id]);
+    }, [id, ProgressCurveBond]);
 
-    useEffect(() => {
-        const fetchKingoftheHill_progress = async () => {
-            try {
-                const response = await kingoftheHill_progress();
-                console.log('kingoftheHill_progress:', response);
-                setKingoftheHill(response?.data?.king_progress);
-            } catch (error) {
-                console.error('Error kingoftheHill_progress:', error);
-                toast.error('Failed to kingoftheHill_progress.');
-            }
-        };
+    console.log('coinDatacoinData:', coinData);
 
-        fetchKingoftheHill_progress();
-    }, []);
+    const fetchKingoftheHill_progress = async (token_address) => {
+        try {
+            const response = await kingoftheHill_progress(token_address);
+            console.log('kingoftheHill_progress:', response);
+            setKingoftheHill(response?.data?.king_progress);
+        } catch (error) {
+            console.error('Error kingoftheHill_progress:', error);
+            toast.error('Failed to kingoftheHill_progress.');
+        }
+    };
+
+    const fetchProgress_curve_bond = async (token_address) => {
+        try {
+            const response = await Progress_curve_bond(token_address);
+            console.log('boning:', response);
+            setProgressCurveBond(response?.data?.progress);
+        } catch (error) {
+            console.error('Error Progress_curve_bond:', error);
+            toast.error('Failed to Progress_curve_bond.');
+        }
+    };
+
+    console.log("ProgressCurveBond", ProgressCurveBond)
+    // console.log("ProgressCurveBond", ProgressCurveBond)
+
+    // useEffect(() => {
+
+
+    // }, []);
 
 
 
@@ -128,7 +149,7 @@ const Threads = () => {
                 </div>
                 <div className='flex flex-col gap-6 w-full lg:w-[30%]'>
                     {coinData && <PlaceTrade coinData={coinData} />}
-                    <Progress title="Bonding curve progress" progress={coinData?.bonding_curve_progress} pusherProgress={pusherAfterTrade?.bonding_curve_percentage} />
+                    <Progress title="Bonding curve progress" progress={ProgressCurveBond} pusherProgress={pusherAfterTrade?.bonding_curve_percentage} />
                     <Progress title="Guess master" progress={kingoftheHill} pusherProgress={pusherAfterTrade?.king_of_the_hill_per} />
                     <TradesTable />
                     <HoldersTable />

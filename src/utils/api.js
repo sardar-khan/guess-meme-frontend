@@ -112,6 +112,19 @@ export const kingoftheHill_progress = async (token_address) => {
 };
 
 
+export const Progress_curve_bond = async (token_address) => {
+    try {
+        const response = await apiInstance.post('trade/progress-curve-bond', {
+            token_address: token_address
+        });
+        console.log('Progress_curve_bondssss', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error during Progress_curve_bond:', error);
+        throw error;
+    }
+};
+
 
 //createCoin function
 export const createCoin = async ({ name, ticker, description, image, max_supply, twitter_link, telegram_link, website, bonding_curve, max_buy_percentage, fee, timer }) => {

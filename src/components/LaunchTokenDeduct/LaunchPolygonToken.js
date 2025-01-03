@@ -3,8 +3,10 @@ import { parseEther } from 'viem';
 import { adminTokenAddress } from '../../utils/api';
 import { LaunchTokenEthValue } from '../../services/config';
 
+
 const LaunchTokenPolygon = (address, sendTransaction, balance, amount) => {
-    console.log("poly amount", amount)
+    console.log("poly amount", amount, LaunchTokenEthValue);
+
     const amountParse = parseFloat(amount)
     const TokenEthValue = parseFloat(LaunchTokenEthValue)
 

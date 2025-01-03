@@ -8,7 +8,7 @@ import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 
 
-const CreatorBuyToken = ({ isOpen, onClose, tokenName, amount, setAmount, handleLaunchToken,userSolBalnace }) => {
+const CreatorBuyToken = ({ isOpen, onClose, tokenName, amount, setAmount, handleLaunchToken,userSolBalnace ,setIsCreatingCoin}) => {
     const blockchainType = localStorage.getItem("blockchain") || "SOL";
     const { walletProvider } = useAppKitProvider('solana');
 
@@ -24,6 +24,8 @@ const CreatorBuyToken = ({ isOpen, onClose, tokenName, amount, setAmount, handle
             toast("please enter amount to buy", { type: "error" });
             return;
         }
+        setIsCreatingCoin(true);
+        onClose();
         handleLaunchToken();
     }
 

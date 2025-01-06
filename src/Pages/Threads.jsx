@@ -14,6 +14,20 @@ import LightweightCandlestickChart from '../components/Charts/LightweightCandles
 import AdvancedTradingViewChart from '../components/Charts/AdvancedTradingViewChart';
 import HighchartsReactNew from '../components/Charts/HighchartsReactNew';
 import { useNotificationContext } from '../context/NotificationContext';
+import { FaXTwitter } from "react-icons/fa6";
+import { FaTelegramPlane } from "react-icons/fa";
+import { CiGlobe } from "react-icons/ci";
+
+const SocialLinks = ({coinData}) => {
+    return (
+        <div className='flex  gap-2'>
+         {coinData?.twitter_link &&  <a href="https://twitter.com/" target="_blank" className="bg-[#8E8DC7]  py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"><FaXTwitter/> tiwiter</a>}
+          {coinData?.telegram_link && <a href="https://twitter.com/" target="_blank" className="bg-[#8E8DC7] py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"> <FaTelegramPlane/>telegram</a>}
+         {coinData?.website &&  <a href="https://twitter.com/" target="_blank" className="bg-[#8E8DC7] py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"><CiGlobe/> website </a>}
+            </div>
+    )
+
+}
 
 const Threads = () => {
     const { id } = useParams();
@@ -149,6 +163,7 @@ const Threads = () => {
                 </div>
                 <div className='flex flex-col gap-6 w-full lg:w-[30%]'>
                     {coinData && <PlaceTrade coinData={coinData} />}
+                    <SocialLinks coinData={coinData} />
                     <Progress title="Bonding curve progress" progress={ProgressCurveBond} pusherProgress={pusherAfterTrade?.bonding_curve_percentage} />
                     <Progress title="Guess master" progress={kingoftheHill} pusherProgress={pusherAfterTrade?.king_of_the_hill_per} />
                     <TradesTable />

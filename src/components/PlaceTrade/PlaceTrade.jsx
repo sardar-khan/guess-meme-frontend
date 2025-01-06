@@ -755,11 +755,20 @@ const PlaceTrade = ({ coinData }) => {
   console.log("amountamount", amount, "tokenToBuytokenToBuy", tokenToBuy)
 
   const handleBuyPercentage = (percentage) => {
-    const perctageSet = userBalance?.tokenBalance * (percentage / 100);
-    setAmount(perctageSet);
-    handleAmountSell(perctageSet)
-
-    console.log("perctageSet", perctageSet, userBalance?.tokenBalance)
+    if(blockchainType === 'SOL'){
+      const perctageSet = userBalance?.tokenBalance * (percentage / 100);
+      setAmount(perctageSet);
+      handleAmountSell(perctageSet)
+  
+      console.log("perctageSet", perctageSet, userBalance?.tokenBalance)
+    }else{
+      const perctageSet = userBalance?.solBalance * (percentage / 100);
+      setAmount(perctageSet);
+      handleAmount(perctageSet)
+  
+      console.log("perctageSet", perctageSet, userBalance?.solBalance)
+    }
+   
   }
 
   const handleSell = async () => {

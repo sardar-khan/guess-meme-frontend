@@ -14,7 +14,7 @@ const InputField = ({
     const handleChange = (e) => {
         const inputValue = e.target.value;
 
-        if (label === "Username:" && inputValue.length > 10) {
+        if (label === "Username:" && inputValue.length > 15) {
             setError("Username cannot exceed 10 characters");
             return; // Ignore changes that exceed 10 characters
         }

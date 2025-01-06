@@ -14,6 +14,8 @@ import TaskBar from './components/TaskBar/TaskBar';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Footer from './components/Footer';
+import PrivacyPolicy from './Pages/PrivacyPolicy';
+import TermsOfService from './Pages/TermsOfService';
 
 function App() {
   // localStorage.setItem('blockchain', 'SOL')
@@ -33,6 +35,8 @@ function App() {
           <Route path='/howitworks' element={<HowItWorks />} />
           <Route path='/revealsBestPerformers' element={<RevealsBestPerformers />} />
           <Route path='/trade/:id' element={<Threads />} />
+          <Route path='/docs/privacy-policy' element={<PrivacyPolicy/>} />
+          <Route path='/docs/terms-and-conditions' element={<TermsOfService/>} />
         </Routes>
         <Footer />
         <TaskBar />

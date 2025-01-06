@@ -224,7 +224,7 @@ const UserProfile = () => {
 
                     <CardWrapper>
 
-                        <div className='flex flex-row gap-1'>
+                        <div className='flex flex-row justify-center flex-wrap gap-1'>
                             {tabs.map((tab) => {
                                 // Show all tabs if showUserData is true, else skip "Notification" tab
                                 if (!showUserData && tab.id === 'notification') {

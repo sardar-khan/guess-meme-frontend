@@ -56,9 +56,9 @@ const AllLaunchs = () => {
     };
 
     return (
-        <div className='p-2 md:p-4 !pb-[150px]'>
-            <div className="w-full flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-                <div className='flex items-center gap-3'>
+        <div className='p-2 md:p-4 !pb-[50px]'>
+            <div className="w-full flex md:flex-row md:justify-between md:items-center items-start justify-between space-x-3 mb-4">
+                <div className='sm:flex items-center gap-3'>
                     <div className="win2000-sort-select-container">
                         <select
                             className="win2000-sort-select"
@@ -72,7 +72,7 @@ const AllLaunchs = () => {
                     </div>
                     <AnimationToggle />
                 </div>
-                <div className='flex items-end gap-2 mt-4 md:mt-0'>
+                <div className='flex items-end gap-2 md:mt-4'>
                     <div className="win2000-sort-select-container">
                         <select className="win2000-sort-select" value={sortOption} onChange={handleSortChange}>
                             <option value="">Sort: Featured</option>

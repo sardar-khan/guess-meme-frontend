@@ -50,7 +50,7 @@ const Hero = () => {
     const strokeDashoffset = circumference - (kingOfHill?.kingOfTheHill?.bonding_curve_progress / 100) * circumference;
 
     return (
-        <div className='py-8 px-2 pb-0 md:px-4 flex flex-col items-center'>
+        <div className='py-4 sm:py-8 px-2 pb-0 md:px-4 flex flex-col items-center'>
             <h1 className='text-center text-[#C720EF] text-[20px] leading-[22px] md:text-[30px] md:leading-[32px] font-extrabold tracking-[2px]'
                 style={{
                     textShadow: '2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000'

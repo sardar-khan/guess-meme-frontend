@@ -16,7 +16,7 @@ const checkBlockChain =
     blockchain === 'SOL' ? 'solana' :
         blockchain === 'ETH' ? 'ethereum' :
             blockchain === 'POL' ? 'polygon' :
-                blockchain === 'BNB' ? 'bnb' :
+                blockchain === 'BNB' ? 'bsc' :
                     blockchain === null ? 'solana' :
                         'solana';
 

@@ -3,7 +3,7 @@ import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { SolanaAdapter } from "@reown/appkit-adapter-solana";
-import { solana, solanaTestnet, solanaDevnet, polygonAmoy } from "@reown/appkit/networks";
+import { solana, solanaTestnet, solanaDevnet, polygonAmoy, bscTestnet } from "@reown/appkit/networks";
 import { mainnet, arbitrum, sepolia } from "@reown/appkit/networks";
 import {
   SolflareWalletAdapter,
@@ -42,6 +42,8 @@ export function Web3ModalProvider({ children }) {
   const networks = [
     polygonAmoy,
     solanaDevnet,
+    sepolia,
+    bscTestnet
   ];
 
   // 4. Create Wagmi Adapter
@@ -56,8 +58,9 @@ export function Web3ModalProvider({ children }) {
     wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
   });
 
+   const setAdapter = block_chain === "ETH" || block_chain === "POL" || block_chain === "BNB" ? [wagmiAdapter] : [solanaWeb3JsAdapter]
 
-  const setAdapter = block_chain == "ETH" ? [wagmiAdapter] : [solanaWeb3JsAdapter]
+  //const setAdapter = block_chain == "ETH" ? [wagmiAdapter] : [solanaWeb3JsAdapter]
   // 5. Create modal
   const modal = createAppKit({
     adapters: setAdapter,

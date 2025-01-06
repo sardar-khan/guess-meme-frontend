@@ -30,6 +30,9 @@ const LaunchTokens = () => {
     const { walletProvider } = useAppKitProvider('solana');
 
 
+
+
+
     const dispatch = useDispatch();
     const { address, isConnected } = useAppKitAccount();
     const [name, setName] = useState('');
@@ -64,6 +67,14 @@ const LaunchTokens = () => {
     const { block_chain } = useContext(WalletContext);
     console.log("block_chainblock_chainblock_chain", block_chain)
 
+    const checkBlockChain =
+        block_chain === 'SOL' ? 'solana' :
+            block_chain === 'ETH' ? 'ethereum' :
+                block_chain === 'POL' ? 'polygon' :
+                    block_chain === 'BNB' ? 'bsc' :
+                        block_chain === null ? 'solana' :
+                            'solana';
+
 
     console.log("statuses", isConfirming, isConfirmed, hash);
 
@@ -96,27 +107,7 @@ const LaunchTokens = () => {
         parseFloat(parseFloat(preTokenBuy) + 0.05)
     );
 
-    // const handleImageUpload = async (e) => {
-    //     if (isConnected) {
-    //         const file = e.target.files[0];
-    //         if (file) {
-    //             const formData = new FormData();
-    //             formData.append('profile_photo', file);
-    //             setFileName(file.name);
 
-    //             try {
-    //                 const data = await uploadImage(formData);
-    //                 setImageUrl(data.imageUrl);
-    //                 toast.success('Image uploaded successfully!');
-    //             } catch (error) {
-    //                 console.log("errorerror", error.message)
-    //                 toast.error(`Error uploading image: ${error.message}`);
-    //             }
-    //         }
-    //     } else {
-    //         toast.error('Connect Wallet First')
-    //     }
-    // };
     const handleImageUpload = async (e) => {
         if (isConnected) {
             const file = e.target.files[0];
@@ -278,21 +269,21 @@ const LaunchTokens = () => {
                 if (response.status === 200) {
 
                     const apiResponse = await BuyToken({
-                        account_type: 'ethereum',
+                        account_type: checkBlockChain,
                         amount: parseFloat(preTokenBuy),
                         token_amount: 1,
                         token_id: response.data._id,
                         type: "buy",
                         transaction_hash: hash,
-                      });
-          
-                      if (apiResponse?.status === 200) {
+                    });
+
+                    if (apiResponse?.status === 200) {
                         toast.success(response.message);
                         resetForm();
                         navigate('/');
                         dispatch(fetchCoins(sortOption));
-                      }
-                   
+                    }
+
                 } else {
                     toast.error('Failed to create coin. Please try again.');
                 }

@@ -13,6 +13,7 @@ import Threads from './Pages/Threads';
 import TaskBar from './components/TaskBar/TaskBar';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Footer from './components/Footer';
 
 function App() {
   // localStorage.setItem('blockchain', 'SOL')
@@ -31,8 +32,9 @@ function App() {
           <Route path='/comingSoon' element={<ComingSoon />} />
           <Route path='/howitworks' element={<HowItWorks />} />
           <Route path='/revealsBestPerformers' element={<RevealsBestPerformers />} />
-          <Route path='/trade/:id' element={<Threads />} /> 
+          <Route path='/trade/:id' element={<Threads />} />
         </Routes>
+        <Footer />
         <TaskBar />
       </Router>
     </>

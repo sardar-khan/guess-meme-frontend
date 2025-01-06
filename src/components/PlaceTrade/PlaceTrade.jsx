@@ -309,7 +309,7 @@ const PlaceTrade = ({ coinData }) => {
 
       }
 
-      else if (blockchainType === "ETH" && coinData?.status === 'deployed') {
+      else if (blockchainType === "ETH" || blockchainType === "POL" || blockchainType === "BNB" && coinData?.status === 'deployed') {
         console.log("ETH and deployed")
         const tokenAddress = coinData?.token_address;
         console.log("tokenAddress", tokenAddress)
@@ -369,32 +369,32 @@ const PlaceTrade = ({ coinData }) => {
         }
       }
 
-      else if (blockchainType === "ETH" && coinData?.status === 'created' && tradeType === 'buy') {
+      else if (blockchainType === "ETH" || blockchainType === "POL" || blockchainType === "BNB" && coinData?.status === 'created' && tradeType === 'buy') {
         console.log("ETH ****** created ****** buy")
         let deductETH = await handleLaunchTokenE();
         setAmount('')
         console.log("deductETH", deductETH)
         if (deductETH) {
           setAmount('')
-            const apiResponse = await BuyToken({
-              account_type: 'ethereum',
-              amount: parseFloat(amount),
-              token_amount: 1,
-              token_id: id,
-              type: tradeType,
-              transaction_hash: deductETH,
-            });
+          const apiResponse = await BuyToken({
+            account_type: 'ethereum',
+            amount: parseFloat(amount),
+            token_amount: 1,
+            token_id: id,
+            type: tradeType,
+            transaction_hash: deductETH,
+          });
 
-            if (apiResponse?.status === 200) {
-              toast.success(
-                `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
-              );
-              dispatch(fetchTrades(id)); // Fetch updated trades
-            } else {
-              throw new Error(
-                `Failed to record ${tradeType} trade in the backend`
-              );
-            }
+          if (apiResponse?.status === 200) {
+            toast.success(
+              `${tradeType === "buy" ? "buy" : "sell"} saved successfully`
+            );
+            dispatch(fetchTrades(id)); // Fetch updated trades
+          } else {
+            throw new Error(
+              `Failed to record ${tradeType} trade in the backend`
+            );
+          }
         }
 
       }

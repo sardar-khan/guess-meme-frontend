@@ -21,9 +21,9 @@ import { CiGlobe } from "react-icons/ci";
 const SocialLinks = ({coinData}) => {
     return (
         <div className='flex  gap-2'>
-         {coinData?.twitter_link &&  <a href="https://twitter.com/" target="_blank" className="bg-[#8E8DC7]  py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"><FaXTwitter/> tiwiter</a>}
-          {coinData?.telegram_link && <a href="https://twitter.com/" target="_blank" className="bg-[#8E8DC7] py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"> <FaTelegramPlane/>telegram</a>}
-         {coinData?.website &&  <a href="https://twitter.com/" target="_blank" className="bg-[#8E8DC7] py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"><CiGlobe/> website </a>}
+         {coinData?.twitter_link &&  <a href={coinData?.twitter_link} target="_blank" className="bg-[#8E8DC7]  py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"><FaXTwitter/> tiwiter</a>}
+         {coinData?.telegram_link && <a href={coinData?.telegram_link} target="_blank" className="bg-[#8E8DC7] py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"> <FaTelegramPlane/>telegram</a>}
+         {coinData?.website &&  <a href={coinData?.website} target="_blank" className="bg-[#8E8DC7] py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"><CiGlobe/> website </a>}
             </div>
     )
 

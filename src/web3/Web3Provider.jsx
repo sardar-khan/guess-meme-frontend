@@ -39,7 +39,7 @@ export function Web3ModalProvider({ children }) {
   // 3. Set the networks
   // const blockChain = localStorage.getItem("blockchain");
   // blockChain === "SOL" ? solanaDevnet : polygonAmoy;
-  const networks = [
+  const networks  = [
     polygonAmoy,
     solanaDevnet,
     sepolia,
@@ -77,9 +77,13 @@ export function Web3ModalProvider({ children }) {
       analytics: true, // Optional - defaults to your Cloud configuration
     },
   });
-  return (
+  return block_chain === "ETH" ?(
     <WagmiProvider config={wagmiAdapter.wagmiConfig}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </WagmiProvider>
+  ):(
+    <QueryClientProvider client={queryClient}>
+    {children}
+  </QueryClientProvider>
   );
 }

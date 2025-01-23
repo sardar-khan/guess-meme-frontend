@@ -422,11 +422,11 @@ const ChatRoom = ({ coinData }) => {
                 }
 
                 {refferalError && <div className='text-red-600 Inter'>{refferalError}</div>}
-                <button
+                {/* <button
                     onClick={() => { openModalReferral() }}
                     className='themeBtn w-fit px-5 py-4 SegoeUi mt-5'>
                     <span>Referral</span>
-                </button>
+                </button> */}
 
                 {/* Referral Modal */}
                 <ReferralModal

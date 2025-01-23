@@ -96,10 +96,13 @@ import solImg from "../../assets/icons/sol.svg";
 import polImg from "../../assets/icons/polygon.png";
 import bnbImg from "../../assets/icons/bnb.png";
 import { useNavigate } from "react-router-dom";
+import { useAppKitAccount, useDisconnect } from "@reown/appkit/react";
 
 const WindowDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { address, isConnected } = useAppKitAccount()
   const navigate = useNavigate()
+   const { disconnect } = useDisconnect()
   const blockChain = localStorage.getItem("blockchain")
   const [selectedOption, setSelectedOption] = useState(blockChain === null ? localStorage.setItem("blockchain", "SOL") : blockChain);
 
@@ -115,7 +118,10 @@ const WindowDropdown = () => {
     }
   };
 
-  const selectOption = (option) => {
+  const selectOption = async (option) => {
+    console.log("selected notiio",option,isConnected)
+   
+  
     setSelectedOption(option);
     localStorage.setItem("blockchain", option
       // option === 'SOL' ? 'SOL' :
@@ -125,9 +131,22 @@ const WindowDropdown = () => {
       //         'solana'
     );
 
-    setIsOpen(false);
+   if(isConnected){ setIsOpen(false);
+    await disconnect()
+    navigate('/')
+    document.cookie.split(";").forEach(cookie => {
+      const [name] = cookie.split("=");
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    });
+    window.location.reload(); // Refresh the page
+  }else{
+    document.cookie.split(";").forEach(cookie => {
+      const [name] = cookie.split("=");
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    });
     navigate('/')
     window.location.reload(); // Refresh the page
+  }
   };
 
   useEffect(() => {
@@ -157,14 +176,14 @@ const WindowDropdown = () => {
             <img src={ethImg} alt="ETH" className="dropdown-icon" />
             ETH
           </div>
-          <div className="win2000-option" onClick={() => selectOption("POL")}>
+          {/* <div className="win2000-option" onClick={() => selectOption("POL")}>
             <img src={polImg} alt="POL" className="dropdown-icon" />
             POL
           </div>
           <div className="win2000-option" onClick={() => selectOption("BNB")}>
             <img src={bnbImg} alt="BNB" className="dropdown-icon" />
             BNB
-          </div>
+          </div> */}
         </div>
       )}
     </div>

@@ -6,13 +6,16 @@
 
 import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction, clusterApiUrl, sendAndConfirmTransaction } from "@solana/web3.js";
 // import { connection, feeRecipient, IDL1, mintaddy, SELLSLIPPAGE, wallet } from "./config";
-import { connection, provider,feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
+import { connection, provider, feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
 import { getAccount, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import { Buy_createTransactionInstruction, b, fetchLiquidityPool, lx_global } from "./utils";
 import BN from "bn.js";
 import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
-import { AnchorProvider, Program } from "@coral-xyz/anchor";
+import { AnchorProvider, Program, web3 } from "@coral-xyz/anchor";
 import * as buffer from 'buffer'
+import { toast } from "react-toastify";
+import { getAssociatedTokenAddressSync } from '@solana/spl-token'
+import { getBuySellInSolBuy, getBuySellInTokensBuy, retrieveTokenInfo } from "./TokenPriceCalculations";
 
 
 
@@ -38,10 +41,9 @@ function decodeLiquidityPool(data) {
 // const bs58 = require("bs58");
 // const userPublickey = new PublicKey("GMjT1392P2XMgMwQJEvQFsjJrrFW6symXjerkUvzinLV");
 
-async function buy(walletProvider, amount, mintaddy) {
+async function buy(walletProvider, amount, mintaddy, maxSlippage, priorityFee) {
     console.log("amount for sol", Number(amount) * 10 ** 6);
-    const maxSlippage='1'
-    const buy_value =maxSlippage?.toString()
+    const buy_value = maxSlippage ? maxSlippage?.toString() : '10'
     console.log(walletProvider, "wallet Provider");
     const programId = new PublicKey("7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh");
 
@@ -249,7 +251,7 @@ async function sellcoin(walletProvider, amount, mintaddy) {
     console.log("Transaction signature", signature);
 }
 
- const sell = async (
+const sell = async (
     walletProvider,
     tokenAmount,
     taddress,
@@ -376,11 +378,11 @@ async function sellcoin(walletProvider, amount, mintaddy) {
                 ),
             })
             .transaction();
-            sellTx.feePayer = walletProvider.publicKey;
-            sellTx.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
-        
-            const signature = await walletProvider.signAndSendTransaction(sellTx);
-       // console.log('Sell transaction signature: ', sellTx,signature)
+        sellTx.feePayer = walletProvider.publicKey;
+        sellTx.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
+
+        const signature = await walletProvider.signAndSendTransaction(sellTx);
+        // console.log('Sell transaction signature: ', sellTx,signature)
         return {
             error: false,
             data: signature,
@@ -406,224 +408,218 @@ async function fetchLiquidityPool1(pda, program) {
     }
 }
 
-const TokenPriceCalculations = async (taddress, amount , isSolToToken ) => {
-
-    
+const TokenPriceCalculations = async (taddress, amount, isSolToToken, isDeployed) => {
+    // console.log("not-okay", taddress, amount, isSolToToken, isDeployed)
     window.Buffer = buffer.Buffer
-    const tokenAddress = new PublicKey(taddress)
-            const programId = new PublicKey(
+    if (isDeployed) {
+
+        const tokenAddress = new PublicKey(taddress)
+        const programId = new PublicKey(
             '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
         )
-       
+
         const program = new Program(IDL1, programId, provider)
-    const data = await retrieveTokenInfo(program, programId, tokenAddress);
-    
-    const virtualSolReserves = BigInt(data?.virtualSolReserves);
-    const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
+        const data = await retrieveTokenInfo(program, programId, tokenAddress, isDeployed);
 
-    const k = virtualSolReserves * virtualTokenReserves;
+        const virtualSolReserves = BigInt(data?.virtualSolReserves);
+        const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
 
-    if(isSolToToken){
-    const oneSOLInLamports =BigInt(Math.floor(amount * LAMPORTS_PER_SOL));
-console.log("sol in lamports",oneSOLInLamports);
-    // Constant product (k)
-   
-    // Tokens per 1 SOL
-    const buyTokensAgainstSol = Number(
-        virtualTokenReserves - (k / (virtualSolReserves + oneSOLInLamports))
-    );
-    const sellTokensAgainstSol = Number(        
-        (k / (virtualSolReserves - oneSOLInLamports)) - virtualTokenReserves
-    );
+        const k = virtualSolReserves * virtualTokenReserves;
 
-    // Buy price in SOL
-    const tokenPriceInLamport = (oneSOLInLamports * virtualSolReserves) / virtualTokenReserves;
-    const tokenPriceInSol = Number(tokenPriceInLamport) / 1_000_000_000;
+        if (isSolToToken) {
+            const pricesInToken = getBuySellInTokensBuy(amount, k, virtualSolReserves, virtualTokenReserves)
+            return pricesInToken
+        } else {
+            const PriceInSol = getBuySellInSolBuy(amount, k, virtualSolReserves, virtualTokenReserves);
+            return PriceInSol;
+        }
+    } else {
 
-    // Sell price in SOL
-    const tokenPriceInLamportSell = (oneSOLInLamports * virtualSolReserves) / (virtualTokenReserves + oneSOLInLamports);
-    const tokenPriceInSolSell = Number(tokenPriceInLamportSell) / 1_000_000_000;
-    const    tokensbuy = buyTokensAgainstSol/1000000
-    const tokensell = sellTokensAgainstSol/1000000
+        const data = await retrieveTokenInfo("", "", "", isDeployed);
 
-    console.log({
-        tokenPriceInSol,
-        sellTokenPriceInSol: tokenPriceInSolSell,
-        tokensbuy,
-        tokensell
-    });
+        const virtualSolReserves = BigInt(data?.virtualSolReserves);
+        const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
 
-    return {
-        tokenPriceInSol,
-        sellTokenPriceInSol: tokenPriceInSolSell,
-        tokensbuy,
-        tokensell
-    };
-}else{
-    const tokenAmountBN = BigInt(Math.floor(amount * 1_000_000)); // Assuming 6 decimal tokens
-        console.log("Tokens in smallest unit:", tokenAmountBN);
+        const k = virtualSolReserves * virtualTokenReserves;
 
-        // SOL price for given tokens
-        const buySolAgainstTokens =Math.abs( Number(
-            virtualSolReserves - (k / (virtualTokenReserves - tokenAmountBN))
-        ));
-        const sellSolAgainstTokens = Math.abs(Number(
-            (k / (virtualTokenReserves + tokenAmountBN)) - virtualSolReserves
-        ));
+        if (isSolToToken) {
+            const pricesInToken = getBuySellInTokensBuy(amount, k, virtualSolReserves, virtualTokenReserves)
+            return pricesInToken
+        } else {
+            const PriceInSol = getBuySellInSolBuy(amount, k, virtualSolReserves, virtualTokenReserves);
+            return PriceInSol;
+        }
 
-        return {
-            tokensbuy: buySolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
-            tokensell: sellSolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
-        };
-}
+    }
 };
 
+const PUMP_PROGRAM_ADDRESS = new PublicKey("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P");
+
+function getBondingCurveAddress(mintAddress) {
+    //const mintAddress = new PublicKey("5bDLmgxe2heUdosBWM1pYiKvfgT8kL2kbAa19bHwpump");
+    const [bondingCurve] = PublicKey.findProgramAddressSync(
+        [Buffer.from("bonding-curve"), mintAddress.toBytes()],
+        PUMP_PROGRAM_ADDRESS
+    );
 
 
-//  const TokenPriceCalculations = async (taddress, amount) => {
-//     try {
-//         console.log("token calculations",taddress)
-//         const tokenamt = tokenToSmallestUnit(parseInt(amount), 6)
-//         console.log("ammunt",tokenamt);
 
-//         window.Buffer = buffer.Buffer
-      
-//         //console.log('connection', connection)
+    console.log("address", bondingCurve?.toBase58())
+    return bondingCurve;
+}
+async function getBondingCurveInfo() {
+    try {
+        const mintAddress = "5bDLmgxe2heUdosBWM1pYiKvfgT8kL2kbAa19bHwpump";
+        // Get bonding curve address
+        const bondingCurveAddress = getBondingCurveAddress(new PublicKey(mintAddress));
 
-//         const programId = new PublicKey(
-//             '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
-//         )
-       
-//         const program = new Program(IDL1, programId, provider)
-//         const tokenAddress = new PublicKey(taddress)
-//         console.log("info-usessss",program,tokenAddress,programId)
-//         const data = await retrieveTokenInfo(program, programId, tokenAddress)
-//         console.log("dataklklkl",data)
+        // Fetch account info
+        const accountInfo = await connection.getAccountInfo(bondingCurveAddress);
 
-//         const virtualSolReserves = BigInt(data?.virtualSolReserves);
-//         const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
-//         console.log("datavrual sols",virtualSolReserves,virtualTokenReserves)
-//         const tokenAmountBN = BigInt(tokenamt);
+        if (!accountInfo || !accountInfo.data) {
+            throw new Error('Bonding curve account not found');
+        }
 
-//          // Buy price calculation
-//          const tokenPriceInLamport = (
-//             (tokenAmountBN * virtualSolReserves) / 
-//         (virtualTokenReserves - tokenAmountBN)
-//         );
-        
-//         // Sell price calculation
-//         const tokenPriceInLamportSell = (
-//             (tokenAmountBN * virtualSolReserves) / 
-//             (virtualTokenReserves + tokenAmountBN)
-//         );
+        // Parse the account data
+        const data = accountInfo.data;
+        let offset = 8; // Skip discriminator
 
-//         // Convert to SOL
-//         const tokenPriceInSol = convertScientificToDecimal(
-//             Number(tokenPriceInLamport) / 1_000_000_000
-//         );
-//         const tokenPriceInSolSell = convertScientificToDecimal(
-//             Number(tokenPriceInLamportSell) / 1_000_000_000
-//         );
-//         const LAMPORTS_PER_SOL = 1_000_000;
-//         const oneSOLTokenAmount = BigInt(LAMPORTS_PER_SOL);
-//         console.log("oneSOLTokenAmount",oneSOLTokenAmount,virtualSolReserves,virtualTokenReserves,oneSOLTokenAmount)
-//         const consttokenPriceInLamport = (
-//            parseFloat(oneSOLTokenAmount * virtualSolReserves) / 
-//             parseFloat(virtualTokenReserves + oneSOLTokenAmount)
-//         );
-      
-//         const consttokenPriceInLamportSell = (
-//             (oneSOLTokenAmount * virtualSolReserves) / 
-//             (virtualTokenReserves - oneSOLTokenAmount)
-//         );
-        
-//         const consttokenPriceInSol = convertScientificToDecimal(
-//             parseFloat(consttokenPriceInLamport) / 1_000_000_000
-//         );
-//         const consttokenPriceInSolSell = convertScientificToDecimal(
-//             Number(consttokenPriceInLamportSell) / 1_000_000_000
-//         );
+        // Helper function to read u64
+        const readU64 = (buffer, offset) => {
+            return BigInt('0x' + buffer.slice(offset, offset + 8).reverse().toString('hex')).toString();
+        };
 
-//         const jkjkj ={
-//             tokenPriceInSol: tokenPriceInSol,
-//             sellTokenPriceInSol: tokenPriceInSolSell,
-//             onetokenPriceInSol: consttokenPriceInSol,
-//             sellTokenPer1Sol: consttokenPriceInSolSell,
-//             tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
-//         }
+        // Parse all fields
+        const virtualTokenReserves = readU64(data, offset);
+        offset += 8;
 
-//         console.log("hallloojkjkjk",consttokenPriceInSol)
+        const virtualSolReserves = readU64(data, offset);
+        offset += 8;
 
-//         return {
-//             tokenPriceInSol: tokenPriceInSol,
-//             sellTokenPriceInSol: tokenPriceInSolSell,
-//             onetokenPriceInSol: consttokenPriceInSol,
-//             sellTokenPer1Sol: consttokenPriceInSolSell,
-//             tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
-//         };
-//         //token price buy
-//             // const tokenPriceInLamport =
-//             //     parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
-//             //     parseFloat(parseFloat(data?.virtualTokenReserves) - tokenamt)
-//             // const tokenPriceInLamportSell =
-//             //     parseFloat(tokenamt * parseFloat(data?.virtualSolReserves)) /
-//             //     parseFloat(parseFloat(data?.virtualTokenReserves) + tokenamt)
-//         // const tokenPriceInSol = convertScientificToDecimal(
-//         //     parseFloat(tokenPriceInLamport / 1000000000),
-//         // )
-//         // const tokenPriceInSolSell = convertScientificToDecimal(
-//         //     parseFloat(tokenPriceInLamportSell / 1000000000),
-//         // )
+        const realTokenReserves = readU64(data, offset);
+        offset += 8;
 
-//         // token per 1 SOL calculations
-//         // const consttokenPriceInLamport =
-//         //     parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
-//         //     parseFloat(parseFloat(data?.virtualTokenReserves) + 1000000)
-//         // const consttokenPriceInLamportSell =
-//         //     parseFloat(1000000 * parseFloat(data?.virtualSolReserves)) /
-//         //     parseFloat(parseFloat(data?.virtualTokenReserves) - 1000000)
-//         // console.log('token-price-in-lamport', tokenPriceInLamport)
-//         // const consttokenPriceInSol = convertScientificToDecimal(
-//         //     parseFloat(consttokenPriceInLamport / 1000000000),
-//         // )
-//         // const consttokenPriceInSolSell = convertScientificToDecimal(
-//         //     parseFloat(consttokenPriceInLamportSell / 1000000000),
-//         // )
-//         // return {
-//         //     //tokenInfo: data,
-//         //     tokenPriceInSol: tokenPriceInSol,
-//         //     sellTokenPriceInSol: tokenPriceInSolSell,
-//         //     onetokenPriceInSol: consttokenPriceInSol,
-//         //     sellTokenPer1Sol: consttokenPriceInSolSell,
-//         //     tokenPer1Sol: 1 / parseFloat(consttokenPriceInSol),
+        const tokenTotalSupply = readU64(data, offset);
+        offset += 8;
 
-//         //     //solPer1Token:parseFloat(1/tokenAgainstSol)
-//         // }
-//     } catch (error) {
-//         console.log('error while fetching sell token price', error)
-//     }
-// }
+        // Calculate remaining and total tokens in millions/billions for readability
+        const remainingTokens = Number(realTokenReserves) / 1_000_000; // Adjust divisor based on your token decimals
+        const totalTokens = Number(tokenTotalSupply) / 1_000_000;
+
+        return {
+            virtualTokenReserves,
+            virtualSolReserves,
+            realTokenReserves,
+            tokenTotalSupply,
+            remainingTokens,
+            totalTokens,
+            complete: remainingTokens === 0
+        };
+    } catch (error) {
+        console.error('Error fetching bonding curve info:', error);
+        throw error;
+    }
+}
+
+const getBondingCurveAddressOfPUMP = async () => {
+    try {
+        const PUMP_PROGRAM_ADDRESS = new PublicKey("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P");
+
+        function getBondingCurveAddress(mintAddress) {
+            const [bondingCurve] = PublicKey.findProgramAddressSync([Buffer.from("bonding-curve"), mintAddress.toBytes()], PUMP_PROGRAM_ADDRESS);
+            return bondingCurve;
+        }
+
+        function getAssociatedBondingCurveAddress(bondingCurveAddress, mintAddress) {
+            const [associatedBondingCurve] =
+                PublicKey.findProgramAddressSync([bondingCurveAddress.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mintAddress.toBuffer()], ASSOCIATED_TOKEN_PROGRAM_ID);
+            return associatedBondingCurve;
+        }
+    } catch (error) {
+
+    }
+}
+
+const PUMPFUNTOKENINFO = async (program, programId, mintaddy, isDeployed) => {
+
+    console.log("is ths okay", program, programId, mintaddy, isDeployed)
+    if (isDeployed) {
+
+        window.Buffer = buffer.Buffer
+        const [C] = PublicKey.findProgramAddressSync(
+            [Buffer.from('bonding-curve'), mintaddy.toBuffer()],
+            programId,
+        )
+
+        const r = await program.account.bondingCurve.fetch(C)
+        console.log("rrrrrr", r)
+        const {
+            virtualTokenReserves,
+            virtualSolReserves,
+            realTokenReserves,
+            tokenTotalSupply,
+            complete = false, // Default value if not present
+        } = r
+
+        // Convert BN objects to strings
+        const virtualTokenReservesStr = virtualTokenReserves.toString()
+        const virtualSolReservesStr = virtualSolReserves.toString()
+        const realTokenReservesStr = realTokenReserves.toString()
+        const tokenTotalSupplyStr = tokenTotalSupply.toString()
+
+        // Logging the specific properties in a formatted string
+        const formattedOutput = {
+            virtualTokenReserves: virtualTokenReservesStr,
+            virtualSolReserves: virtualSolReservesStr,
+            realTokenReserves: realTokenReservesStr,
+            tokenTotalSupply: tokenTotalSupplyStr,
+            remainingTokens: parseFloat(realTokenReservesStr / 1000000),
+            totalTokens: parseFloat(tokenTotalSupplyStr / 1000000),
+            complete: complete,
+        }
+
+        console.log('virtual reseverrrs', formattedOutput)
+        return formattedOutput
+    } else {
+        const formattedOutput = {
+            virtualTokenReserves: "1200000000000000",
+            virtualSolReserves: "30000000000",
+            realTokenReserves: "800000000000000",
+            tokenTotalSupply: "1000000000000000",
+            remainingTokens: 800000000,
+            totalTokens: 1000000000,
+            complete: false,
+        }
+
+
+        console.log('virtual reseves', formattedOutput)
+        return formattedOutput
+    }
+
+}
+
+
 
 const reteriveTokenDetails = async (walletProvider, taddress) => {
     try {
         window.Buffer = buffer.Buffer
-        console.log("provider",walletProvider);
+        console.log("provider", walletProvider);
         const programId = new PublicKey(
             '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
         )
         const program = new Program(IDL1, programId, provider)
-        console.log("program",program.account.bondingCurve);
+        console.log("program", program.account.bondingCurve);
         const tokenAddress = new PublicKey(taddress)
-        console.log("tokenAddress",tokenAddress);
+        console.log("tokenAddress", tokenAddress);
         const [C] = PublicKey.findProgramAddressSync(
             [Buffer.from('bonding-curve'), tokenAddress.toBuffer()],
             programId,
         )
-        console.log("c",C)
-        
+        console.log("c", C)
+
 
         const r = await program.account.bondingCurve.fetch(C)
-        console.log("r",r)
+        console.log("r", r)
 
         const {
             virtualTokenReserves,
@@ -632,7 +628,7 @@ const reteriveTokenDetails = async (walletProvider, taddress) => {
             tokenTotalSupply,
             complete = false, // Default value if not present
         } = r
-        
+
 
         // Convert BN objects to strings
         const virtualTokenReservesStr = virtualTokenReserves.toString()
@@ -659,44 +655,103 @@ const reteriveTokenDetails = async (walletProvider, taddress) => {
 
 }
 
- const retrieveTokenInfo = async (program, programId, mintaddy) => {
-   
+
+
+
+
+const calculateBondingCurveProgress = async (taddress, isDeployed) => {
+
     window.Buffer = buffer.Buffer
-    const [C] = PublicKey.findProgramAddressSync(
-        [Buffer.from('bonding-curve'), mintaddy.toBuffer()],
-        programId,
+
+    const mintaddy = new PublicKey(taddress)
+    const programId = new PublicKey(
+        '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
     )
 
-    const r = await program.account.bondingCurve.fetch(C)
-console.log("rrrrrr",r)
-    const {
-        virtualTokenReserves,
-        virtualSolReserves,
-        realTokenReserves,
-        tokenTotalSupply,
-        complete = false, // Default value if not present
-    } = r
+    const program = new Program(IDL1, programId, provider)
+    const calculateBondingCurveProgress = (remainingTokens, initialRealTokenReserves) => {
+        // Calculate the Bonding Curve Progress
+        console.log("sakass", remainingTokens, initialRealTokenReserves)
+        return ((initialRealTokenReserves - remainingTokens) * 100) / initialRealTokenReserves;
+    };
 
-    // Convert BN objects to strings
-    const virtualTokenReservesStr = virtualTokenReserves.toString()
-    const virtualSolReservesStr = virtualSolReserves.toString()
-    const realTokenReservesStr = realTokenReserves.toString()
-    const tokenTotalSupplyStr = tokenTotalSupply.toString()
+    if (isDeployed) {
+        window.Buffer = buffer.Buffer;
+        const [C] = PublicKey.findProgramAddressSync(
+            [Buffer.from('bonding-curve'), mintaddy.toBuffer()],
+            programId,
+        );
 
-    // Logging the specific properties in a formatted string
-    const formattedOutput = {
-        virtualTokenReserves: virtualTokenReservesStr,
-        virtualSolReserves: virtualSolReservesStr,
-        realTokenReserves: realTokenReservesStr,
-        tokenTotalSupply: tokenTotalSupplyStr,
-        remainingTokens: parseFloat(realTokenReservesStr / 1000000),
-        totalTokens: parseFloat(tokenTotalSupplyStr / 1000000),
-        complete: complete,
+        const r = await program.account.bondingCurve.fetch(C);
+        console.log("rrrrrr", r);
+
+        const {
+            virtualTokenReserves,
+            virtualSolReserves,
+            realTokenReserves,
+            tokenTotalSupply,
+            complete = false, // Default value if not present
+        } = r;
+
+        // Convert BN objects to strings
+        const virtualTokenReservesStr = virtualTokenReserves.toString();
+        const virtualSolReservesStr = virtualSolReserves.toString();
+        const realTokenReservesStr = realTokenReserves.toString();
+        const tokenTotalSupplyStr = tokenTotalSupply.toString();
+
+        // Remaining tokens in normal units
+        const remainingTokens = parseFloat(realTokenReservesStr / 1000000);
+        const totalTokens = parseFloat(tokenTotalSupplyStr / 1000000);
+
+        // Initial real token reserves based on your logic
+        const initialRealTokenReserves = 800_000_000; // Fixed initial reserve from your requirements
+        const bondingCurveProgress = calculateBondingCurveProgress(remainingTokens, initialRealTokenReserves);
+
+        // Logging the specific properties in a formatted string
+        const formattedOutput = {
+            virtualTokenReserves: virtualTokenReservesStr,
+            virtualSolReserves: virtualSolReservesStr,
+            realTokenReserves: realTokenReservesStr,
+            tokenTotalSupply: tokenTotalSupplyStr,
+            remainingTokens: remainingTokens,
+            totalTokens: totalTokens,
+            bondingCurveProgress: bondingCurveProgress.toFixed(2), // Add bonding curve progress
+            complete: complete,
+        };
+
+        console.log('virtual reserves', formattedOutput);
+        return formattedOutput;
+    } else {
+        const virtualTokenReserves = "1200000000000000";
+        const virtualSolReserves = "30000000000";
+        const realTokenReserves = "800000000000000";
+        const tokenTotalSupply = "1000000000000000";
+
+        // Remaining tokens in normal units
+        const remainingTokens = 800_000_000;
+        const totalTokens = 1_000_000_000;
+
+        // Initial real token reserves based on your logic
+        const initialRealTokenReserves = 800_000_000; // Fixed initial reserve from your requirements
+        const bondingCurveProgress = calculateBondingCurveProgress(remainingTokens, initialRealTokenReserves);
+
+        // Logging the specific properties in a formatted string
+        const formattedOutput = {
+            virtualTokenReserves: virtualTokenReserves,
+            virtualSolReserves: virtualSolReserves,
+            realTokenReserves: realTokenReserves,
+            tokenTotalSupply: tokenTotalSupply,
+            remainingTokens: remainingTokens,
+            totalTokens: totalTokens,
+            bondingCurveProgress: bondingCurveProgress.toFixed(2), // Add bonding curve progress
+            complete: false,
+        };
+
+        console.log('virtual reserves', formattedOutput);
+        return formattedOutput;
     }
+};
 
-    console.log('virtual reseves', formattedOutput)
-    return formattedOutput
-}
 
 
 function convertScientificToDecimal(scientificNotation) {
@@ -722,8 +777,8 @@ function convertScientificToDecimal(scientificNotation) {
         exponent < 0
             ? '0.' + '0'.repeat(Math.abs(exponent) - 1) + coefficient.replace('.', '')
             : coefficient.slice(0, exponent + 1) +
-              (coefficient.length > exponent + 1 ? 
-                  '.' + coefficient.slice(exponent + 1) : '')
+            (coefficient.length > exponent + 1 ?
+                '.' + coefficient.slice(exponent + 1) : '')
     ).replace(/\.?0+$/, '');
 
     // Return the adjusted coefficient with sign
@@ -746,4 +801,234 @@ const reterieveUserSolanaBalance = async (walletProvider) => {
     }
 }
 
-export { buy, sell, reteriveTokenDetails,TokenPriceCalculations,reterieveUserSolanaBalance }
+
+const launchSolToken = async (
+    name,
+    symbol,
+    image,
+    buyPercentage,
+    amount,
+    walletProvider,
+    appconnection,
+    setIsCreatingCoin
+
+) => {
+    console.log("props", name, symbol, image, buyPercentage, amount)
+    // console.log('buyPercentage in func', buyPercentage, name, symbol, image)
+    // if ((!name, !symbol, !image)) {
+    //     return toast.error('Please fill out all the feilds')
+    // }
+    window.Buffer = buffer.Buffer
+
+    //setLoading(true)
+
+    try {
+
+        // const connection = new web3.Connection(
+        //     web3.clusterApiUrl('devnet', true),
+        //     'confirmed',
+        // )
+        // console.log('connection', connection)
+        const tokenamt = Number(amount) * 10 ** 6;
+        const programId = new PublicKey(
+            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
+        )
+        // const provider = new AnchorProvider(connection, walletProvider, {
+        //     commitment: 'confirmed',
+        // })
+        const program = new Program(IDL1, programId, walletProvider)
+
+        // Constants for SOL and Token decimals
+        const SOL_DECIMALS = 9;
+        const TOKEN_DECIMALS = 6;
+
+        const maxSlippage = '10'
+        const buy_value = maxSlippage?.toString()
+
+        // Compute scaling factors
+        const solFactor = new BN(10).pow(new BN(SOL_DECIMALS)); // 10^9 for SOL
+        const tokenFactor = new BN(10).pow(new BN(TOKEN_DECIMALS)); // 10^6 for Token
+
+        // Adjusted token parameters
+        const tokenTotalSupply = new BN(1000000000).mul(tokenFactor); // 1 billion tokens, adjusted for 6 decimals
+        const tokenMargin = new BN(200000000).mul(tokenFactor); // Margin adjusted for token decimals
+        const initialVirtualTokenReserves = tokenTotalSupply.add(tokenMargin);
+        const initialRealTokenReserves = tokenTotalSupply.mul(new BN(80)).div(new BN(100)); // 80% of total supply
+
+        const token_key = Keypair.generate();
+        console.log("Token address (public key):", token_key.publicKey.toBase58());
+        console.log("SOL Decimals:", SOL_DECIMALS);
+        console.log("Token Decimals:", TOKEN_DECIMALS);
+        console.log("Initial Real Token Reserves:", initialRealTokenReserves.toString());
+        console.log("Initial Virtual Token Reserves:", initialVirtualTokenReserves.toString());
+
+        // Derive addresses
+        const [S] = PublicKey.findProgramAddressSync(
+            [Buffer.from("mint-authority")],
+            programId
+        );
+        console.log("Mint authority:", S.toBase58());
+
+        const [C] = PublicKey.findProgramAddressSync(
+            [Buffer.from("bonding-curve"), token_key.publicKey.toBuffer()],
+            programId
+        );
+        console.log("Bonding curve:", C.toBase58());
+
+        const B = b(token_key.publicKey, C, true);
+        console.log("Associated Bonding Curve Address:", B.toBase58());
+
+        const MPL_TOKEN_METADATA_PROGRAM_ID = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s";
+        const E = new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
+
+        const [O] = PublicKey.findProgramAddressSync(
+            [Buffer.from("global")],
+            programId
+        );
+
+        const [D] = PublicKey.findProgramAddressSync(
+            [Buffer.from("metadata"), E.toBuffer(), token_key.publicKey.toBuffer()],
+            E
+        );
+
+        //console.log("Token Supply (adjusted for decimals):", tokenTotalSupply.toString(), max_supply * tokenFactor);
+        // Create transaction
+        const tx = await program.methods
+            .create(
+                name,
+                symbol,
+                image,
+                100, // Adjust max_supply for token decimals
+                initialRealTokenReserves,
+                initialVirtualTokenReserves,
+                tokenTotalSupply
+            )
+            .accounts({
+                mint: token_key.publicKey,
+                mintAuthority: S,
+                bondingCurve: C,
+                associatedBondingCurve: B,
+                global: O,
+                mplTokenMetadata: E,
+                metadata: D,
+                user: walletProvider.publicKey,
+                systemProgram: new PublicKey("11111111111111111111111111111111"),
+                tokenProgram: new PublicKey(
+                    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+                ),
+                rent: new PublicKey("SysvarRent111111111111111111111111111111111"),
+            })
+            .signers([token_key])
+            .transaction();
+
+
+        let atains;
+        const r = b(token_key.publicKey, walletProvider.publicKey, false);
+        let hasAta = false;
+        try {
+            const res = await getAccount(connection, r);
+        } catch (error) {
+            hasAta = true
+            atains = Buy_createTransactionInstruction(
+                walletProvider.publicKey,
+                r,
+                walletProvider.publicKey,
+                token_key.publicKey
+            );
+        }
+
+        const a = new BN(Math.floor(1e9 * parseFloat(buy_value)));
+
+        let o = {
+            solAmount: a,
+        };
+        let buyTx
+        if (hasAta) {
+
+            buyTx = await program.methods
+                .buy(
+                    new BN(tokenamt),
+                    o.solAmount.add(a.mul(new BN(Math.floor(10 * 999))).div(new BN(1e3)))
+                )
+                .accounts({
+                    global: O,
+                    feeRecipient: feeRecipient,
+                    mint: token_key.publicKey,
+                    bondingCurve: C,
+                    associatedBondingCurve: b(token_key.publicKey, C, true),
+                    associatedUser: r,
+                    user: walletProvider.publicKey,
+                    systemProgram: new PublicKey("11111111111111111111111111111111"),
+                    tokenProgram: new PublicKey(
+                        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+                    ),
+                    rent: new PublicKey("SysvarRent111111111111111111111111111111111"),
+                })
+                .preInstructions([atains])
+                .transaction();
+        } else {
+
+            buyTx = await program.methods
+                .buy(
+                    new BN(tokenamt),
+                    o.solAmount.add(a.mul(new BN(Math.floor(10 * 999))).div(new BN(1e3)))
+                )
+                .accounts({
+                    global: O,
+                    feeRecipient: feeRecipient,
+                    mint: token_key.publicKey,
+                    bondingCurve: C,
+                    associatedBondingCurve: b(token_key.publicKey, C, true),
+                    associatedUser: r,
+                    user: walletProvider.publicKey,
+                    systemProgram: new PublicKey("11111111111111111111111111111111"),
+                    tokenProgram: new PublicKey(
+                        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+                    ),
+                    rent: new PublicKey("SysvarRent111111111111111111111111111111111"),
+                })
+                // .preInstructions([atains])
+                .transaction();
+        }
+
+
+
+
+
+        const transaction = new web3.Transaction().add(tx);
+        transaction.add(buyTx);
+        transaction.feePayer = walletProvider.publicKey;
+        transaction.recentBlockhash = (await appconnection.getLatestBlockhash('confirmed')).blockhash;
+        transaction.partialSign(token_key);
+
+
+        const signedTransaction = await walletProvider.signTransaction(transaction); // signTransaction for custom signing
+        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+        console.log("signature of token", signature);
+        await connection.confirmTransaction(signature, 'confirmed');
+        return {
+            success: true,
+            hash: signature,
+            token_address: token_key.publicKey.toBase58(),
+            bonding_curve: B.toBase58(),
+        };
+    } catch (err) {
+        //setLoading(false)
+        setIsCreatingCoin(false)
+        console.log('Error while creating coin', err)
+        if (err.message.includes('User rejected the request')) {
+            toast.error('Transaction request was rejected by the user.')
+        } else {
+            toast.error('Something went wrong. Please try again.')
+        }
+
+        return {
+            success: false,
+            token_address: null,
+            tx_hash: null,
+            bonding_curve: null,
+        }
+    }
+}
+
+export { buy, launchSolToken, getBondingCurveAddress, getBondingCurveInfo, calculateBondingCurveProgress, sell, reteriveTokenDetails, TokenPriceCalculations, reterieveUserSolanaBalance }

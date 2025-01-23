@@ -471,7 +471,8 @@ const PlaceTrade = ({ coinData }) => {
     // setAmount(val)
     const res = await TokenPriceCalculations(
       coinData?.token_address,
-      val === '' ? 0 : val, !showSOGs
+      val === '' ? 0 : val, !showSOGs,
+      false
     )
     console.log("result", res, !showSOGs)
 

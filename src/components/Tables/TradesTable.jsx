@@ -12,7 +12,7 @@ const TradesTable = () => {
     console.log("trades", trades)
     const { pusherAfterTrade } = useNotificationContext();
     // latestTrades
-
+console.log("hellos",id)
     useEffect(() => {
         dispatch(fetchTrades(id));
         // }, [dispatch, id]);

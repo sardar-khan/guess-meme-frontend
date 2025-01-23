@@ -86,9 +86,9 @@ export const editProfile = async ({ user_name, bio, profile_photo }) => {
 };
 
 // viewCoins function
-export const viewCoins = async (sortBy = '') => {
+export const viewCoins = async (sortBy) => {
     try {
-        const url = sortBy ? `user/view-coins?sortBy=${sortBy}&type=${checkBlockChain}` : `user/view-coins?type=${checkBlockChain}`;
+        const url = sortBy ? `user/view-coins?status=${sortBy?.toLowerCase()}&type=${checkBlockChain}` : `user/view-coins?status=deployed&type=${checkBlockChain}`;
         const response = await apiInstance.get(url);
         console.log('ViewCoins', response.data);
         return response.data;
@@ -127,7 +127,7 @@ export const Progress_curve_bond = async (token_address) => {
 
 
 //createCoin function
-export const createCoin = async ({ name, ticker, description, image, max_supply, twitter_link, telegram_link, website, bonding_curve, max_buy_percentage, fee, timer }) => {
+export const createCoin = async ({ name, ticker, description, image, max_supply, twitter_link, telegram_link, website, bonding_curve, max_buy_percentage, amount, timer, hash, bondingCurve, tokenAddress }) => {
     try {
         const response = await apiInstance.post('user/create-coin', {
             name,
@@ -140,8 +140,11 @@ export const createCoin = async ({ name, ticker, description, image, max_supply,
             website,
             bonding_curve,
             max_buy_percentage,
-            fee,
-            timer
+            amount,
+            timer,
+            hash,
+            bonding_curve: bondingCurve,
+            token_address: tokenAddress,
         });
 
         console.log('createCoin', response.data);
@@ -211,7 +214,7 @@ export const KingOfTheHill = async () => {
         const response = await apiInstance.get(`trade/coin_of_hill/${checkBlockChain}`);
         return response.data;
     } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching profile :', error);
         throw error;
     }
 };

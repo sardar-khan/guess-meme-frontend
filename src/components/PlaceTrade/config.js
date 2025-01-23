@@ -46,6 +46,7 @@ import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import { Keypair, Connection, PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
 import IDL1 from "./solIdl.json"; // Ensure the JSON file is accessible in your build
+import IDL2 from "./idl2.json"; 
 import { WalletProvider } from "@solana/wallet-adapter-react";
 
 const programId = new PublicKey(
@@ -87,6 +88,53 @@ const wallet = {
 const provider = new AnchorProvider(connection, wallet, {
     commitment: "confirmed",
 });
+ function Buy_createTransactionInstruction(
+    signerPublicKey, // Public key of the signer account
+    programPublicKey, // Public key of the program to interact with
+    associatedTokenPublicKey, // Public key of the associated token account
+    mintPublicKey // Public key of the mint account
+  ) {
+    const accounts = [
+      {
+        pubkey: signerPublicKey,
+        isSigner: true,
+        isWritable: true,
+      },
+      {
+        pubkey: programPublicKey,
+        isSigner: false,
+        isWritable: false,
+      },
+      {
+        pubkey: associatedTokenPublicKey,
+        isSigner: false,
+        isWritable: true,
+      },
+      {
+        pubkey: mintPublicKey,
+        isSigner: false,
+        isWritable: false,
+      },
+      {
+        pubkey: SystemProgram.programId,
+        isSigner: false,
+        isWritable: false,
+      },
+      {
+        pubkey: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
+        isSigner: false,
+        isWritable: false,
+      },
+    ];
+  
+    const data = Buffer.alloc(0);
+  
+    return new TransactionInstruction({
+      keys: accounts,
+      programId: new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"),
+      data,
+    });
+  }
 
 const program = new Program(IDL1, programId, WalletProvider);
 
@@ -94,11 +142,13 @@ export {
     programId,
     connection,
     feeRecipient,
+    Buy_createTransactionInstruction,
     SELLSLIPPAGE,
     mintaddy,
     wallet,
     provider,
      program,
     
-    IDL1
+    IDL1,
+    IDL2
 };

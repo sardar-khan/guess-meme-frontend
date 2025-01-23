@@ -4,6 +4,7 @@ import maximize from '../assets/icons/maximize.png'
 import cross from '../assets/icons/cross.png'
 import comingSoon from '../assets/images/comingSoon.png'
 import BoxHeader from '../components/Global/BoxHeader'
+import { Link } from 'react-router-dom'
 
 const HowItWorks = () => {
 
@@ -31,7 +32,7 @@ const HowItWorks = () => {
                                     <li className='PixelOperatorbold text-base md:text-[21px] text-bold mt-5'>Step4: <br />If enough people make the same guess and the market cap hits $70k, the coin gets listed on Raydium, Uniswap, or whichever chain you’re on.</li>
                                 </ul>
                                 <p className='PixelOperatorbold text-base md:text-[21px] text-bold mt-5'>All liquidity is burned and locked in for everyone to trade.</p>
-                                <button className='themeBtn PixelOperatorbold w-fit py-4 px-7 mt-8 md:mx-auto'><span>Happy guessing!</span></button>
+                               <Link to={'/'}> <button className='themeBtn PixelOperatorbold w-fit py-4 px-7 mt-8 md:mx-auto'><span>Happy guessing!</span></button></Link>
 
                             </div>
 

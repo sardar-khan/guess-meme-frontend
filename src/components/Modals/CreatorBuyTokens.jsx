@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ethImg from "../../assets/icons/eth.png";
 import solImg from "../../assets/icons/sol.webp";
 import { useAppKitProvider } from '@reown/appkit/react';
 import { toast } from 'react-toastify';
-import { reterieveUserSolanaBalance } from '../PlaceTrade/solanaBuySellFunction';
+import { reterieveUserSolanaBalance, TokenPriceCalculations } from '../PlaceTrade/solanaBuySellFunction';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { selectedName } from '../../utils/helper';
+
+// import { useReadContract } from 'wagmi'
 
 
-
-const CreatorBuyToken = ({ isOpen, onClose, tokenName, amount, setAmount, handleLaunchToken,userSolBalnace ,setIsCreatingCoin}) => {
+const CreatorBuyToken = ({ isOpen, onClose, tokenName, isSoltoToken, setIsSoltoToken, tokenToBuy, setTokenToBuy, amount, setAmount, handleLaunchToken, userSolBalnace, imageUrl, setIsCreatingCoin }) => {
     const blockchainType = localStorage.getItem("blockchain") || "SOL";
     const { walletProvider } = useAppKitProvider('solana');
+
 
     const [accountSolBalance, setAccountSolBalance] = useState({
         reason: "0",
@@ -20,19 +23,12 @@ const CreatorBuyToken = ({ isOpen, onClose, tokenName, amount, setAmount, handle
     if (!isOpen) return null;
 
     const deployToken = () => {
-        if (!amount) {
-            toast("please enter amount to buy", { type: "error" });
-            return;
-        }
+
         setIsCreatingCoin(true);
         onClose();
         handleLaunchToken();
     }
 
-  console.log("userSolBalnace",userSolBalnace);
-  
-
-  
     return (
         <div
             className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'
@@ -43,8 +39,14 @@ const CreatorBuyToken = ({ isOpen, onClose, tokenName, amount, setAmount, handle
                 className='bg-[#A49DD2] p-5 z-[1000] rounded-lg w-[90%] max-w-md'
                 onClick={(e) => e.stopPropagation()}
             >
-                <h3 className='text-lg font-semibold mb-3'>Buy {tokenName}</h3>
+                <h3 className='text-xl Inter text-center font-semibold mb-3'> Choose how many <span className=' text-purple-900 text-lg font-bold '>{tokenName}</span> you want to buy  <span className='font-sans'>(optional)</span></h3>
+                <p className='text-sm Inter text-center  mb-3'>tip: its optional but buying a small amount of coins helps protect your coin from snipers</p>
 
+                <SwitchBuyToken
+                    tokenName={tokenName}
+                    isSoltoToken={isSoltoToken}
+                    setIsSoltoToken={setIsSoltoToken}
+                />
                 {/* Input Fields */}
                 <div className='flex flex-col gap-2'>
 
@@ -55,35 +57,46 @@ const CreatorBuyToken = ({ isOpen, onClose, tokenName, amount, setAmount, handle
                                 <input
                                     type="number"
                                     name="amount"
-                                    value={amount}
+                                    value={isSoltoToken ? amount : tokenToBuy}
                                     placeholder='Amount'
                                     className="w-full px-2 py-3 pr-4"
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         if (!value || Number(value) >= 0) {
-                                            setAmount(value);
+                                            isSoltoToken ? setAmount(value) : setTokenToBuy(value)
                                         }
                                     }}
                                 />
                                 <div className="w-fit flex items-center gap-1 bg-white">
                                     <span className="text-black font-semibold text-sm SegoeUi">
-                                        {blockchainType === "ETH" ? "ETH" : "SOL"}
+                                        {selectedName(blockchainType, isSoltoToken, tokenName)}
                                     </span>
-                                    <img
-                                        src={blockchainType === "ETH" ? ethImg : solImg}
-                                        className="w-[30px] mr-5"
-                                        alt={blockchainType === "ETH" ? "ETH" : "SOL"}
+
+                                    <SelectedImage
+                                        isSoltoToken={isSoltoToken}
+                                        blockchainType={blockchainType}
+                                        imageUrl={imageUrl}
+                                        tokenName={tokenName}
                                     />
                                 </div>
                             </div>
-                            
+
                         </div>
+                        {/* token calculations */}
+                        <PriceCalculations
+                            amount={amount}
+                            setAmount={setAmount}
+                            isSoltoToken={isSoltoToken}
+                            tokenToBuy={tokenToBuy}
+                            setTokenToBuy={setTokenToBuy}
+                            tokenName={tokenName}
+                        />
                     </div>
-                    {userSolBalnace>amount?null:<div className="text-red-500 text-xs">Insufficient balance</div>}
+                    {userSolBalnace > amount ? null : <div className="text-red-500 text-xs">Insufficient balance</div>}
                 </div>
 
                 {/* Buttons */}
-                <div className='flex flex-col sm:flex sm:flex-row justify-end mt-4 gap-1 sm:gap-3'>
+                <div className='flex flex-col py-4 sm:flex sm:flex-row justify-end mt-4 gap-1 sm:gap-3'>
                     <button
                         onClick={onClose}
                         className='w-full sm:w-fit px-4 py-2 bg-gray-300 sm:!text-base text-xs'
@@ -93,17 +106,11 @@ const CreatorBuyToken = ({ isOpen, onClose, tokenName, amount, setAmount, handle
                     <button
                         className='themeBtn w-full sm:w-fit'
                         onClick={() => {
-                            console.log("amount", amount);
-
-                            // Use integer arithmetic by working with lamports directly.
-                            // const amt = Math.round((parseFloat(amount) + 0.03) * 1e9); // Multiply by 1e9 and round to nearest integer
-                            // console.log("amt in SOL (including 0.03):", (amt / 1e9)); // For display purposes
-                            // console.log("lamports", amt); // Final lamports value
-                            userSolBalnace>amount&&
-                            deployToken();
+                            userSolBalnace > amount &&
+                                deployToken();
                         }}
                     >
-                        <span className='!text-xs sm:!text-base'>Buy</span>
+                        <span className='!text-xs sm:!text-base'>Create Coin</span>
                     </button>
                 </div>
             </div>
@@ -112,3 +119,92 @@ const CreatorBuyToken = ({ isOpen, onClose, tokenName, amount, setAmount, handle
 };
 
 export default CreatorBuyToken;
+
+
+const SwitchBuyToken = ({ tokenName, isSoltoToken, setIsSoltoToken }) => {
+    return (
+
+        <div className='flex Inter items-center justify-end'>
+            <button onClick={(() => { setIsSoltoToken(!isSoltoToken) })} className='text-base  tracking ease-in-out transition-all duration-300 hover:bg-purple-500 hover:text-white p-1.5 rounded-md mb-2'>
+                switch to {isSoltoToken ? tokenName : "SOL"}
+            </button>
+        </div>
+    );
+}
+
+
+const SelectedImage = ({ isSoltoToken, blockchainType, imageUrl, tokenName }) => {
+
+    return (
+        <> {blockchainType === "ETH" ?
+            <img
+                src={isSoltoToken ? ethImg : `${import.meta.env.VITE_API_URL.slice(0, -1)}${imageUrl}`}
+                className="w-[30px] mr-5"
+                alt={selectedName(blockchainType, isSoltoToken, tokenName)}
+            /> :
+            <img
+                src={isSoltoToken ? solImg : `${import.meta.env.VITE_API_URL.slice(0, -1)}${imageUrl}`}
+                className="w-[30px] mr-5"
+                alt={selectedName(blockchainType, isSoltoToken, tokenName)}
+            />
+
+        }</>
+    );
+
+}
+
+const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTokenToBuy, tokenName }) => {
+    const [price, setPrice] = useState({});
+    const [contractInfo,setContractInfo]=useState('');
+
+    //  useEffect(()=>{
+    //         GetContractConfiguration(block_chain).then(async(res)=>{
+    //         console.log("block-info",res);
+    //         setContractInfo(res);
+    //       })
+          
+    
+    //     },[block_chain])
+
+
+    //fetch price conversions for token
+    const fetchPrice = async () => {
+        // const result = useReadContract({
+        //     abi,
+        //     address: '0x6b175474e89094c44da98b954eedeac495271d0f',
+        //     functionName: 'totalSupply',
+        //   })
+        
+        try {
+            //const res1 = await tokenToEthConversion(useReadContract,"0x7D3Fb449FbD018af1898c13e0c3b5382aF20501d", tokenToBuy,contractInfo)
+            const res = await TokenPriceCalculations(
+                "",
+                isSoltoToken ? amount === '' ? 0 : amount : tokenToBuy === '' ? 0 : tokenToBuy,
+                isSoltoToken,
+                false
+            );
+            setPrice(res);
+            isSoltoToken ? setTokenToBuy(res?.tokensbuy) : setAmount(res?.tokensbuy)
+            console.log("after switch", "amunt", amount, "tokentobuy", tokenToBuy);
+            // Store the response in state to render it
+        } catch (error) {
+            console.error("Error fetching token price:", error);
+        }
+    }
+
+
+    useEffect(() => {
+        fetchPrice();  // Fetch the price whenever dependencies change
+    }, [amount, isSoltoToken, tokenToBuy]);
+
+    return (
+        <div className='pt-2'>
+            {isSoltoToken ?
+                <span>You receive : {price?.tokensbuy} {tokenName}</span>
+                :
+                <span>Cost : {price?.tokensbuy} SOL</span>
+            }
+        </div>
+    );
+}
+

@@ -1,6 +1,6 @@
 // ConnectButton.jsx
 import React, { useEffect, useCallback, useState } from 'react';
-import { useAppKit, useAppKitAccount, useAppKitState } from "@reown/appkit/react";
+import { useAppKit, useAppKitAccount, useAppKitNetwork, useAppKitState } from "@reown/appkit/react";
 import { useDisconnect } from '@reown/appkit/react'
 
 import logo from '../assets/logo.png';
@@ -10,7 +10,7 @@ import { toast } from 'react-toastify';
 const ConnectButton = () => {
     const { address, isConnected } = useAppKitAccount()
     const { disconnect } = useDisconnect()
-    const { open, close } = useAppKit()
+    const { open, close } = useAppKit() 
 
     const [connectedAddress, setConnectedAddress] = useState('');
 
@@ -47,7 +47,7 @@ const ConnectButton = () => {
                 }
             }
         } catch (error) {
-            disconnect();
+           await disconnect();
             console.error('Error connecting wallet:', error);
             // toast.error('Failed to connect wallet.', { autoClose: 1000 });
         }
@@ -66,7 +66,7 @@ const ConnectButton = () => {
 
     const handleConnectClick = () => {
         if (address) {
-            disconnect();
+            open();
         } else {
             open();
         }
@@ -87,6 +87,9 @@ const ConnectButton = () => {
                 </h2>
             </span>
         </div>
+
+
+
         //     <div className='connectBtn flex items-center w-[190px] cursor-pointer' onClick={handleConnectClick}>
         //     <img src={logo} className='w-[40px] h-[40px]' alt="Logo" />
         //     <h2 className='SegoeUi'>

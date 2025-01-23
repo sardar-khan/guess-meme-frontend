@@ -17,37 +17,43 @@ import { useNotificationContext } from '../context/NotificationContext';
 import { FaXTwitter } from "react-icons/fa6";
 import { FaTelegramPlane } from "react-icons/fa";
 import { CiGlobe } from "react-icons/ci";
+import { useWalletContext } from '../context/WalletContext';
+import PlaceTradeSol from '../components/PlaceTrade/PlaceTradeSol';
+import { calculateBondingCurveProgress } from '../components/PlaceTrade/solanaBuySellFunction';
 
-const SocialLinks = ({coinData}) => {
+const SocialLinks = ({ coinData }) => {
     return (
         <div className='flex  gap-2'>
-         {coinData?.twitter_link &&  <a href={coinData?.twitter_link} target="_blank" className="bg-[#8E8DC7]  py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"><FaXTwitter/> twitter</a>}
-         {coinData?.telegram_link && <a href={coinData?.telegram_link} target="_blank" className="bg-[#8E8DC7] py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"> <FaTelegramPlane/>telegram</a>}
-         {coinData?.website &&  <a href={coinData?.website} target="_blank" className="bg-[#8E8DC7] py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"><CiGlobe/> website </a>}
-            </div>
+            {coinData?.twitter_link && <a href={coinData?.twitter_link} target="_blank" className="bg-[#8E8DC7]  py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"><FaXTwitter /> twitter</a>}
+            {coinData?.telegram_link && <a href={coinData?.telegram_link} target="_blank" className="bg-[#8E8DC7] py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"> <FaTelegramPlane />telegram</a>}
+            {coinData?.website && <a href={coinData?.website} target="_blank" className="bg-[#8E8DC7] py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"><CiGlobe /> website </a>}
+        </div>
     )
 
 }
 
 const Threads = () => {
-    const { id } = useParams();
+    const { id,tokenid} = useParams();
     const [coinData, setCoinData] = useState(null);
     const [kingoftheHill, setKingoftheHill] = useState();
     const [ProgressCurveBond, setProgressCurveBond] = useState();
     const [isDisabled, setIsDisabled] = useState(false);
     const { pusherAfterTrade } = useNotificationContext();
+    const [refresh,setRefresh]=useState(false)
+    const { block_chain } = useWalletContext()
+    console.log("selecte_block_chain_result", block_chain)
 
-
-
-
+console.log("tokenid",tokenid)
     useEffect(() => {
         const fetchCoinData = async () => {
             try {
                 const response = await viewCoin(id);
                 console.log('Single Coin Data:', response);
                 setCoinData(response?.data);
-                fetchProgress_curve_bond(response?.data?.token_address);
-                fetchKingoftheHill_progress(response?.data?.token_address);
+                // fetchProgress_curve_bond(response?.data?.token_address);
+                // fetchKingoftheHill_progress(response?.data?.token_address);
+                fetchProgress_curve_bond(tokenid);
+                fetchKingoftheHill_progress(tokenid);
             } catch (error) {
                 console.error('Error fetching coin data:', error);
                 toast.error('Failed to fetch coin data.');
@@ -55,7 +61,7 @@ const Threads = () => {
         };
 
         fetchCoinData();
-    }, [id, ProgressCurveBond]);
+    }, [id, ProgressCurveBond,refresh]);
 
     console.log('coinDatacoinData:', coinData);
 
@@ -66,18 +72,19 @@ const Threads = () => {
             setKingoftheHill(response?.data?.king_progress);
         } catch (error) {
             console.error('Error kingoftheHill_progress:', error);
-            toast.error('Failed to kingoftheHill_progress.');
+          //  toast.error('Failed to kingoftheHill_progress.');
         }
     };
 
     const fetchProgress_curve_bond = async (token_address) => {
         try {
-            const response = await Progress_curve_bond(token_address);
-            console.log('boning:', response);
-            setProgressCurveBond(response?.data?.progress);
+            const response = await calculateBondingCurveProgress(token_address,true);
+            console.log('finish her', response
+            );
+            setProgressCurveBond(response?.bondingCurveProgress);
         } catch (error) {
             console.error('Error Progress_curve_bond:', error);
-            toast.error('Failed to Progress_curve_bond.');
+          //  toast.error('Failed to Progress_curve_bond.');
         }
     };
 
@@ -162,9 +169,15 @@ const Threads = () => {
                     <ChatRoom coinData={coinData} />
                 </div>
                 <div className='flex flex-col gap-6 w-full lg:w-[30%]'>
-                    {coinData && <PlaceTrade coinData={coinData} />}
+                    {
+                        block_chain === "SOL" ?
+                            (coinData && <PlaceTradeSol refresh={refresh} setRefresh={setRefresh} coinData={coinData} tokenid={tokenid} />)
+                            :
+                            (coinData && <PlaceTrade coinData={coinData} />)
+                    }
+
                     <SocialLinks coinData={coinData} />
-                    <Progress title="Bonding curve progress" progress={ProgressCurveBond} pusherProgress={pusherAfterTrade?.bonding_curve_percentage} />
+                    <Progress title="Bonding curve progress" progress={ProgressCurveBond} pusherProgress={ProgressCurveBond} />
                     <Progress title="Guess master" progress={kingoftheHill} pusherProgress={pusherAfterTrade?.king_of_the_hill_per} />
                     <TradesTable />
                     <HoldersTable />

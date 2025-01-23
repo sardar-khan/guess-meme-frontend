@@ -65,7 +65,7 @@ const HoldersTable = () => {
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+        // return <div>Error: {error}</div>;
     }
     // if (holders.length === 0) return <div>No Data Found</div>;
     if (holders.length === 0) return <div>No Data Found</div>;

@@ -43,6 +43,33 @@ export const calculateTokenEthValues = async (tokenAddress, amount) => {
 };
 
 
+export const tokenToEthConversion = async (useReadContract, tokenAddress, amount, contractInfo) => {
+  try {
+    const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
+    const SelectedAbi = contractInfo.Abi
+    const contractAddress = contractInfo.ContractAddress;
+    const result = useReadContract({
+      abi: SelectedAbi,
+      address: contractAddress,
+      functionName: 'buyQuote',
+      args: [
+        "0x7D3Fb449FbD018af1898c13e0c3b5382aF20501d",
+        formattedAmount
+      ],
+    })
+    const payableAmount = BigInt(buyQuoteResult);
+    const fee = BigInt(feeResult);
+
+    const ethToPay = payableAmount + fee; // Summing up the ETH amount and fee
+
+    console.log("Total ETH to pay Onchange:", Number(ethToPay) / 10 ** 18); // Log ETH value in readable format
+    return (Number(ethToPay) / 10 ** 18).toString(); // Return as string for consistency
+  } catch (error) {
+    console.error("Error calculating token ETH values:", error);
+    throw error; // Rethrow if needed
+  }
+};
+
 export const buyTokensOnBlockchain = async (tokenAddress, amount) => {
   try {
     if (!tokenAddress || !ethers.utils.isAddress(tokenAddress) || amount == '') {

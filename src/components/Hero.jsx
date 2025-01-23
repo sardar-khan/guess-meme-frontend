@@ -48,6 +48,7 @@ const Hero = () => {
     const normalizedRadius = radius - stroke * 2;
     const circumference = normalizedRadius * 2 * Math.PI;
     const strokeDashoffset = circumference - (kingOfHill?.kingOfTheHill?.bonding_curve_progress / 100) * circumference;
+    console.log("king-of-the-hill",kingOfHill)
 
     return (
         <div className='py-4 sm:py-8 px-2 pb-0 md:px-4 flex flex-col items-center'>

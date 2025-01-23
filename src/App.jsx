@@ -16,9 +16,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import Footer from './components/Footer';
 import PrivacyPolicy from './Pages/PrivacyPolicy';
 import TermsOfService from './Pages/TermsOfService';
+import LaunchTokenSolana from './Pages/LaunchTokenSolana';
 
 function App() {
   // localStorage.setItem('blockchain', 'SOL')
+  const block = localStorage.getItem('blockchain')
 
   return (
     <>
@@ -28,13 +30,13 @@ function App() {
         <Routes>
           <Route index path='/' element={<Home />} />
           <Route index path='/Test' element={<Test />} />
-          <Route path='/launchToken' element={<LaunchTokens />} />
+          <Route path='/launchToken' element={block ==='SOL'?<LaunchTokenSolana />:<LaunchTokens />} />
           <Route path='/editprofile' element={<Profile />} />
           <Route path='/userprofile/:id' element={<UserProfile />} />
           <Route path='/comingSoon' element={<ComingSoon />} />
           <Route path='/howitworks' element={<HowItWorks />} />
           <Route path='/revealsBestPerformers' element={<RevealsBestPerformers />} />
-          <Route path='/trade/:id' element={<Threads />} />
+          <Route path='/trade/:id/:tokenid' element={<Threads />} />
           <Route path='/docs/privacy-policy' element={<PrivacyPolicy/>} />
           <Route path='/docs/terms-and-conditions' element={<TermsOfService/>} />
         </Routes>

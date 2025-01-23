@@ -64,9 +64,11 @@ function Buy_createTransactionInstruction(
     });
 }
 
+
+  
  async function lx_global(programId,program) {
     const [i] = PublicKey.findProgramAddressSync(
-      [Buffer.from("bonding-curve")],
+      [Buffer.from("global")],
       programId
     );
     console.log("iiiii",i.toString(),program)

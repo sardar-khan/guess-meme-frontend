@@ -13,7 +13,7 @@ const AllLaunchs = () => {
     const deployedCoins = useSelector(selectDeployedCoins);
     const createdCoins = useSelector(selectCreatedCoins);
     const filteredCoins = useSelector(selectFilteredCoins);
-    const [activeTab, setActiveTab] = useState('AllLaunches');
+    const [activeTab, setActiveTab] = useState('deployed');
     const [sortOption, setSortOption] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const coinsPerPage = 18;
@@ -44,7 +44,7 @@ const AllLaunchs = () => {
 
     useEffect(() => {
         if (status === 'idle') {
-            dispatch(fetchCoins(sortOption));
+            dispatch(fetchCoins(activeTab));
         }
     }, [status, dispatch, sortOption]);
 
@@ -52,8 +52,13 @@ const AllLaunchs = () => {
 
     const handleSortChange = (e) => {
         setSortOption(e.target.value);
+        handleTabClick(e.target.value)
         dispatch(fetchCoins(e.target.value));
+        
     };
+
+    console.log("coinDatacoinData",coins)
+    console.log("deployedCoins",deployedCoins)
 
     return (
         <div className='p-2 md:p-4 !pb-[50px]'>
@@ -63,11 +68,11 @@ const AllLaunchs = () => {
                         <select
                             className="win2000-sort-select"
                             value={activeTab}
-                            onChange={(e) => handleTabClick(e.target.value)}
+                            onChange={handleSortChange}
                         >
-                            <option value="AllLaunches">All Launches</option>
-                            <option value="Revealed">Revealed</option>
-                            <option value="Hidden">Hidden</option>
+                            {/* <option value="all">All Launches</option> */}
+                            <option value="deployed">Revealed</option>
+                            <option value="created">Hidden</option>
                         </select>
                     </div>
                     <AnimationToggle />
@@ -89,7 +94,7 @@ const AllLaunchs = () => {
 
             {/* Content based on active tab */}
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-10'>
-                {activeTab === 'AllLaunches' && (
+                {/* {activeTab === 'AllLaunches' && (
                     <>
                         {status === 'succeeded' && (
                             filteredCoins.length === 0 && Object.keys(createNotificationWithBlockChain).length === 0 ? (
@@ -114,11 +119,11 @@ const AllLaunchs = () => {
 
                         {status === 'failed' && <div>No Coin Found</div>}
                     </>
-                )}
-                {activeTab === 'Revealed' && (
+                )} */}
+                {activeTab === 'deployed' && (
                     <>
                         {status === 'succeeded' && deployedCoins.length === 0 ? (
-                            <div>No data found</div>
+                            <div>No data found </div>
                         ) : (
                             <>
                                 {deployedCoins.map((coin, index) => (
@@ -129,10 +134,10 @@ const AllLaunchs = () => {
                         {status === 'failed' && <div>Error: {error}</div>}
                     </>
                 )}
-                {activeTab === 'Hidden' && (
+                {activeTab === 'created' && (
                     <>
                         {status === 'succeeded' && createdCoins.length === 0 ? (
-                            <div>No data found</div>
+                            <div>No data found </div>
                         ) : (
                             <>
                                 {createdCoins.map((coin, index) => (

@@ -1,8 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { viewCoins } from '../utils/api';
 
-export const fetchCoins = createAsyncThunk('coins/fetchCoins', async (sortBy) => {
-    const response = await viewCoins(sortBy);
+export const fetchCoins = createAsyncThunk('coins/fetchCoins', async ({sortBy,coinSorting}) => {
+   // console.log("mahelli",sortBy,coinSorting)
+    const response = await viewCoins({sortBy,coinSorting});
     return response; 
 });
 

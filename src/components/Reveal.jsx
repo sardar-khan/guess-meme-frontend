@@ -14,7 +14,9 @@ const Reveal = () => {
     
     useEffect(() => {
         if (status === 'idle') {
-            dispatch(fetchCoins('deployed'));
+            
+                                   
+            dispatch(fetchCoins({sortBy:'deployed',coinSorting:""}));
         }
     }, [status, dispatch]);
 

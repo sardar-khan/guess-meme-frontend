@@ -13,6 +13,7 @@ const AllLaunchs = () => {
     const deployedCoins = useSelector(selectDeployedCoins);
     const createdCoins = useSelector(selectCreatedCoins);
     const filteredCoins = useSelector(selectFilteredCoins);
+    const[coinsTab,setCoinTab]=useState('')
     const [activeTab, setActiveTab] = useState('deployed');
     const [sortOption, setSortOption] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -44,7 +45,7 @@ const AllLaunchs = () => {
 
     useEffect(() => {
         if (status === 'idle') {
-            dispatch(fetchCoins(activeTab));
+            dispatch(fetchCoins({sortBy:activeTab,coinSorting:""}));
         }
     }, [status, dispatch, sortOption]);
 
@@ -52,12 +53,18 @@ const AllLaunchs = () => {
 
     const handleSortChange = (e) => {
         setSortOption(e.target.value);
+        //handleTabClick(e.target.value)
+        dispatch(fetchCoins({sortBy:activeTab,coinSorting:e.target.value}));
+        
+    };
+    const handleTabChange = (e) => {
+        //setSortOption(e.target.value);
         handleTabClick(e.target.value)
-        dispatch(fetchCoins(e.target.value));
+        dispatch(fetchCoins({sortBy:e.target.value,coinSorting:""}));
         
     };
 
-    console.log("coinDatacoinData",coins)
+    console.log("coinDatacoinData",activeTab,sortOption)
     console.log("deployedCoins",deployedCoins)
 
     return (
@@ -68,7 +75,7 @@ const AllLaunchs = () => {
                         <select
                             className="win2000-sort-select"
                             value={activeTab}
-                            onChange={handleSortChange}
+                            onChange={handleTabChange}
                         >
                             {/* <option value="all">All Launches</option> */}
                             <option value="deployed">Revealed</option>

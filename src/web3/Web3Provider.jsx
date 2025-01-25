@@ -31,7 +31,7 @@ export function Web3ModalProvider({ children }) {
   // Configure adapters and wallets based on the selected blockchain
   const solanaWallets = [new PhantomWalletAdapter(), new SolflareWalletAdapter()];
   const ethereumNetworks = 
-  blockChain === "ETH" ? [sepolia] :
+  blockChain === "ETH" ? [bscTestnet] :
   blockChain === "POL" ? [polygonAmoy] :
   blockChain === "BNB" ? [bscTestnet] :[];
 

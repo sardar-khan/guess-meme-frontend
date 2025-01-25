@@ -19,7 +19,8 @@ import { FaTelegramPlane } from "react-icons/fa";
 import { CiGlobe } from "react-icons/ci";
 import { useWalletContext } from '../context/WalletContext';
 import PlaceTradeSol from '../components/PlaceTrade/PlaceTradeSol';
-import { calculateBondingCurveProgress } from '../components/PlaceTrade/solanaBuySellFunction';
+import { calculateBondingCurveProgress,calculateKingOfTheHillProgress} from '../components/PlaceTrade/solanaBuySellFunction';
+
 
 const SocialLinks = ({ coinData }) => {
     return (
@@ -67,9 +68,9 @@ console.log("tokenid",tokenid)
 
     const fetchKingoftheHill_progress = async (token_address) => {
         try {
-            const response = await kingoftheHill_progress(token_address);
+            const response = await calculateKingOfTheHillProgress(token_address,true);
             console.log('kingoftheHill_progress:', response);
-            setKingoftheHill(response?.data?.king_progress);
+            setKingoftheHill(response?.kingOfTheHillProgress);
         } catch (error) {
             console.error('Error kingoftheHill_progress:', error);
           //  toast.error('Failed to kingoftheHill_progress.');
@@ -178,7 +179,7 @@ console.log("tokenid",tokenid)
 
                     <SocialLinks coinData={coinData} />
                     <Progress title="Bonding curve progress" progress={ProgressCurveBond} pusherProgress={ProgressCurveBond} />
-                    <Progress title="Guess master" progress={kingoftheHill} pusherProgress={pusherAfterTrade?.king_of_the_hill_per} />
+                    <Progress title="Guess master" progress={kingoftheHill} pusherProgress={kingoftheHill} />
                     <TradesTable />
                     <HoldersTable />
 

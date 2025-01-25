@@ -77,7 +77,7 @@ export const editProfile = async ({ user_name, bio, profile_photo }) => {
             bio,
             profile_photo,
         });
-        console.log('editProfile', response.data);
+       // console.log('editProfile', response.data);
         return response.data;
     } catch (error) {
         console.error('Error during edit Profile:', error);
@@ -86,11 +86,12 @@ export const editProfile = async ({ user_name, bio, profile_photo }) => {
 };
 
 // viewCoins function
-export const viewCoins = async (sortBy) => {
+export const viewCoins = async ({sortBy,coinSorting}) => {
     try {
-        const url = sortBy ? `user/view-coins?status=${sortBy?.toLowerCase()}&type=${checkBlockChain}` : `user/view-coins?status=deployed&type=${checkBlockChain}`;
+        
+        const url = sortBy ? `user/view-coins?status=${sortBy?.toLowerCase()}&type=${checkBlockChain}&sortBy=${coinSorting?.toLowerCase()}` : `user/view-coins?status=deployed&type=${checkBlockChain}`;
         const response = await apiInstance.get(url);
-        console.log('ViewCoins', response.data);
+        
         return response.data;
     } catch (error) {
         console.error('Error fetching coins:', error);
@@ -103,7 +104,7 @@ export const kingoftheHill_progress = async (token_address) => {
         const response = await apiInstance.post('trade/king-of-hill-progress', {
             token_address: token_address
         });
-        console.log('kingoftheHill_progress', response.data);
+       // console.log('kingoftheHill_progress', response.data);
         return response.data;
     } catch (error) {
         console.error('Error during kingoftheHill_progress:', error);

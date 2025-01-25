@@ -235,7 +235,7 @@ const LaunchTokenSolana = () => {
                 toast.success(response.message);
                 resetForm();
                 navigate('/');
-                dispatch(fetchCoins('deployed'));
+                dispatch(fetchCoins({sortBy:'deployed',coinSorting:""}));
             } else {
                 toast.error('Failed to create coin. Please try again.');
                 setIsCreatingCoin(false)

@@ -6,74 +6,30 @@ import { BuyToken } from "../../utils/api";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { fetchTrades } from "../../features/tradesSlice";
-import { buyTokensOnBlockchain, calculateTokenEthValues, sellTokensOnBlockchain } from "./ether-trade-utils";
-import { wallet, mintaddy, connection } from "./config";
-import { buy, getBondingCurveAddress, getBondingCurveInfo, reteriveTokenDetails, sell, TokenPriceCalculations } from "./solanaBuySellFunction";
+import { connection } from "./config";
+import { buy, reteriveTokenDetails, sell, TokenPriceCalculations } from "./solanaBuySellFunction";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useAppKitProvider } from '@reown/appkit/react';
-
-import LaunchTokenSol from "../LaunchTokenDeduct/LaunchTokenSol";
-import LaunchTokenPolygon from "../LaunchTokenDeduct/LaunchPolygonToken";
-
-
-import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import SetSlipPage from "../Modals/SetSlipPage";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { useWalletContext } from "../../context/WalletContext";
-
-
-const blockchainType = localStorage.getItem("blockchain") || "SOL";
-
 // eslint-disable-next-line react/prop-types
-const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
-
-    console.log("placeTrade COin data", coinData , tokenid)
-    //console.log("placeTrade COin data token_address", tokenid)
-
-    // const tokenAddress_mint = tokenid ? new PublicKey(coinData.token_address) : null;
-    let tokenAddress_mint = null;
-
-    if (tokenid && blockchainType === 'SOL') {
-        try {
-            tokenAddress_mint = new PublicKey(tokenid);
-        } catch (error) {
-            console.error("Invalid token address:", tokenid, error);
-            tokenAddress_mint = null;
-        }
-    } else {
-        console.warn("Token address is missing in coinData.");
-    }
-
-
-
+const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const [isSlipPageOpen, setIsSlipPageOpen] = useState(false);
     const wallet = useWallet()
     const [showSOGs, setShowSOGs] = useState(false);
     const { block_chain } = useWalletContext()
-
-
+    const tokenAddress_mint = tokenid && block_chain === 'SOL' ? new PublicKey(tokenid) : null;
     console.log("blockselectedchain", block_chain)
-    // if (blockchainType === "ETH") {
-    //   setShowSOGs(true)
-    // }
+
 
     const [amount, setAmount] = useState("");
     const [userBalance, setUserBalance] = useState({
         tokenBalance: null,
         solBalance: null,
-    })
-    const [tokenCal, setTokenCal] = useState({
-        data: null,
-        loading: false,
-        success: false,
-    })
-    const [tokenInfo, setTokenInfo] = useState({
-        loading: false,
-        success: false,
-        data: null,
     })
     const [amountError, setAmountError] = useState({
         error: false,
@@ -83,17 +39,23 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
     const [tokenToBuy, setTokenToBuy] = useState('')
     const [remaningTokens, setRemaningTokens] = useState('')
     const [solAmount, setSolAmount] = useState('')
-    const [ethAmount, setEthAmount] = useState('')
     const [isLoading, setIsLoading] = useState(false);
     const { walletProvider } = useAppKitProvider('solana');
     const [tradeType, setTradeType] = useState("buy"); // Default trade type is "buy"
-    const { address, isConnected } = useAppKitAccount()
+    const { isConnected } = useAppKitAccount()
     const [slipage, setSlipage] = useState('')
+    const [isButtonDisabled, setIsButtonDisabled] = useState(false);
     const [prorityFee, setPriorityFee] = useState('');
 
+    useEffect(() => {
+        if (tokenid && walletProvider) {
+            getUserBalances()
+            console.log("coinddss", tokenid, coinData)
+            remaningAndMaxbuyTokens(tokenid)
+        }
+    }, [amount, coinData, wallet, tokenToBuy, walletProvider])
 
 
-    console.log("coinDataPlaceTrade", coinData)
 
     const handleSwitchClick = async () => {
 
@@ -118,7 +80,7 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
             console.log("result from the tokens", res);
             const maxBuyPercentage = 100
             const percentage = (res?.totalTokens * maxBuyPercentage) / 100;
-            console.log("percentage", percentage);
+
             setMaxBuyTokens(percentage)
             setRemaningTokens(res?.remainingTokens)
         } catch (error) {
@@ -127,134 +89,110 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
         }
     }
 
-
-
-    useEffect(() => {
-        if (blockchainType === "ETH") {
-            setShowSOGs(false)
-        }
-    }, [])
-
-
-
-    //console.log("solAmount",solAmount)
-    const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-
     const handleTrade = async () => {
-        setIsButtonDisabled(true);
-
-        setTimeout(() => {
-            setIsButtonDisabled(false);
-        }, 2000);
-
         setIsLoading(true);
+        if (!isConnected) return toast.error("Please connect wallet")
+        if (!amount || isNaN(amount) || parseFloat(amount) <= 0) toast.error("Please enter a valid amount")
+        if (block_chain === "SOL" && tradeType === 'buy') {
 
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 1000);
-
-
-        if (isConnected) {
-            // if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-            //   toast.error("Please enter a valid amount");
-            //   return;
-            // }
+            buyTokens()
         }
-        else {
-            toast.error("Connect Wallet First");
-            return;
-        }
-
-        setIsLoading(true);
-        
-
-        try {
-
-            if (blockchainType === "SOL"  && tradeType === 'buy') {
-              
-                const buySuccess = await buy(walletProvider, tokenToBuy, tokenAddress_mint,slipage);
-               
-
-                if (buySuccess) {
-                    setAmount('')
-                    setTokenToBuy('')
-                    setSolAmount('')
-
-                    const apiResponse = await BuyToken({
-                        account_type: 'solana',
-                        amount: parseFloat(tokenToBuy),
-                        token_amount: parseFloat(solAmount),
-                        token_id: id,
-                        type: tradeType,
-                        transaction_hash: buySuccess,
-                    });
-                    if (apiResponse?.status === 201) {
-                        toast.success(`Transction Successfull: ${buySuccess}`)
-                        setRefresh(!refresh);
-                        dispatch(fetchTrades(id)); // Fetch updated trades
-
-                    } else {
-                        throw new Error(
-                            `Failed to record ${tradeType} trade in the backend`
-                        );
-                    }
-
-
-                }
-               
-            }
-
-            else if (blockchainType === "SOL"  && tradeType === 'sell') {
-
-                const sellTrxHash = await sell(walletProvider, amount, tokenAddress_mint);
-                
-                if (sellTrxHash?.success) {
-                    setAmount('')
-                    setSolAmount('')
-                    setTokenToBuy('')
-                    // toast.success("Successfully Sell")
-                    const apiResponse = await BuyToken({
-                        account_type: 'solana',
-                        amount: parseFloat(amount), // no of tokens to be deducted
-                        token_amount: parseFloat(solAmount).toFixed(10), // amount of sol to be received 
-                        token_id: id,
-                        type: tradeType,
-                        transaction_hash: sellTrxHash?.data,
-                    });
-                    if (apiResponse?.status === 201) {
-                        toast.success(`Transction Successfull: ${sellTrxHash?.data}`)
-                        setRefresh(!refresh);
-                        dispatch(fetchTrades(id)); // Fetch updated trades
-
-                    } else {
-                        throw new Error(
-                            `Failed to record ${tradeType} trade in the backend`
-                        );
-                    }
-                } else {
-                    toast.error(`${sellTrxHash?.error}`)
-                }
-
-            }
-
-        } catch (error) {
-            toast.error(error.message || `Error placing ${tradeType} trade`);
-            console.error(`Error during ${tradeType}:`, error);
-        } finally {
-            setIsLoading(false);
+        else if (block_chain === "SOL" && tradeType === 'sell') {
+            sellTokens()
         }
     };
 
+    const buyTokens = async () => {
+        try {
+
+            const buySuccess = await buy(walletProvider, tokenToBuy, tokenAddress_mint, slipage);
+            if (buySuccess?.success) {
+                setAmount('')
+                setTokenToBuy('')
+                setSolAmount('')
+                const apiResponse = await BuyToken({
+                    account_type: 'solana',
+                    amount: parseFloat(tokenToBuy),
+                    token_amount: parseFloat(solAmount),
+                    token_id: id,
+                    type: tradeType,
+                    transaction_hash: buySuccess?.data,
+                });
+                if (apiResponse?.status === 201) {
+                    toast.success(`Transction Successfull: ${buySuccess?.data}`)
+                    setRefresh(!refresh);
+                    dispatch(fetchTrades(id)); // Fetch updated trades
+                    setIsLoading(false);
+
+                } else {
+                    setIsLoading(false);
+                    throw new Error(
+                        `Failed to record ${tradeType} trade in the backend`
+                    );
+                    
+                }
 
 
+            }else{
+                toast.error(`${buySuccess?.error}`)
+                setIsLoading(false);
+            }
+        } catch (error) {
+            toast.error(error.message || `Error placing ${tradeType} trade`);
+            console.log("error while buying tokens", error)
+            setIsLoading(false);
+        }
+    }
 
+    const sellTokens = async () => {
+        try {
+
+
+            const sellTrxHash = await sell(walletProvider, amount, tokenAddress_mint);
+
+            if (sellTrxHash?.success) {
+                setAmount('')
+                setSolAmount('')
+                setTokenToBuy('')
+                // toast.success("Successfully Sell")
+                const apiResponse = await BuyToken({
+                    account_type: 'solana',
+                    amount: parseFloat(amount), // no of tokens to be deducted
+                    token_amount: parseFloat(solAmount).toFixed(10), // amount of sol to be received 
+                    token_id: id,
+                    type: tradeType,
+                    transaction_hash: sellTrxHash?.data,
+                });
+                if (apiResponse?.status === 201) {
+                    toast.success(`Transction Successfull: ${sellTrxHash?.data}`)
+                    setRefresh(!refresh);
+                    dispatch(fetchTrades(id)); // Fetch updated trades
+                    setIsLoading(false);
+
+                } else {
+                    setIsLoading(false);
+                    throw new Error(
+                        `Failed to record ${tradeType} trade in the backend`
+                    );
+                }
+            } else {
+                toast.error(`${sellTrxHash?.error}`)
+                setIsLoading(false);
+            }
+
+        } catch (error) {
+            setIsLoading(false);
+            toast.error(error.message || `Error placing ${tradeType} trade`);
+            console.log("error while selling tokens", error)
+        }
+    }
 
     //calculate token values for buy
     const handleAmount = async (val) => {
         const res = await TokenPriceCalculations(
             tokenid,
             val === '' ? 0 : val,
-             !showSOGs,
+            !showSOGs,
             true
         )
 
@@ -269,7 +207,7 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
                 }))
                 //toast.error("macbut exceeded")
             }
-           
+
             if (           //3 * 500000 = 150000                   100000
                 res?.tokensbuy > remaningTokens
             ) {
@@ -346,29 +284,10 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
 
     }
 
-    const calculateTokenEthOnchange = async (amount) => {
-        if (isConnected) {
-            setAmountError((prevState) => ({
-                ...prevState,
-                error: false,
-                reason: '',
-            }))
-            setAmount(amount);
-
-        } else {
-            setAmountError((prevState) => ({
-                ...prevState,
-                error: true,
-                reason: 'Connect Wallet First',
-            }))
-
-        }
-    };
-
     const handleAmountSell = async (val) => {
         const res = await TokenPriceCalculations(
             tokenid,
-            val === '' ? 0 : val, false,true
+            val === '' ? 0 : val, false, true
         )
         if (val <= userBalance?.tokenBalance) {
             setSolAmount(res?.tokensell)
@@ -425,26 +344,11 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
         }
     }
 
-
-
-    console.log("coinddss",tokenid,coinData)
-    useEffect(() => {
-        if (tokenid && walletProvider) {
-            getUserBalances()
-            console.log("coinddss",tokenid,coinData)
-            remaningAndMaxbuyTokens(tokenid)
-        }
-    }, [amount, coinData, wallet, tokenToBuy, walletProvider, ethAmount])
-
-
-
-
     const handleBuyPercentage = (percentage) => {
         const perctageSet = userBalance?.tokenBalance * (percentage / 100);
         setAmount(perctageSet);
         handleAmountSell(perctageSet)
 
-        console.log("perctageSet", perctageSet, userBalance?.tokenBalance)
 
 
     }
@@ -469,7 +373,7 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
                                         >
                                             Buy
                                         </button>
-                                       <button
+                                        <button
                                             className={`text-[16px] SegoeUi font-semibold text-center w-full px-3 py-2 rounded ${tradeType === "sell"
                                                 ? "bg-[#F87171] text-white"
                                                 : "bg-[#1F2937] text-[gray]"
@@ -482,12 +386,12 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
                                     </div>
 
                                     <div className="flex justify-between gap-3 px-3 pt-[35px]">
-                                        {tradeType === 'buy' && blockchainType !== 'ETH' ?
+                                        {tradeType === 'buy' && block_chain !== 'ETH' ?
                                             <span
                                                 className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
                                                 onClick={coinData?.status === "deployed" && handleSwitchClick}
                                             >
-                                                {showSOGs ? `Switch to ${blockchainType}` : `Switch to ${coinData?.name}`}
+                                                {showSOGs ? `Switch to ${block_chain}` : `Switch to ${coinData?.name}`}
                                             </span>
                                             :
                                             <span></span>
@@ -496,10 +400,10 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
                                         <div>
                                             <span
                                                 className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
-                                                onClick={() =>{
-                                                   
-                                          setIsSlipPageOpen(true)
-                                                    }}
+                                                onClick={() => {
+
+                                                    setIsSlipPageOpen(true)
+                                                }}
                                             >
                                                 Set max slippage
                                             </span>
@@ -510,8 +414,8 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
                                                 onClose={() => setIsSlipPageOpen(false)}
                                                 setSlipage={setSlipage}
                                                 setPriorityFee={setPriorityFee}
-                                                
-                                                
+
+
                                             />
                                         </div>
                                     </div>
@@ -543,15 +447,15 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
 
                                                         <div className="w-fit flex items-center gap-1 bg-white">
                                                             <span className="whitespace-nowrap text-black font-semibold text-sm SegoeUi">
-                                                                {!showSOGs && blockchainType !== 'ETH' ? blockchainType : coinData?.name}
-                                                                {/* {blockchainType === "ETH" ? "ETH" : "SOL"} */}
+                                                                {!showSOGs && block_chain !== 'ETH' ? block_chain : coinData?.name}
+                                                                {/* {block_chain === "ETH" ? "ETH" : "SOL"} */}
                                                             </span>
 
                                                             <img
                                                                 src={
                                                                     showSOGs
                                                                         ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`
-                                                                        : (blockchainType === 'SOL' ? solImg : ethImg)
+                                                                        : (block_chain === 'SOL' ? solImg : ethImg)
                                                                 }
                                                                 className="w-[30px] mr-7 rounded-full"
                                                             />
@@ -602,13 +506,13 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
                                             reset
                                         </span>
                                         <span onClick={() => { setAmount(0.1); handleAmount(0.1) }} className='Inter whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
-                                            0.1 {blockchainType}
+                                            0.1 {block_chain}
                                         </span>
                                         <span onClick={() => { setAmount(0.5); handleAmount(0.5) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
-                                            0.5 {blockchainType}
+                                            0.5 {block_chain}
                                         </span>
                                         <span onClick={() => { setAmount(1); handleAmount(1) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
-                                            1 {blockchainType}
+                                            1 {block_chain}
                                         </span>
                                     </div>
                                 }
@@ -632,8 +536,8 @@ const PlaceTradeSol = ({refresh ,setRefresh, coinData , tokenid }) => {
                                     </div>
                                 }
 
-                                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && blockchainType == "SOL" && <p p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? blockchainType : coinData?.name}</p>}
-                                {amount != '' && <p p className="mt-2 ml-3">{ethAmount} {blockchainType}</p>}
+                                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && block_chain == "SOL" && <p p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? block_chain : coinData?.name}</p>}
+                                {amount != '' && <p p className="mt-2 ml-3"> {block_chain}</p>}
 
                                 {amountError.error && <p className="text-red-700 mt-2 ml-3">{amountError.reason}</p>}
 

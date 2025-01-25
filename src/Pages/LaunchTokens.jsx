@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import CreatorBuyToken from '../components/Modals/CreatorBuyTokens';
 import { GetContractConfiguration } from '../web3/EvmConfig';
 import { parseUnits } from 'viem';
+import EthCreatorBuyToken from '../components/Modals/EthCreatorBuyTokens';
 const LaunchTokens = () => {
     const dispatch = useDispatch();
     const {data: txHash, writeContract } = useWriteContract()
@@ -36,22 +37,30 @@ const LaunchTokens = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     // const [currentDateTime, setCurrentDateTime] = useState(new Date().toISOString().slice(0, 16));
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().slice(0, 10)); // Only the date part
-
+ const [tokenToBuy, setTokenToBuy] = useState(0);
     const [description, setDescription] = useState('');
     const [maxSupply, setMaxSupply] = useState('');
     const [imageFile, setImageFile] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
     const [fileName, setFileName] = useState('');
+     const [websiteLink, setWebsiteLink] = useState(null)
+        const [telegramLink, setTelegramLink] = useState(null)
+        const [twitterLink, setTwitterLink] = useState(null)
     const [sortOption, setSortOption] = useState('');
     const { data: balanceData } = useBalance({ address });
     const { data: hash, sendTransaction } = useSendTransaction();
+    const [isEthToToken,setIsEthToToken]=useState(false)
     
 
     const navigate = useNavigate();
 
-    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-        hash: hash,
+    const createCoinresult = useWaitForTransactionReceipt({
+        hash: txHash,
     });
+    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+        hash: txHash,
+    });
+
 
 
 
@@ -124,10 +133,10 @@ const LaunchTokens = () => {
     };
 
 
-    // useEffect(() => {
-    //     if (isConfirmed && hash) { createEthCoin({ hash }) }
+    useEffect(() => {
+        if (isConfirmed && txHash) { createEthCoin({ txHash,createCoinresult }) }
 
-    // }, [isConfirming, isConfirmed, hash])
+    }, [isConfirming, isConfirmed, txHash])
 
     const createToken = async () => {
        
@@ -159,8 +168,7 @@ const LaunchTokens = () => {
                   100
                 ],
              })
-            // console.log("results",result)
-
+             
            
 
         } catch (error) {
@@ -170,21 +178,24 @@ const LaunchTokens = () => {
         }
     };
 
-    console.log("infoxxx",contractInfo.Abi)
+   // console.log("createCoinresult",createCoinresult?.data,createCoinresult?.data?.logs[0]?.address,txHash,isConfirming, isConfirmed)
+
+    // console.log("infoxxx",contractInfo.Abi)
     // create meme token
     const handleSubmit = async () => {
-        if (!name || !ticker || !imageUrl || !description || !revealTime) {
+        // if (!name || !ticker || !imageUrl || !description || !revealTime) {
 
-            toast.error('Please fill in all required fields: Name, Ticker, Image, Description, and Reveal Time.');
-            return;
-        }
+        //     toast.error('Please fill in all required fields: Name, Ticker, Image, Description, and Reveal Time.');
+        //     return;
+        // }
        setIsModalOpen(true);
     }
 
-    const createEthCoin = async ({ hash }) => {
+    const createEthCoin = async ({ txHash , createCoinresult }) => {
         try {
+          //  console.log("entering the funtion to create the coin",txHash , createCoinresult)
             const formattedRevealTime = new Date(revealTime).toISOString();
-            if (hash) {
+            if (txHash) {
 
 
                 // Step 2: If the transaction is successful, proceed with creating the coin
@@ -193,14 +204,18 @@ const LaunchTokens = () => {
                     ticker,
                     description,
                     image: imageUrl,
-                    max_supply: maxSupply,
-                    twitter_link: 'https://twitter.com',
-                    telegram_link: 'https://telegram.com',
-                    website: 'https://website.com',
+                    max_supply: 100,
+                    twitter_link: twitterLink ? twitterLink : null,
+                    telegram_link: telegramLink ? telegramLink : null,
+                    website: websiteLink ? websiteLink : null,
                     bonding_curve: 0,
                     max_buy_percentage: 0,
                     fee: 0,
+                    amount: tokenToBuy,
                     timer: formattedRevealTime,
+                    hash: txHash,
+                    bondingCurve: "",
+                    tokenAddress: createCoinresult?.data?.logs[0]?.address
                 });
 
                 if (response.status === 200) {
@@ -211,14 +226,14 @@ const LaunchTokens = () => {
                         token_amount: 1,
                         token_id: response.data._id,
                         type: "buy",
-                        transaction_hash: hash,
+                        transaction_hash: txHash,
                     });
 
                     if (apiResponse?.status === 200) {
                         toast.success(response.message);
                         resetForm();
                         navigate('/');
-                        dispatch(fetchCoins(sortOption));
+                        dispatch(fetchCoins({sortBy:sortOption,coinSorting:""}));
                     }
 
                 } else {
@@ -278,7 +293,7 @@ const LaunchTokens = () => {
         <div className='border flex justify-center items-center py-[55px] px-4 w-full pb-[100px]'>
             <div className='relative w-full max-w-[830px] border-t-[5px] border-t-[#fff] border-l-[5px] border-l-[#fff] border-r-[2px] border-r-[#353535] border-b-[2px] border-b-[#353535]'>
                 <div className='absolute top-0 left-0 h-[5px] w-full bg-white'></div>
-                <div>Chamma</div>
+               
 
                 <BoxHeader label='Launch Token' />
 
@@ -375,9 +390,9 @@ const LaunchTokens = () => {
                                 </div>
 
                                 {/* <InputField label="Supply:" value={maxSupply} onChange={(e) => setMaxSupply(e.target.value)} type='number' /> */}
-                                <InputField label="Website (Optional):" />
-                                <InputField label="Telegram (Optional):" />
-                                <InputField label="Twitter (Optional):" />
+                                <InputField label="Website (Optional):" value={websiteLink} onChange={(e) => setWebsiteLink(e.target.value)} />
+                                <InputField label="Telegram (Optional):" value={telegramLink} onChange={(e) => setTelegramLink(e.target.value)} />
+                                <InputField label="Twitter (Optional):" value={twitterLink} onChange={(e) => setTwitterLink(e.target.value)} />
 
 
 
@@ -405,14 +420,19 @@ const LaunchTokens = () => {
                 </div>
 
             </div>
-            <CreatorBuyToken
+            <EthCreatorBuyToken
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 tokenName={name}
+                isEthToToken={isEthToToken}
+                setIsEthToToken={setIsEthToToken}
+                tokenToBuy={tokenToBuy}
+                setTokenToBuy={setTokenToBuy}
                 amount={preTokenBuy}
                 setAmount={setPreTokenBuy}
                 handleLaunchToken={createToken}
                 userSolBalnace={block_chain === "SOL" ? userSolBalnace : balanceData?.formatted}
+                imageUrl={imageUrl}
                 setIsCreatingCoin={setIsCreatingCoin}
             />
         </div >

@@ -1,6 +1,6 @@
 import EthContractAbi  from "./EthContractAbi.json"
 export const EthConfig = {
-    "ContractAddress": "0xd951dADe512Dd4C7e74FCcE5B756Bf591Bac3436",
+    "ContractAddress": "0x20c09aCCe0cAe954715B30AD421D2836BEdA58Db",
     "Abi": EthContractAbi
 }
 

@@ -1,23 +1,13 @@
 
-import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction, clusterApiUrl, sendAndConfirmTransaction } from "@solana/web3.js";
-// import { connection, feeRecipient, IDL1, mintaddy, SELLSLIPPAGE, wallet } from "./config";
-import { connection, provider, feeRecipient, IDL1, SELLSLIPPAGE, wallet } from "./config";
-import { getAccount, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
-import { Buy_createTransactionInstruction, b, fetchLiquidityPool, lx_global } from "./utils";
-import BN from "bn.js";
-import { createAssociatedTokenAccountInstruction } from "@solana/spl-token";
-import { AnchorProvider, Program, web3 } from "@coral-xyz/anchor";
+import {LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import * as buffer from 'buffer'
-import { toast } from "react-toastify";
-import { getAssociatedTokenAddressSync } from '@solana/spl-token'
-//import { getBuySellInSolBuy, getBuySellInTokens, getBuySellInTokensBuy, retrieveTokenInfo } from "./TokenPriceCalculations";
 
 export const getBuySellInSolBuy =(amount,k,virtualSolReserves,virtualTokenReserves)=>{
     try{
 
         const tokenAmountBN = BigInt(Math.floor(amount * 1_000_000)); // Assuming 6 decimal tokens
 
-        console.log("Tokens in smallest unit:", tokenAmountBN);
+      
 
         // SOL price for given tokens
         const buySolAgainstTokens = Math.abs(Number(
@@ -26,10 +16,7 @@ export const getBuySellInSolBuy =(amount,k,virtualSolReserves,virtualTokenReserv
         const sellSolAgainstTokens = Math.abs(Number(
             (k / (virtualTokenReserves + tokenAmountBN)) - virtualSolReserves
         ));
-        console.log("priceeeexx", {
-            tokensbuy: buySolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
-            tokensell: sellSolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
-        })
+      
         return {
             tokensbuy: buySolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
             tokensell: sellSolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
@@ -74,19 +61,6 @@ export const getBuySellInTokensBuy=(amount,k,virtualSolReserves,virtualTokenRese
        
        
 
-        console.log({
-            tokenPriceInSol,
-            sellTokenPriceInSol,
-            tokensbuy,
-            tokensell
-        });
-        console.log("priceeee", {
-            tokenPriceInSol,
-            sellTokenPriceInSol,
-            tokensbuy,
-            tokensell
-        })
-
         return {
             tokenPriceInSol,
             sellTokenPriceInSol,
@@ -100,7 +74,6 @@ export const getBuySellInTokensBuy=(amount,k,virtualSolReserves,virtualTokenRese
 }
 export const retrieveTokenInfo = async (program, programId, mintaddy, isDeployed) => {
 
-    console.log("is ths okay", program, programId, mintaddy, isDeployed)
     if (isDeployed) {
 
         window.Buffer = buffer.Buffer
@@ -110,7 +83,6 @@ export const retrieveTokenInfo = async (program, programId, mintaddy, isDeployed
         )
 
         const r = await program.account.bondingCurve.fetch(C)
-        console.log("rrrrrr", r)
         const {
             virtualTokenReserves,
             virtualSolReserves,
@@ -136,7 +108,6 @@ export const retrieveTokenInfo = async (program, programId, mintaddy, isDeployed
             complete: complete,
         }
 
-        console.log('virtual reseverrrs', formattedOutput)
         return formattedOutput
     } else {
         const formattedOutput = {
@@ -150,8 +121,52 @@ export const retrieveTokenInfo = async (program, programId, mintaddy, isDeployed
         }
 
 
-        console.log('virtual reseves', formattedOutput)
         return formattedOutput
     }
 
+}
+
+export const ethereumTokenInfo = async ()=>{
+    try{
+      return   {
+            virtualTokenReserves: "1200000000000000000000000000",
+            virtualSolReserves: "30000000000000000000",
+            realTokenReserves: "800000000000000000000000000",
+            tokenTotalSupply: "1000000000000000000000000000",
+            remainingTokens: 800000000,
+            totalTokens: 1000000000,
+            complete: false,
+        }
+
+    }catch(error){}
+}
+
+export const getBuySellInEthBuy =(amount,k,virtualSolReserves,virtualTokenReserves)=>{
+    try{
+
+        console.log("props-in-buy-sell",amount,k,virtualSolReserves,virtualTokenReserves)
+        const tokenAmountBN = BigInt(Math.floor(amount * 1_000_000_000_000_000_000)); // Assuming 6 decimal tokens
+
+      
+
+        // SOL price for given tokens
+        const buySolAgainstTokens = Math.abs(Number(
+            virtualSolReserves - (k / (virtualTokenReserves - tokenAmountBN))
+        ));
+        const sellSolAgainstTokens = Math.abs(Number(
+            (k / (virtualTokenReserves + tokenAmountBN)) - virtualSolReserves
+        ));
+        const p = {
+            tokensbuy: buySolAgainstTokens / 1_000_000_000_000_000_000, // Convert lamports to SOL
+            tokensell: sellSolAgainstTokens / 1_000_000_000_000_000_000, // Convert lamports to SOL
+        };
+        console.log("p every tme",p)
+      
+        return {
+            tokensbuy: buySolAgainstTokens / 1_000_000_000_000_000_000, // Convert lamports to SOL
+            tokensell: sellSolAgainstTokens / 1_000_000_000_000_000_000, // Convert lamports to SOL
+        };
+    }catch(error){
+        console.log("error while buysell sol conversion",error)
+    }
 }

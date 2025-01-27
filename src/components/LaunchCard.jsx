@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import CardImg from '../assets/images/card 1.png'
 import { Link } from 'react-router-dom'
 import { calculateBondingCurveProgress } from './PlaceTrade/solanaBuySellFunction'
+import { formatNumber } from '../utils/helper'
 
 const LaunchCard = ({ key, setSpace, coinData, topCoins }) => {
     console.log("coinDataLaunch", coinData)
@@ -55,7 +56,7 @@ const LaunchCard = ({ key, setSpace, coinData, topCoins }) => {
                             <div className={`flex flex-col justify-between p-[5px] md:p-[8px] min-h-full border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff] border-r-[#fff]`}>
                                 <div>
                                     <h5 className='PixelOperatorbold text-[10px] md:text-[14px]'>Created by 💩 <Link to={`/userprofile/${coinData?.coin?.creator?._id}`} className='hover:underline'>{coinData?.coin?.creator?.user_name}</Link></h5>
-                                    <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: {coinData?.coin?.market_cap}</h5>
+                                    <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: ${formatNumber(coinData?.coin?.market_cap?.toFixed(2))}</h5>
                                     {/* <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: {coinData?.coin?.market_cap}</h5> */}
                                     <div className=''>
                                         <div className='flex justify-between items-end w-full mt-[7px] md:mt-[15px]'>

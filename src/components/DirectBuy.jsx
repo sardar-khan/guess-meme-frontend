@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ethImg from "../assets/icons/eth.png";
 import solImg from "../assets/icons/sol.webp";
+import { retrieveTokenMetaData } from './PlaceTrade/solanaBuySellFunction';
+
 
 
 const DirectBuy = ({ isOpen, onClose }) => {
@@ -9,6 +11,8 @@ const DirectBuy = ({ isOpen, onClose }) => {
     const blockchainType = localStorage.getItem("blockchain") || "SOL";
 
     if (!isOpen) return null;
+
+
 
     return (
         <div
@@ -20,7 +24,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
                 className='bg-[#A49DD2] p-5 z-[1000] rounded-lg w-[90%] max-w-md'
                 onClick={(e) => e.stopPropagation()}
             >
-                <h3 className='text-lg font-semibold mb-3'>Direct Buy</h3>
+                <h3 className='text-lg font-semibold mb-3' onClick={(()=>{retrieveTokenMetaData("ADcRx2U4vPeCT1rRPxDqT4RwstrGTFoRd5XHhpisSUoX")})}>Direct Buy</h3>
 
                 {/* Input Fields */}
                 <div className='flex flex-col gap-2'>
@@ -88,7 +92,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
                         className='themeBtn w-full sm:w-fit'
                         onClick={() => {
                             console.log({ tokenAddress, amount });
-                            onClose();
+                            retrieveTokenMetaData("ADcRx2U4vPeCT1rRPxDqT4RwstrGTFoRd5XHhpisSUoX")
                         }}
                     >
                         <span className='!text-xs sm:!text-base'>Buy</span>

@@ -23,7 +23,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
     const [showSOGs, setShowSOGs] = useState(false);
     const { block_chain } = useWalletContext()
     const tokenAddress_mint = tokenid && block_chain === 'SOL' ? new PublicKey(tokenid) : null;
-    console.log("blockselectedchain", block_chain)
+  
 
 
     const [amount, setAmount] = useState("");
@@ -48,9 +48,10 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
     const [prorityFee, setPriorityFee] = useState('');
 
     useEffect(() => {
+        console.log("checking",tokenid && walletProvider,tokenid , walletProvider)
         if (tokenid && walletProvider) {
             getUserBalances()
-            console.log("coinddss", tokenid, coinData)
+          
             remaningAndMaxbuyTokens(tokenid)
         }
     }, [amount, coinData, wallet, tokenToBuy, walletProvider])
@@ -189,6 +190,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
 
     //calculate token values for buy
     const handleAmount = async (val) => {
+
         const res = await TokenPriceCalculations(
             tokenid,
             val === '' ? 0 : val,
@@ -197,6 +199,14 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
         )
 
         if (!showSOGs) {
+            if(!walletProvider){
+               return setAmountError((prevState) => ({
+                    ...prevState,
+                    error: true,
+                    reason: 'Please connect your wallet!',
+                }))
+            }
+           
 
             if (res?.tokensbuy > maxBuyTokens) {
 
@@ -205,12 +215,10 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                     error: true,
                     reason: 'max buy exceeded',
                 }))
-                //toast.error("macbut exceeded")
+                
             }
 
-            if (           //3 * 500000 = 150000                   100000
-                res?.tokensbuy > remaningTokens
-            ) {
+            if ( res?.tokensbuy > remaningTokens) {
                 return setAmountError((prevState) => ({
                     ...prevState,
                     error: true,
@@ -218,8 +226,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                 }))
 
             }
-
-
+            
             if (val < userBalance?.solBalance) {
                 setSolAmount(val)
                 setAmount(val)
@@ -240,6 +247,13 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
             }
         }
         else {
+            if(!walletProvider){
+               return setAmountError((prevState) => ({
+                    ...prevState,
+                    error: true,
+                    reason: 'Please connect your wallet!',
+                }))
+            }
 
             if (val > maxBuyTokens) {
 

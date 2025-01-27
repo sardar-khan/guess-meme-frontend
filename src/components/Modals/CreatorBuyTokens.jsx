@@ -12,7 +12,7 @@ import { useWalletContext } from '../../context/WalletContext';
 
 
 const CreatorBuyToken = ({ isOpen, onClose, tokenName, isSoltoToken, setIsSoltoToken, tokenToBuy, setTokenToBuy, amount, setAmount, handleLaunchToken, userSolBalnace, imageUrl, setIsCreatingCoin }) => {
-    const {block_chain} = useWalletContext
+    const {block_chain} = useWalletContext()
     //const block_chain = localStorage.getItem("blockchain") || "SOL";
     const { walletProvider } = useAppKitProvider('solana');
 

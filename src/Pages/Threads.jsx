@@ -4,14 +4,10 @@ import { Link, useParams } from 'react-router-dom';
 import ChatRoom from '../components/ChatRoom/ChatRoom';
 import TradesTable from '../components/Tables/TradesTable';
 import HoldersTable from '../components/Tables/HoldersTable';
-import CandlestickComboChart from '../components/Charts/CandlestickComboChart';
-import logoSmall from '../assets/icons/logoSmall.png';
 import { toast } from 'react-toastify';
 import { kingoftheHill_progress, Progress_curve_bond, viewCoin } from '../utils/api';
 import Progress from '../components/Progress';
 import PlaceTrade from '../components/PlaceTrade/PlaceTrade';
-import LightweightCandlestickChart from '../components/Charts/LightweightCandlestickChart ';
-import AdvancedTradingViewChart from '../components/Charts/AdvancedTradingViewChart';
 import HighchartsReactNew from '../components/Charts/HighchartsReactNew';
 import { useNotificationContext } from '../context/NotificationContext';
 import { FaXTwitter } from "react-icons/fa6";
@@ -23,6 +19,7 @@ import { calculateBondingCurveProgress,calculateKingOfTheHillProgress} from '../
 
 
 const SocialLinks = ({ coinData }) => {
+    console.log("social-links-data",coinData)
     return (
         <div className='flex  gap-2'>
             {coinData?.twitter_link && <a href={coinData?.twitter_link} target="_blank" className="bg-[#8E8DC7]  py-0.5 text-xs md:text-base flex items-center gap-2 justify-center SegoeUi w-full text-center" rel="noreferrer"><FaXTwitter /> twitter</a>}
@@ -42,14 +39,11 @@ const Threads = () => {
     const { pusherAfterTrade } = useNotificationContext();
     const [refresh,setRefresh]=useState(false)
     const { block_chain } = useWalletContext()
-    console.log("selecte_block_chain_result", block_chain)
-
-console.log("tokenid",tokenid)
+   
     useEffect(() => {
         const fetchCoinData = async () => {
             try {
                 const response = await viewCoin(id);
-                console.log('Single Coin Data:', response);
                 setCoinData(response?.data);
                 // fetchProgress_curve_bond(response?.data?.token_address);
                 // fetchKingoftheHill_progress(response?.data?.token_address);
@@ -64,12 +58,10 @@ console.log("tokenid",tokenid)
         fetchCoinData();
     }, [id, ProgressCurveBond,refresh]);
 
-    console.log('coinDatacoinData:', coinData);
 
     const fetchKingoftheHill_progress = async (token_address) => {
         try {
             const response = await calculateKingOfTheHillProgress(token_address,true);
-            console.log('kingoftheHill_progress:', response);
             setKingoftheHill(response?.kingOfTheHillProgress);
         } catch (error) {
             console.error('Error kingoftheHill_progress:', error);
@@ -80,8 +72,7 @@ console.log("tokenid",tokenid)
     const fetchProgress_curve_bond = async (token_address) => {
         try {
             const response = await calculateBondingCurveProgress(token_address,true);
-            console.log('finish her', response
-            );
+          
             setProgressCurveBond(response?.bondingCurveProgress);
         } catch (error) {
             console.error('Error Progress_curve_bond:', error);
@@ -89,14 +80,7 @@ console.log("tokenid",tokenid)
         }
     };
 
-    console.log("ProgressCurveBond", ProgressCurveBond)
-    // console.log("ProgressCurveBond", ProgressCurveBond)
-
-    // useEffect(() => {
-
-
-    // }, []);
-
+   
 
 
     const handleCopy = () => {

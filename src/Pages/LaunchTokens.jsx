@@ -5,31 +5,36 @@ import folder from '../assets/icons/Group 110.png';
 import BoxHeader from '../components/Global/BoxHeader';
 import InputField from '../components/Global/InputField';
 import TextArea from '../components/Global/TextArea';
-import {  BuyToken, createCoin, uploadImage } from '../utils/api';
+import { BuyToken, createCoin, uploadImage } from '../utils/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAppKitAccount } from '@reown/appkit/react';
 import WalletContext from '../context/WalletContext';
-import LaunchTokenPolygon from "../components/LaunchTokenDeduct/LaunchPolygonToken"
 import { useWriteContract } from 'wagmi'
 
 
 
-import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { useBalance, useSendTransaction, useReadContract, useWaitForTransactionReceipt } from 'wagmi';
 
 import { useNavigate } from 'react-router-dom';
-import CreatorBuyToken from '../components/Modals/CreatorBuyTokens';
 import { GetContractConfiguration } from '../web3/EvmConfig';
 import { parseUnits } from 'viem';
 import EthCreatorBuyToken from '../components/Modals/EthCreatorBuyTokens';
+import { buyTokensEthereum, getPayAbleEtherAmount } from '../components/PlaceTrade/ether-trade-utils';
+import { ethers } from 'ethers';
 const LaunchTokens = () => {
+
     const dispatch = useDispatch();
-    const {data: txHash, writeContract } = useWriteContract()
+
+    const { data: txHash, writeContract } = useWriteContract()
+    const { data: buyTxHash, writeContract: useBuyTokens } = useWriteContract()
+
+
     const { address, isConnected } = useAppKitAccount();
     const [name, setName] = useState('');
     const [userSolBalnace, setUserSolBalnace] = useState(0);
-    const [contractInfo,setContractInfo]=useState('')
-    const [preTokenBuy, setPreTokenBuy] = useState(false);
+    const [contractInfo, setContractInfo] = useState('')
+    const [preTokenBuy, setPreTokenBuy] = useState(0);
     const [ticker, setTicker] = useState('');
     const [iscreatingCoin, setIsCreatingCoin] = useState(false);
     const [revealTime, setRevealTime] = useState('');
@@ -37,21 +42,21 @@ const LaunchTokens = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     // const [currentDateTime, setCurrentDateTime] = useState(new Date().toISOString().slice(0, 16));
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().slice(0, 10)); // Only the date part
- const [tokenToBuy, setTokenToBuy] = useState(0);
+    const [tokenToBuy, setTokenToBuy] = useState(0);
     const [description, setDescription] = useState('');
     const [maxSupply, setMaxSupply] = useState('');
     const [imageFile, setImageFile] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
     const [fileName, setFileName] = useState('');
-     const [websiteLink, setWebsiteLink] = useState(null)
-        const [telegramLink, setTelegramLink] = useState(null)
-        const [twitterLink, setTwitterLink] = useState(null)
+    const [websiteLink, setWebsiteLink] = useState(null)
+    const [telegramLink, setTelegramLink] = useState(null)
+    const [twitterLink, setTwitterLink] = useState(null)
     const [sortOption, setSortOption] = useState('');
     const { data: balanceData } = useBalance({ address });
-    const { data: hash, sendTransaction } = useSendTransaction();
-    const [isEthToToken,setIsEthToToken]=useState(false)
-    
+    const [isEthToToken, setIsEthToToken] = useState(false)
+    const [SelectedAbi, setSelectedAbi] = useState(false)
 
+ 
     const navigate = useNavigate();
 
     const createCoinresult = useWaitForTransactionReceipt({
@@ -67,14 +72,14 @@ const LaunchTokens = () => {
     const { block_chain } = useContext(WalletContext);
 
 
-    useEffect(()=>{
-        GetContractConfiguration(block_chain).then(async(res)=>{
-        console.log("block-info",res);
-        setContractInfo(res);
-      })
-      
+    useEffect(() => {
+        GetContractConfiguration(block_chain).then(async (res) => {
+            console.log("block-info", res);
+            setContractInfo(res);
+        })
 
-    },[block_chain])
+
+    }, [block_chain])
 
     const checkBlockChain =
         block_chain === 'SOL' ? 'solana' :
@@ -95,7 +100,7 @@ const LaunchTokens = () => {
         return () => clearInterval(interval);
     }, [adminAddress]);
 
-   
+
 
 
     // const handleLaunchTokenE = LaunchTokenPolygon(
@@ -134,12 +139,12 @@ const LaunchTokens = () => {
 
 
     useEffect(() => {
-        if (isConfirmed && txHash) { createEthCoin({ txHash,createCoinresult }) }
+        if (isConfirmed && txHash) { createEthCoin({ txHash, createCoinresult }) }
 
     }, [isConfirming, isConfirmed, txHash])
 
     const createToken = async () => {
-       
+
         if (!name || !ticker || !imageUrl || !description || !revealTime) {
 
             toast.error('Please fill in all required fields: Name, Ticker, Image, Description, and Reveal Time.');
@@ -152,24 +157,24 @@ const LaunchTokens = () => {
             const SelectedAbi = contractInfo.Abi
             const contractAddress = contractInfo.ContractAddress
             const totalSupply = parseUnits('1000000000', 18)
-            console.log("object",SelectedAbi,contractAddress,totalSupply)
-       
-               
-             writeContract({ 
-               
-                address:contractAddress,
-                abi:SelectedAbi,
+            console.log("object", SelectedAbi, contractAddress, totalSupply)
+
+
+            writeContract({
+
+                address: contractAddress,
+                abi: SelectedAbi,
                 functionName: 'createToken',
                 args: [
                     "0x76399c8A5027fD58A1D1b07500ccC8a223BEE0c3",
-                  name,
-                  ticker,
-                  totalSupply,
-                  100
+                    name,
+                    ticker,
+                    totalSupply,
+                    100
                 ],
-             })
-             
-           
+            })
+
+
 
         } catch (error) {
             setIsCreatingCoin(false)
@@ -178,22 +183,18 @@ const LaunchTokens = () => {
         }
     };
 
-   // console.log("createCoinresult",createCoinresult?.data,createCoinresult?.data?.logs[0]?.address,txHash,isConfirming, isConfirmed)
-
-    // console.log("infoxxx",contractInfo.Abi)
-    // create meme token
     const handleSubmit = async () => {
         // if (!name || !ticker || !imageUrl || !description || !revealTime) {
 
         //     toast.error('Please fill in all required fields: Name, Ticker, Image, Description, and Reveal Time.');
         //     return;
         // }
-       setIsModalOpen(true);
+        setIsModalOpen(true);
     }
 
-    const createEthCoin = async ({ txHash , createCoinresult }) => {
+    const createEthCoin = async ({ txHash, createCoinresult }) => {
         try {
-          //  console.log("entering the funtion to create the coin",txHash , createCoinresult)
+            //  console.log("entering the funtion to create the coin",txHash , createCoinresult)
             const formattedRevealTime = new Date(revealTime).toISOString();
             if (txHash) {
 
@@ -230,10 +231,13 @@ const LaunchTokens = () => {
                     });
 
                     if (apiResponse?.status === 200) {
+                        handleBuyTokens()
+
+
                         toast.success(response.message);
                         resetForm();
                         navigate('/');
-                        dispatch(fetchCoins({sortBy:sortOption,coinSorting:""}));
+                        dispatch(fetchCoins({ sortBy: sortOption, coinSorting: "" }));
                     }
 
                 } else {
@@ -257,7 +261,7 @@ const LaunchTokens = () => {
         setFileName('');
     };
 
-   
+
     const handleTimeSelect = (minutes) => {
         setSelectedMinutes(minutes);
 
@@ -279,7 +283,35 @@ const LaunchTokens = () => {
         setRevealTime(formattedTime);
     };
 
+    const handleBuyTokens = async (amount) => {
+        try {
+            setPreTokenBuy(amount)
+            const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
+            const payAbleAmountEther = await getPayAbleEtherAmount("0xC65A078e65fd53C6c04396DD9CAD6c545A03d3f7", amount, balanceData?.formatted)
+            console.log("get-balance", payAbleAmountEther?.data)
+            const SelectedAbi = contractInfo.Abi
+            const contractAddress = contractInfo.ContractAddress
+        
+const payAmount = payAbleAmountEther?.data
 
+            // console.log("Payable Amount",payableAmount,fee)
+
+            useBuyTokens({
+                address: contractAddress,
+                abi: SelectedAbi,
+                functionName: 'buyTokens',
+                args: [
+                    "0xC65A078e65fd53C6c04396DD9CAD6c545A03d3f7",
+                    formattedAmount,
+                ],
+                value:payAmount
+               
+            })
+
+        } catch (error) {
+            console.log("error while buying tokens", error)
+        }
+    }
 
     const calculateRevealTime = (date, minutes) => {
         const baseDate = new Date(date);
@@ -293,10 +325,10 @@ const LaunchTokens = () => {
         <div className='border flex justify-center items-center py-[55px] px-4 w-full pb-[100px]'>
             <div className='relative w-full max-w-[830px] border-t-[5px] border-t-[#fff] border-l-[5px] border-l-[#fff] border-r-[2px] border-r-[#353535] border-b-[2px] border-b-[#353535]'>
                 <div className='absolute top-0 left-0 h-[5px] w-full bg-white'></div>
-               
+
 
                 <BoxHeader label='Launch Token' />
-
+                <button className='bg-neutral-600 p-6 ' onClick={(() => { handleBuyTokens("2") })}>Click me maseer gee</button>
                 <div className='secondary-bg p-[14px]'>
                     <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
                         <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>

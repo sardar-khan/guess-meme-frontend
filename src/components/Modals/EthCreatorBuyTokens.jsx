@@ -8,6 +8,8 @@ import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { selectedName } from '../../utils/helper';
 import { parseUnits } from 'viem';
 import { useWalletContext } from '../../context/WalletContext';
+import { getBuySellInEthBuy } from '../PlaceTrade/TokenPriceCalculations';
+import { calculateTokenEthValues } from '../PlaceTrade/ether-trade-utils';
 
 // import { useReadContract } from 'wagmi'
 
@@ -15,7 +17,7 @@ import { useWalletContext } from '../../context/WalletContext';
 const EthCreatorBuyToken = ({ isOpen, onClose, tokenName, isEthToToken, setIsEthToToken, tokenToBuy, setTokenToBuy, amount, setAmount, handleLaunchToken, userSolBalnace, imageUrl, setIsCreatingCoin }) => {
     const {block_chain} = useWalletContext()
    
-
+console.log("user-sol-balane",userSolBalnace)
     const [accountSolBalance, setAccountSolBalance] = useState({
         reason: "0",
         hasError: 0,
@@ -50,12 +52,12 @@ const EthCreatorBuyToken = ({ isOpen, onClose, tokenName, isEthToToken, setIsEth
                 <h3 className='text-xl Inter text-center font-semibold mb-3'> Choose how many <span className=' text-purple-900 text-lg font-bold '>{tokenName}</span> you want to buy  <span className='font-sans'>(optional)</span></h3>
                 <p className='text-sm Inter text-center  mb-3'>tip: its optional but buying a small amount of coins helps protect your coin from snipers</p>
 
-                <SwitchBuyToken
+                {/* <SwitchBuyToken
                     tokenName={tokenName}
                     isEthToToken={isEthToToken}
                     setIsEthToToken={setIsEthToToken}
                     block_chain={block_chain}
-                />
+                /> */}
                 {/* Input Fields */}
                 <div className='flex flex-col gap-2'>
 
@@ -187,7 +189,7 @@ const PriceCalculations = ({ amount, setAmount, isEthToToken, tokenToBuy, setTok
         
         try {
             //const res1 = await tokenToEthConversion(useReadContract,"0x7D3Fb449FbD018af1898c13e0c3b5382aF20501d", tokenToBuy,contractInfo)
-            const res = await TokenPriceCalculations(
+            const res = await calculateTokenEthValues(
                 "",
                 isEthToToken ? amount === '' ? 0 : amount : tokenToBuy === '' ? 0 : tokenToBuy,
                 isEthToToken,

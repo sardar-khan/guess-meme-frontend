@@ -5,19 +5,29 @@ import { searchCoins } from '../features/coinSlice';
 import group160 from '../assets/images/group160.webp';
 import herologo from '../assets/images/Group 159.png';
 import { KingOfTheHill } from '../utils/api';
+import { calculateBondingCurveProgress } from './PlaceTrade/solanaBuySellFunction';
 
 const Hero = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const dispatch = useDispatch();
     const [kingOfHill, setKingOfHill] = useState();
+    const [progressCurveBond, setProgressCurveBond] = useState(0);
     // Fetch KingOfTheHill data on component mount
 
     useEffect(() => {
         const fetchKingOfTheHill = async () => {
             try {
-                const data = await KingOfTheHill();
-                console.log('KingOfTheHill Data:', data);
-                setKingOfHill(data?.data)
+             KingOfTheHill().then((res) =>{
+                    if(res.status === 200){
+                        setKingOfHill(res?.data)
+                        calculateBondingCurveProgress(res?.data?.kingOfTheHill?.token_address,true).then((response) => {
+                            console.log('finish her22@$', response);
+                            setProgressCurveBond(response?.bondingCurveProgress);
+                        })
+                        
+                    }
+                });
+               
             } catch (error) {
                 console.error('Error fetching KingOfTheHill data:', error);
             }
@@ -82,7 +92,7 @@ const Hero = () => {
                         />
                     </svg>
                     <div className="PixelOperatorbold absolute inset-0 flex items-center justify-center text-[#FFF9F9] text-xl font-bold">
-                        {kingOfHill?.kingOfTheHill?.bonding_curve_progress}
+                        {progressCurveBond}
                     </div>
                 </div>
 
@@ -98,7 +108,7 @@ const Hero = () => {
 
                 <span className='PixelOperator lightWhite text-[18px] text-center'>Marketcap</span>
                 {/* <span className='PixelOperator text-[#FDA6FF] text-[22px]'>$ {kingOfHill?.kingOfTheHill?.market_cap}</span> */}
-                <span className='PixelOperator text-[#FDA6FF] text-[22px]'>$ {Number(kingOfHill?.kingOfTheHill?.market_cap).toLocaleString('en-US')}</span>
+                <span className='PixelOperator text-[#FDA6FF] text-[22px]'>$ {kingOfHill?.kingOfTheHill?.market_cap?Number(kingOfHill?.kingOfTheHill?.market_cap).toLocaleString('en-US'):0}</span>
                 
             </div>
 

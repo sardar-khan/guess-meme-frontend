@@ -6,6 +6,7 @@ import AnimationToggle from './AnimationToggle';
 import { useNotificationContext } from '../context/NotificationContext';
 import PusherLaunchCard from './PusherLaunchCard';
 import Pagination from './Pagination';
+import { useWalletContext } from '../context/WalletContext';
 
 const AllLaunchs = () => {
     const dispatch = useDispatch();
@@ -18,12 +19,12 @@ const AllLaunchs = () => {
     const [sortOption, setSortOption] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const coinsPerPage = 18;
+    const {block_chain} = useWalletContext()
 
-    const blockChain = localStorage.getItem("blockchain");
     const { createNotifications, createNotificationsEth } = useNotificationContext();
-    const createNotificationWithBlockChain = blockChain === "SOL" ? createNotifications : createNotificationsEth;
+    const createNotificationWithblock_chain = block_chain === "SOL" ? createNotifications : createNotificationsEth;
 
-    const hasCreateNotificationData = Object.keys(createNotificationWithBlockChain).length > 0;
+    const hasCreateNotificationData = Object.keys(createNotificationWithblock_chain).length > 0;
 
     // Calculate the index of the first and last coin to display on the current page
     const indexOfLastCoin = currentPage * coinsPerPage;
@@ -53,19 +54,14 @@ const AllLaunchs = () => {
 
     const handleSortChange = (e) => {
         setSortOption(e.target.value);
-        //handleTabClick(e.target.value)
         dispatch(fetchCoins({sortBy:activeTab,coinSorting:e.target.value}));
         
     };
     const handleTabChange = (e) => {
-        //setSortOption(e.target.value);
         handleTabClick(e.target.value)
         dispatch(fetchCoins({sortBy:e.target.value,coinSorting:""}));
         
     };
-
-    console.log("coinDatacoinData",activeTab,sortOption)
-    console.log("deployedCoins",deployedCoins)
 
     return (
         <div className='p-2 md:p-4 !pb-[50px]'>
@@ -104,18 +100,18 @@ const AllLaunchs = () => {
                 {/* {activeTab === 'AllLaunches' && (
                     <>
                         {status === 'succeeded' && (
-                            filteredCoins.length === 0 && Object.keys(createNotificationWithBlockChain).length === 0 ? (
+                            filteredCoins.length === 0 && Object.keys(createNotificationWithblock_chain).length === 0 ? (
                                 <div>No data found</div>
                             ) : (
                                 <>
-                                    {Object.keys(createNotificationWithBlockChain).length > 0 && sortOption === '' && (
-                                        <PusherLaunchCard pusherData={createNotificationWithBlockChain} />
+                                    {Object.keys(createNotificationWithblock_chain).length > 0 && sortOption === '' && (
+                                        <PusherLaunchCard pusherData={createNotificationWithblock_chain} />
                                     )}
 
                                     {currentCoins
                                         .filter((coin) =>
-                                            Object.keys(createNotificationWithBlockChain).length === 0 ||
-                                            createNotificationWithBlockChain.token_id !== coin?.coin?._id
+                                            Object.keys(createNotificationWithblock_chain).length === 0 ||
+                                            createNotificationWithblock_chain.token_id !== coin?.coin?._id
                                         )
                                         .map((coin, index) => (
                                             <LaunchCard key={index} setSpace="medium" coinData={coin} />

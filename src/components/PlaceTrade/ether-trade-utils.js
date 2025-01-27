@@ -2,9 +2,11 @@ import { ethers } from "ethers";
 import abi from "../../web3/abi.json";
 import TokenAbi from "../../web3/TokenAbi.json";
 import { toast } from "react-toastify";
+import { ethereumTokenInfo, getBuySellInEthBuy, getBuySellInTokensBuy } from "./TokenPriceCalculations";
+import { data } from "autoprefixer";
 
 // Contract Address
-const CONTRACT_ADDRESS = "0x93C27bA75a1480ac1a7aE7ea9887D5Ee8AFf6942";
+const CONTRACT_ADDRESS = "0x20c09aCCe0cAe954715B30AD421D2836BEdA58Db";
 
 // Connect to the factory contract
 export const getFactoryContract = async () => {
@@ -13,33 +15,50 @@ export const getFactoryContract = async () => {
   }
 
   // Initialize provider from MetaMask
-  const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+  const provider = new ethers.providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.binance.org:8545");
 
-  const signer = provider.getSigner(); // Get the connected signer from MetaMask
-  const factoryContract = new ethers.Contract(CONTRACT_ADDRESS, abi, signer, { gasLimit: 10000000 });
+  const factoryContract = new ethers.Contract(CONTRACT_ADDRESS, abi, provider);
   return factoryContract;
 };
 
+export const gettokenDetails = async (tokenAddress) => {
 
+}
 // Function to buy tokens
 
-export const calculateTokenEthValues = async (tokenAddress, amount) => {
+export const calculateTokenEthValues = async (tokenAddress, amount, isDeployed) => {
   try {
-    const factoryContract = await getFactoryContract();
-    const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
+    if (!isDeployed) {
+      console.log("ether-cal", tokenAddress, amount, isDeployed)
+      const data = await ethereumTokenInfo();
+      console.log("ether-token-info", data)
+      const virtualSolReserves = BigInt(data?.virtualSolReserves);
+      const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
 
-    const payableAmount = await factoryContract.buyQuote(tokenAddress, formattedAmount);
-    const fee = await factoryContract.calculateBuyFee(tokenAddress, formattedAmount);
-    console.log("payableAmount onchange", payableAmount);
-    const ethToPay = ethers.BigNumber.from(payableAmount).add(
-      ethers.BigNumber.from(fee)
-    );
-    console.log("Total ETH to pay Onchange:", ethers.utils.formatEther(ethToPay));
-    return ethers.utils.formatEther(ethToPay);
+      const k = virtualSolReserves * virtualTokenReserves;
+
+
+      const pricesInToken = getBuySellInEthBuy(amount, k, virtualSolReserves, virtualTokenReserves)
+      return pricesInToken
+
+    } else {
+      const factoryContract = await getFactoryContract();
+      const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
+
+      const payableAmount = await factoryContract.buyQuote(tokenAddress, formattedAmount);
+      const fee = await factoryContract.calculateBuyFee(tokenAddress, formattedAmount);
+      console.log("payableAmount onchange", payableAmount);
+      const ethToPay = ethers.BigNumber.from(payableAmount).add(
+        ethers.BigNumber.from(fee)
+      );
+      console.log("Total ETH to pay Onchange:", ethers.utils.formatEther(ethToPay));
+      return ethers.utils.formatEther(ethToPay);
+    }
   } catch (error) {
     console.error("Error calculating token ETH values:", error);
     throw error; // Rethrow if needed
   }
+
 };
 
 
@@ -70,7 +89,7 @@ export const tokenToEthConversion = async (useReadContract, tokenAddress, amount
   }
 };
 
-export const buyTokensOnBlockchain = async (tokenAddress, amount) => {
+export const buyTokensOnBlockchain = async (tokenAddress, amount,walletBalance) => {
   try {
     if (!tokenAddress || !ethers.utils.isAddress(tokenAddress) || amount == '') {
       throw new Error(`Invalid token address: ${tokenAddress}`);
@@ -125,6 +144,50 @@ export const buyTokensOnBlockchain = async (tokenAddress, amount) => {
   }
 };
 
+export const getPayAbleEtherAmount = async (tokenAddress, amount,walletBalance) => {
+  console.log("props", tokenAddress, amount, walletBalance)
+  try {
+    if (!tokenAddress || !ethers.utils.isAddress(tokenAddress) || amount == '') {
+      throw new Error(`Invalid token address: ${tokenAddress}`);
+    }
+
+
+    const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
+
+    const factoryContract = await getFactoryContract();
+
+    console.log("Fetching quote and fee...",factoryContract);
+    console.log("token address",formattedAmount?.toString())
+    const payableAmount = await factoryContract.buyQuote(tokenAddress, formattedAmount?.toString());
+    console.log("payableAmount", payableAmount?.toString())
+    const fee = await factoryContract.calculateBuyFee(tokenAddress, formattedAmount?.toString());
+    console.log("fee", fee)
+    const feeInEther = ethers.utils.formatEther(fee?.toString());
+    const payableAmountInEther = ethers.utils.formatEther(payableAmount);
+    console.log("amounts converted in ethers", payableAmountInEther,feeInEther)
+    
+
+    const ethToPayFloat = parseFloat(payableAmount) + parseFloat(fee);
+    console.log("ehter-to-pay",ethToPayFloat)
+    const ethToPay = ethers.utils.formatEther(ethToPayFloat);
+    console.log("shentu neworks",ethToPay?.toString())
+   
+     
+    return {
+      success: true,
+      data:ethToPayFloat,
+      error:false
+    }
+
+
+
+
+  } catch (error) {
+    console.error("Error buying tokens on blockchain:", error);
+    return { success: false, data:null, error: error.message };
+  }
+
+}
 
 export const sellTokensOnBlockchain = async (tokenAddress, amount) => {
   try {
@@ -177,4 +240,21 @@ export const sellTokensOnBlockchain = async (tokenAddress, amount) => {
     return { success: false, error: error.message };
   }
 };
+
+export const buyTokensEthereum = async (tokenAddress, sendTransaction, balance, tokens, ethAmount) => {
+  try {
+    const userBalance = balance ? parseFloat(balance) : 0;
+    if (userBalance < ethAmount) {
+      toast.error("Insufficient balance in wallet!");
+      return false;
+    }
+
+
+
+
+
+  } catch (error) {
+    console.log("error while buying tokens", error)
+  }
+}
 

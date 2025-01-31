@@ -17,7 +17,7 @@ import { calculateTokenEthValues } from '../PlaceTrade/ether-trade-utils';
 const EthCreatorBuyToken = ({ isOpen, onClose, tokenName, isEthToToken, setIsEthToToken, tokenToBuy, setTokenToBuy, amount, setAmount, handleLaunchToken, userSolBalnace, imageUrl, setIsCreatingCoin }) => {
     const {block_chain} = useWalletContext()
    
-console.log("user-sol-balane",userSolBalnace)
+console.log("user-sol-balane",tokenToBuy)
     const [accountSolBalance, setAccountSolBalance] = useState({
         reason: "0",
         hasError: 0,
@@ -25,12 +25,7 @@ console.log("user-sol-balane",userSolBalnace)
 
     if (!isOpen) return null;
 
-    // useEffect(()=>{
-       
-    //         const totalSupply = parseUnits('1000000000', 18) //total supply
-    //         console.log("hello",totalSupply)
-        
-    // },[])
+    
 
     const deployToken = () => {
 

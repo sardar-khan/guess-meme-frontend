@@ -14,7 +14,7 @@ const blockchain = localStorage.getItem("blockchain")
 
 const checkBlockChain =
     blockchain === 'SOL' ? 'solana' :
-        blockchain === 'ETH' ? 'ethereum' :
+        blockchain === 'ETH' ? 'sepolia' :
             blockchain === 'POL' ? 'polygon' :
                 blockchain === 'BNB' ? 'bsc' :
                     blockchain === null ? 'solana' :
@@ -254,6 +254,17 @@ export const getTopHolders = async (tokenAddress) => {
 export const viewCoin = async (coinId) => {
     try {
         const response = await apiInstance.post(`user/view-token/${coinId} `);
+        console.log("coinId", coinId)
+        console.log("responseData", response.data)
+        return response.data;
+    } catch (error) {
+        console.error('Error in View Coin:', error);
+        throw error;
+    }
+};
+export const getCoinByWalletAddress = async (coinId) => {
+    try {
+        const response = await apiInstance.post(`user/token-details/${coinId} `);
         console.log("coinId", coinId)
         console.log("responseData", response.data)
         return response.data;

@@ -22,15 +22,15 @@ import { parseUnits } from 'viem';
 import EthCreatorBuyToken from '../components/Modals/EthCreatorBuyTokens';
 import { buyTokensEthereum, getPayAbleEtherAmount } from '../components/PlaceTrade/ether-trade-utils';
 import { ethers } from 'ethers';
+import { fetchTrades } from '../features/tradesSlice';
 const LaunchTokens = () => {
 
     const dispatch = useDispatch();
 
-    const { data: txHash, writeContract } = useWriteContract()
-    const { data: buyTxHash, writeContract: useBuyTokens } = useWriteContract()
 
 
     const { address, isConnected } = useAppKitAccount();
+
     const [name, setName] = useState('');
     const [userSolBalnace, setUserSolBalnace] = useState(0);
     const [contractInfo, setContractInfo] = useState('')
@@ -44,20 +44,32 @@ const LaunchTokens = () => {
     const [currentDate, setCurrentDate] = useState(new Date().toISOString().slice(0, 10)); // Only the date part
     const [tokenToBuy, setTokenToBuy] = useState(0);
     const [description, setDescription] = useState('');
+    const [createdTokenAddress, setCreatedTokenAddress] = useState('')
     const [maxSupply, setMaxSupply] = useState('');
     const [imageFile, setImageFile] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
     const [fileName, setFileName] = useState('');
+    const [toastId, setToastId] = useState(null)
     const [websiteLink, setWebsiteLink] = useState(null)
     const [telegramLink, setTelegramLink] = useState(null)
+    const { block_chain } = useContext(WalletContext);
     const [twitterLink, setTwitterLink] = useState(null)
     const [sortOption, setSortOption] = useState('');
     const { data: balanceData } = useBalance({ address });
     const [isEthToToken, setIsEthToToken] = useState(false)
     const [SelectedAbi, setSelectedAbi] = useState(false)
 
- 
+    const [createCoinRes, setCreateCoinRes] = useState(null)
     const navigate = useNavigate();
+    const currentChain = block_chain === "BNB" ? "bsc" : "sepolia"
+
+    console.log("currentChain", currentChain)
+
+    const { data: txHash, writeContract } = useWriteContract()
+    const { data: buyTxHash, writeContract: useBuyTokens } = useWriteContract()
+    const { isLoading: isBuying, isSuccess: isBuyed, data: txData } = useWaitForTransactionReceipt({
+        hash: buyTxHash,
+    });
 
     const createCoinresult = useWaitForTransactionReceipt({
         hash: txHash,
@@ -67,12 +79,13 @@ const LaunchTokens = () => {
     });
 
 
+    console.log("buy tx data", isBuying, isBuyed, txData)
 
 
-    const { block_chain } = useContext(WalletContext);
 
 
     useEffect(() => {
+        console.log("block-chain", block_chain)
         GetContractConfiguration(block_chain).then(async (res) => {
             console.log("block-info", res);
             setContractInfo(res);
@@ -101,14 +114,6 @@ const LaunchTokens = () => {
     }, [adminAddress]);
 
 
-
-
-    // const handleLaunchTokenE = LaunchTokenPolygon(
-    //     address,
-    //     sendTransaction,
-    //     balanceData?.formatted,
-    //     parseFloat(parseFloat(preTokenBuy) + 0.05)
-    // );
 
 
     const handleImageUpload = async (e) => {
@@ -143,8 +148,13 @@ const LaunchTokens = () => {
 
     }, [isConfirming, isConfirmed, txHash])
 
-    const createToken = async () => {
+    useEffect(() => {
+        if (isBuyed && txData) { buyCreatedCoin({ buyTxHash, txData }) }
 
+    }, [isBuying, isBuyed, txData])
+
+    const createToken = async () => {
+        setIsCreatingCoin(true);
         if (!name || !ticker || !imageUrl || !description || !revealTime) {
 
             toast.error('Please fill in all required fields: Name, Ticker, Image, Description, and Reveal Time.');
@@ -152,21 +162,18 @@ const LaunchTokens = () => {
         }
 
         try {
-            const formattedRevealTime = new Date(revealTime).toISOString();
-            let transactionSuccess;
+            const id = toast.loading("Creating Coin...");
+            setToastId(id);
             const SelectedAbi = contractInfo.Abi
             const contractAddress = contractInfo.ContractAddress
             const totalSupply = parseUnits('1000000000', 18)
-            console.log("object", SelectedAbi, contractAddress, totalSupply)
-
+            console.log("contratinfo - ", SelectedAbi, contractAddress, totalSupply, name, ticker, totalSupply)
 
             writeContract({
-
                 address: contractAddress,
                 abi: SelectedAbi,
                 functionName: 'createToken',
                 args: [
-                    "0x76399c8A5027fD58A1D1b07500ccC8a223BEE0c3",
                     name,
                     ticker,
                     totalSupply,
@@ -174,11 +181,10 @@ const LaunchTokens = () => {
                 ],
             })
 
-
-
         } catch (error) {
             setIsCreatingCoin(false)
-            toast.error('Error creating coin. Please try again.');
+            toast.update(toastId, { render: "Error while creating coin please try again!", type: "error", isLoading: false, autoClose: 3000 });
+            //toast.error('Error creating coin. Please try again.');
             console.error('Error creating coin:', error);
         }
     };
@@ -194,10 +200,11 @@ const LaunchTokens = () => {
 
     const createEthCoin = async ({ txHash, createCoinresult }) => {
         try {
+
             //  console.log("entering the funtion to create the coin",txHash , createCoinresult)
             const formattedRevealTime = new Date(revealTime).toISOString();
             if (txHash) {
-
+console.log("createCoinresult",createCoinresult,createCoinresult?.data?.logs[0]?.address);
 
                 // Step 2: If the transaction is successful, proceed with creating the coin
                 const response = await createCoin({
@@ -218,34 +225,38 @@ const LaunchTokens = () => {
                     bondingCurve: "",
                     tokenAddress: createCoinresult?.data?.logs[0]?.address
                 });
-
+                setCreatedTokenAddress(createCoinresult?.data?.logs[0]?.address)
                 if (response.status === 200) {
-
-                    const apiResponse = await BuyToken({
-                        account_type: checkBlockChain,
-                        amount: parseFloat(preTokenBuy),
-                        token_amount: 1,
-                        token_id: response.data._id,
-                        type: "buy",
-                        transaction_hash: txHash,
-                    });
-
-                    if (apiResponse?.status === 200) {
-                        handleBuyTokens()
-
-
-                        toast.success(response.message);
+                    setCreateCoinRes(response.data)
+                    if (tokenToBuy && tokenToBuy !== 0) {
+                        handleBuyTokens(tokenToBuy, createCoinresult?.data?.logs[0]?.address)
+                    } else {
+                        if (toastId) {
+                            toast.update(toastId, {
+                                render: "Coin created successfully!",
+                                type: "success",
+                                isLoading: false,
+                                autoClose: 3000, // Auto dismiss after 3 seconds
+                            });
+                        }
+                        setIsCreatingCoin(false);
+                        //toast.success(response.message);
                         resetForm();
                         navigate('/');
                         dispatch(fetchCoins({ sortBy: sortOption, coinSorting: "" }));
                     }
 
                 } else {
-                    toast.error('Failed to create coin. Please try again.');
+                    //toast.error('Failed to create coin. Please try again.');
+                    setIsCreatingCoin(false);
+                    if (toastId) { toastId, toast.update(id, { render: "Failed to save coin", type: "error", isLoading: false, autoClose: 3000 }); }
+
                 }
             }
         } catch (error) {
             console.log("error while creating token", error)
+            setIsCreatingCoin(false);
+            if (toastId) { toast.update(toastId, { render: "Failed to save coin", type: "error", isLoading: false, autoClose: 3000 }); }
 
         }
     }
@@ -283,33 +294,40 @@ const LaunchTokens = () => {
         setRevealTime(formattedTime);
     };
 
-    const handleBuyTokens = async (amount) => {
+
+    const handleBuyTokens = async (amount, tokenAddress) => {
         try {
+
             setPreTokenBuy(amount)
             const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
-            const payAbleAmountEther = await getPayAbleEtherAmount("0xC65A078e65fd53C6c04396DD9CAD6c545A03d3f7", amount, balanceData?.formatted)
+            const payAbleAmountEther = await getPayAbleEtherAmount(tokenAddress, amount, balanceData?.formatted)
             console.log("get-balance", payAbleAmountEther?.data)
             const SelectedAbi = contractInfo.Abi
             const contractAddress = contractInfo.ContractAddress
-        
-const payAmount = payAbleAmountEther?.data
 
-            // console.log("Payable Amount",payableAmount,fee)
+            const payAmount = payAbleAmountEther?.data
+            if (toastId) toast.update(toastId, {
+                render: "Buying Coin...",
+                isLoading: true,
+            });
 
             useBuyTokens({
                 address: contractAddress,
                 abi: SelectedAbi,
                 functionName: 'buyTokens',
                 args: [
-                    "0xC65A078e65fd53C6c04396DD9CAD6c545A03d3f7",
+                    tokenAddress,
                     formattedAmount,
                 ],
-                value:payAmount
-               
+                value: payAmount
+
             })
 
         } catch (error) {
             console.log("error while buying tokens", error)
+            setIsCreatingCoin(false);
+            if (toastId) { toast.update(toastId, { render: "Failed to buy Tokens", type: "error", isLoading: false, autoClose: 3000 }); }
+
         }
     }
 
@@ -320,7 +338,53 @@ const payAmount = payAbleAmountEther?.data
     };
 
 
+    const buyCreatedCoin = async ({ buyTxHash, txData }) => {
+        try {
 
+
+            if (txData?.status === "success" && buyTxHash) {
+                const apiResponse = await BuyToken({
+                    account_type: currentChain,
+                    amount: parseFloat(preTokenBuy),
+                    token_amount: "0",
+                    token_id: createCoinRes?._id,
+                    type: "buy",
+                    transaction_hash: buyTxHash,
+                });
+                console.log("api response after buying", apiResponse)
+
+                if (apiResponse?.status === 201) {
+                    if (toastId) {
+                        toast.update(toastId, {
+                            render: "Token bought successfully!",
+                            type: "success",
+                            isLoading: false,
+                            autoClose: 3000, // Auto dismiss after 3 seconds
+                        });
+                    }
+                    // toast.success(apiResponse.message);
+                    resetForm();
+                   /// navigate('/');
+                    dispatch(fetchCoins({ sortBy: sortOption, coinSorting: "" }));
+                    setIsCreatingCoin(false);
+                } else {
+                    throw new Error(`Failed to Buy tokens`);
+
+                }
+            } else {
+                toast.error('Transaction failed. Please try again now.');
+                setIsCreatingCoin(false);
+                if (toastId) { toast.update(toastId, { render: "Failed to record buy transaction", type: "error", isLoading: false, autoClose: 3000 }); }
+
+            }
+
+        } catch (error) {
+            setIsCreatingCoin(false);
+            if (toastId) { toast.update(toastId, { render: "Failed to record buy transaction", type: "error", isLoading: false, autoClose: 3000 }); }
+
+            console.log("error while buyin token", error)
+        }
+    }
     return (
         <div className='border flex justify-center items-center py-[55px] px-4 w-full pb-[100px]'>
             <div className='relative w-full max-w-[830px] border-t-[5px] border-t-[#fff] border-l-[5px] border-l-[#fff] border-r-[2px] border-r-[#353535] border-b-[2px] border-b-[#353535]'>
@@ -328,7 +392,6 @@ const payAmount = payAbleAmountEther?.data
 
 
                 <BoxHeader label='Launch Token' />
-                <button className='bg-neutral-600 p-6 ' onClick={(() => { handleBuyTokens("2") })}>Click me maseer gee</button>
                 <div className='secondary-bg p-[14px]'>
                     <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
                         <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
@@ -429,14 +492,14 @@ const payAmount = payAbleAmountEther?.data
 
 
                                 <div className='mx-auto'>
-                                    <button className='themeBtn SegoeUi w-fit'
+                                    <button className={`themeBtn SegoeUi w-fit ${iscreatingCoin ? "animate-pulse" : "animate-none"}`}
                                         onClick={(() => {
 
                                             handleSubmit()
 
                                         })}
                                     ><span>
-                                            Launch Token
+                                            {iscreatingCoin ? "Launching ..." : " Launch Token"}
                                         </span>
                                     </button>
                                 </div>

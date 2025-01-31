@@ -1,23 +1,34 @@
 import { ethers } from "ethers";
-import abi from "../../web3/abi.json";
+import abi from "../../web3/EthContractAbi.json";
 import TokenAbi from "../../web3/TokenAbi.json";
 import { toast } from "react-toastify";
 import { ethereumTokenInfo, getBuySellInEthBuy, getBuySellInTokensBuy } from "./TokenPriceCalculations";
 import { data } from "autoprefixer";
+import evmTokenAbi from "../../web3/evmtokenabi.json";
+import { error } from "highcharts";
+import { b } from "./utils";
 
 // Contract Address
-const CONTRACT_ADDRESS = "0x20c09aCCe0cAe954715B30AD421D2836BEdA58Db";
+const CONTRACT_ADDRESS = "0xE2D4cEA37961EA559815830642152AbFE7a87EC5";
 
 // Connect to the factory contract
 export const getFactoryContract = async () => {
-  if (!window.ethereum) {
-    throw new Error("MetaMask is not installed");
-  }
+  
 
   // Initialize provider from MetaMask
-  const provider = new ethers.providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.binance.org:8545");
+  const provider = new ethers.providers.JsonRpcProvider("https://sepolia.infura.io/v3/014624cb65e2436b867f49ef0a3c84e3");
 
   const factoryContract = new ethers.Contract(CONTRACT_ADDRESS, abi, provider);
+  return factoryContract;
+};
+
+export const getTokenContract = async (tokenAddress) => {
+ 
+
+  // Initialize provider from MetaMask
+  const provider = new ethers.providers.JsonRpcProvider("https://sepolia.infura.io/v3/014624cb65e2436b867f49ef0a3c84e3");
+
+  const factoryContract = new ethers.Contract(tokenAddress, evmTokenAbi, provider);
   return factoryContract;
 };
 
@@ -144,6 +155,27 @@ export const buyTokensOnBlockchain = async (tokenAddress, amount,walletBalance) 
   }
 };
 
+export const getReturnedEthAmountonSell = async (tokenAddress, amount) => {
+  try{
+    console.log("token-vals",tokenAddress,amount)
+    const tokenContract = await getTokenContract(tokenAddress);
+    console.log("token-contract",tokenContract)
+    const decimals = await tokenContract.decimals();
+    console.log("decimals",decimals)
+    
+    const formattedAmount = ethers.utils.parseUnits(amount.toString(), decimals);
+    console.log("amontss",formattedAmount)
+    const factoryContract = await getFactoryContract();
+    console.log("factory-contract",factoryContract)
+    const payableAmount = await factoryContract.sellQuote(tokenAddress, formattedAmount);
+    console.log("payable amount",payableAmount)
+    console.log("Total ETH to pay:", ethers.utils.formatEther(payableAmount));
+    return ethers.utils.formatEther(payableAmount);
+  }catch(error){
+    console.log("error while getting eth amount",error)
+  }
+}
+
 export const getPayAbleEtherAmount = async (tokenAddress, amount,walletBalance) => {
   console.log("props", tokenAddress, amount, walletBalance)
   try {
@@ -240,6 +272,62 @@ export const sellTokensOnBlockchain = async (tokenAddress, amount) => {
     return { success: false, error: error.message };
   }
 };
+export const sellTokensInfo = async (tokenAddress,address, amount,contractInfo) => {
+  try {
+    console.log("address",tokenAddress,address, amount,contractInfo)
+
+    const tokenContract = await getTokenContract(tokenAddress);
+
+    const decimals = await tokenContract.decimals();
+    const formattedAmount = ethers.utils.parseUnits(amount.toString(), decimals);
+
+    const tokenBalance = await tokenContract.balanceOf(address);
+
+    if (tokenBalance.lt(formattedAmount)) {
+      throw new Error("Insufficient token balance.");
+    }
+
+    const factoryContract = await getFactoryContract();
+
+    const currentAllowance = await tokenContract.allowance(
+     address,
+     contractInfo?.ContractAddress
+    );
+    console.log("Current Allowance:", ethers.utils.formatUnits(currentAllowance, decimals));
+    console.log("allowance",tokenBalance.lt(formattedAmount),tokenBalance?.toString(),formattedAmount?.toString())
+    return {
+      success: true,
+      error:null,
+      decimals:decimals,
+      tokenInWei:formattedAmount?.toString(),
+      userTokenBalance:tokenBalance?.toString(),
+      doesUserHasEnoughToken:tokenBalance.lt(formattedAmount),
+      currentAllowance:currentAllowance?.toString(),
+      doesContractHasAllowance:formattedAmount.lt(currentAllowance),
+    }
+
+    if (currentAllowance.lt(formattedAmount)) {
+      console.log("Setting new allowance...");
+      const approvalTx = await tokenContract.approve(CONTRACT_ADDRESS, formattedAmount);
+      await approvalTx.wait();
+      // toast.success("Approval successful:", approvalTx.hash);
+      console.log("Approval successful:", approvalTx.hash);
+    }
+
+    console.log("Executing sell transaction...");
+    const tx = await factoryContract.sellTokens(tokenAddress, formattedAmount, {
+      gasLimit: ethers.utils.hexlify(200000), // Adjust as needed
+    });
+    await tx.wait();
+    // toast.success("Sell transaction successful:", tx.hash);
+    console.log("Sell transaction successful:", tx.hash);
+
+    return { success: true, transactionHash: tx.hash };
+  } catch (error) {
+    console.error("Error selling tokens on blockchain:", error);
+    return { success: false, error: error.message };
+  }
+};
 
 export const buyTokensEthereum = async (tokenAddress, sendTransaction, balance, tokens, ethAmount) => {
   try {
@@ -258,3 +346,28 @@ export const buyTokensEthereum = async (tokenAddress, sendTransaction, balance, 
   }
 }
 
+
+export const  evmTokenInfo = async (tokenAddress,address) => {
+  try {
+    console.log("token-address",tokenAddress)
+    const factoryContract = await getFactoryContract();
+    const tokenContract = await getTokenContract(tokenAddress);
+    const userTokenHoldings = await tokenContract.balanceOf(address);
+    const bondingCurveInfo = await factoryContract.bondingCurve(tokenAddress);
+    const tokenInfo={
+      virtualTokenReserves: String(ethers.utils.formatEther(bondingCurveInfo[0].toString())),
+      virtualEthReserves: String(ethers.utils.formatEther(bondingCurveInfo[1].toString())),
+      realTokenReserves   : String(ethers.utils.formatEther(bondingCurveInfo[2].toString())),
+      realEthReserves   : String(ethers.utils.formatEther(bondingCurveInfo[3].toString())),
+      totalSupply: String(ethers.utils.formatEther(bondingCurveInfo[4].toString())),
+      userTokenHoldings:String(ethers.utils.formatEther(userTokenHoldings.toString())),
+      maxSupplyPercentage:bondingCurveInfo[5].toString(),
+      isCompleted: bondingCurveInfo[6].toString(),
+    }
+    console.log("token-info",tokenInfo)
+    return tokenInfo
+    
+  } catch (error) {
+    console.log("error while getting evmTokenInfo",error)
+  }
+}

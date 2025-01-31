@@ -125,7 +125,7 @@ async function buy(walletProvider, amount, mintaddy, maxSlippage, priorityFee) {
     }catch(error){
         return {
             error: true,
-            data: null,
+            data: error,
             success: false,
         }
 

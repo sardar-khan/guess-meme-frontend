@@ -24,7 +24,7 @@ const CoinsCreatedCard = ({ coinsCreated, userData }) => {
     console.log("coinsCreated", coinsCreated);
 
     return (
-        <Link to={`/trade/${coinsCreated?._id}`} className='flex flex-col items-center justify-center'>
+        <Link to={`/trade/${coinsCreated?._id}/${coinsCreated?.token_address}`} className='flex flex-col items-center justify-center'>
             <div className='w-[80px] h-[80px] border rounded-full flex object-cover overflow-hidden'>
                 <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinsCreated?.image}`} alt="" />
             </div>

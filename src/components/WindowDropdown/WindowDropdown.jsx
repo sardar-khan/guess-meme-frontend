@@ -164,7 +164,7 @@ const WindowDropdown = () => {
           alt={selectedOption}
           className="dropdown-icon"
         />
-        <span>{selectedOption}</span>
+        <span>{selectedOption }</span>
       </div>
       {isOpen && (
         <div className="win2000-dropdown-options">

@@ -11,11 +11,13 @@ import DirectBuy from './DirectBuy';
 import ConnectButton from '../web3/ConnectButton';
 import { getLatestNotifications } from '../utils/api';
 import { useNotificationContext } from '../context/NotificationContext';
+import { useWalletContext } from '../context/WalletContext';
+import DirectBuyEth from './DirectBuyEth';
 
 
 const Navbar = () => {
     const blockChain = localStorage.getItem("blockchain")
-
+    const { block_chain } = useWalletContext()
 
     const isOn = useSelector((state) => state.animation.isOn);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -24,7 +26,7 @@ const Navbar = () => {
     const [latestnotifications, setLatestNotifications] = useState([]);
     const { notifications, createNotifications, notificationsEth, createNotificationsEth } = useNotificationContext();
 
-    //////////////////////// Pusher////////////////////////
+    //////////////////////// Pusher ////////////////////////
     const notificationWithBlockChain = blockChain === "SOL" ? notifications : notificationsEth;
     const createNotificationWithBlockChain = blockChain === "SOL" ? createNotifications : createNotificationsEth;
     console.log("notificationWithBlockChain", notificationWithBlockChain)
@@ -311,10 +313,16 @@ const Navbar = () => {
                     onClick={closeMenu}
                 ></div>
             )}
-            <DirectBuy
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-            />
+            {block_chain !== "SOL" ?
+                <DirectBuyEth
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                />
+                : <DirectBuy
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                />
+            }
         </div>
     );
 };

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { calculateBondingCurveProgress } from './PlaceTrade/solanaBuySellFunction'
 import { formatNumber } from '../utils/helper'
 
-const LaunchCard = ({ key, setSpace, coinData, topCoins }) => {
+const LaunchCard = ({ key, setSpace, coinData, topCoins,status }) => {
     console.log("coinDataLaunch", coinData)
     console.log("CoinID", coinData?.coin?._id)
     const [ProgressCurveBond,setProgressCurveBond] = useState()
@@ -55,7 +55,7 @@ const LaunchCard = ({ key, setSpace, coinData, topCoins }) => {
                         <div className={`relative bg-white w-[calc(100%-100px)] sm:w-[calc(100%-150px)] min-h-full border-[3px] border-b-[4px] border-r-[4px] border-[#353535] border-b-[#CBC7E5] border-r-[#CBC7E5] after:absolute after:h-[1px] after:w-full after:top-0 after:left-0 after:bg-[white]`}>
                             <div className={`flex flex-col justify-between p-[5px] md:p-[8px] min-h-full border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff] border-r-[#fff]`}>
                                 <div>
-                                    <h5 className='PixelOperatorbold text-[10px] md:text-[14px]'>Created by 💩 <Link to={`/userprofile/${coinData?.coin?.creator?._id}`} className='hover:underline'>{coinData?.coin?.creator?.user_name}</Link></h5>
+                                   {status ==='deployed' && <h5 className='PixelOperatorbold text-[10px] md:text-[14px]'>Created by 💩 <Link to={`/userprofile/${coinData?.coin?.creator?._id}`} className='hover:underline'>{coinData?.coin?.creator?.user_name}</Link></h5>}
                                     <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: ${formatNumber(coinData?.coin?.market_cap?.toFixed(2))}</h5>
                                     {/* <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: {coinData?.coin?.market_cap}</h5> */}
                                     <div className=''>

@@ -19,6 +19,7 @@ import { CheckFollow, getNotifications, resetNotificationsCount, toggleFollow, V
 import { useAppKitAccount } from '@reown/appkit/react'
 import Notifications from '../components/Notifications'
 import { useNotificationContext } from '../context/NotificationContext'
+import { useWalletContext } from '../context/WalletContext'
 
 
 const UserProfile = () => {
@@ -32,6 +33,7 @@ const UserProfile = () => {
     const [userID, setUserID] = useState();
     const [userProfileData, setUserProfileData] = useState();
     const { isConnected } = useAppKitAccount()
+    const { block_chain } = useWalletContext()
 
     const { pusherLike, pusherFollow, pusherNotificationThread } = useNotificationContext();
 
@@ -207,9 +209,13 @@ const UserProfile = () => {
                     <CardWrapper>
                         <div className='flex flex-col items-center justify-center'>
                             <div className='bg-[#E9E9E9] p-[5px] text-2xl text-center PixelOperator rounded-lg w-full overflow-hidden'>{profileState?.data?.data?.user?.wallet_address[0]?.address}</div>
-                            <div className='w-full'>
-                                <Link to={`https://solscan.io/account/${profileState?.data?.data?.user?.wallet_address[0]?.address}`} target='_blank' className='flex justify-end gap-1 mt-1 PixelOperator'>View on Solscan <img src={Arrow} alt="" /></Link>
-                            </div>
+                            {block_chain !== "SOL" ?
+                                <div className='w-full'>
+                                    <Link to={`https://sepolia.etherscan.io/address/${profileState?.data?.data?.user?.wallet_address[0]?.address}`} target='_blank' className='flex justify-end gap-1 mt-1 PixelOperator'>View on Etherscan <img src={Arrow} alt="" /></Link>
+                                </div> :
+                                <div className='w-full'>
+                                    <Link to={`https://solscan.io/account/${profileState?.data?.data?.user?.wallet_address[0]?.address}?cluster=devnet`} target='_blank' className='flex justify-end gap-1 mt-1 PixelOperator'>View on Solscan <img src={Arrow} alt="" /></Link>
+                                </div>}
                         </div>
                     </CardWrapper>
 

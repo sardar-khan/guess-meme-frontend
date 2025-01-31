@@ -1,8 +1,16 @@
 import EthContractAbi  from "./EthContractAbi.json"
-export const EthConfig = {
+import tokenAbi from "./evmtokenabi.json"
+export const BscConfig = {
     "ContractAddress": "0x20c09aCCe0cAe954715B30AD421D2836BEdA58Db",
-    "Abi": EthContractAbi
+    "Abi": EthContractAbi,
+    "tokenAbi":tokenAbi
 }
+export const EthConfig = {
+  "ContractAddress": "0xE2D4cEA37961EA559815830642152AbFE7a87EC5",
+  "Abi": EthContractAbi,
+  "tokenAbi":tokenAbi
+}
+
 
 
 export const GetContractConfiguration = async(blockchain)=>{
@@ -14,7 +22,7 @@ export const GetContractConfiguration = async(blockchain)=>{
           ethereumNetworks = [polygonAmoy];
           break;
         case "BNB":
-          ethereumNetworks = [bscTestnet];
+          return BscConfig
           break;
         default:
           ethereumNetworks = [];

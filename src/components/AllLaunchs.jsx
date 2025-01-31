@@ -45,10 +45,16 @@ const AllLaunchs = () => {
     };
 
     useEffect(() => {
+        console.log("this got hit")
         if (status === 'idle') {
-            dispatch(fetchCoins({sortBy:activeTab,coinSorting:""}));
+            console.log("this got hit 2")
+            dispatch(fetchCoins({sortBy:"deployed",coinSorting:""}));
         }
     }, [status, dispatch, sortOption]);
+
+    const jelis = ()=>{
+        dispatch(fetchCoins({sortBy:"deployed",coinSorting:""}));
+    } 
 
     const handleTabClick = (tab) => setActiveTab(tab);
 
@@ -63,10 +69,12 @@ const AllLaunchs = () => {
         
     };
 
+    console.log("deployedCoins",deployedCoins,status)
     return (
         <div className='p-2 md:p-4 !pb-[50px]'>
             <div className="w-full flex md:flex-row md:justify-between md:items-center items-start justify-between space-x-3 mb-4">
                 <div className='sm:flex items-center gap-3'>
+                    
                     <div className="win2000-sort-select-container">
                         <select
                             className="win2000-sort-select"
@@ -130,7 +138,7 @@ const AllLaunchs = () => {
                         ) : (
                             <>
                                 {deployedCoins.map((coin, index) => (
-                                    <LaunchCard key={index} setSpace="medium" coinData={coin} />
+                                    <LaunchCard key={index} setSpace="medium" coinData={coin} status={"deployed"} />
                                 ))}
                             </>
                         )}
@@ -144,7 +152,7 @@ const AllLaunchs = () => {
                         ) : (
                             <>
                                 {createdCoins.map((coin, index) => (
-                                    <LaunchCard key={index} setSpace="medium" coinData={coin} />
+                                    <LaunchCard key={index} setSpace="medium" coinData={coin} status={"created"} />
                                 ))}
                             </>
                         )}

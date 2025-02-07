@@ -24,7 +24,7 @@ export function Web3ModalProvider({ children }) {
   const metadata = {
     name: "Guess.Meme",
     description: "guess meme project",
-    url: "http://localhost:5173/",
+    url: "https://guessmemelive.netlify.app/",
     icons: ["https://avatars.githubusercontent.com/u/179229932"],
   };
 

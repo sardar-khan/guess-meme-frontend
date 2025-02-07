@@ -146,7 +146,7 @@ const ChatRoom = ({ coinData }) => {
 
 
 
-console.log("image",coinData?.creator?.profile_photo,   coinData?.creator?.profile_photo ==="https://ibb.co/7zrpRwk")
+console.log("image",coinData)
 
 
 
@@ -158,7 +158,7 @@ console.log("image",coinData?.creator?.profile_photo,   coinData?.creator?.profi
                 <div className='secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]'>
                     <div className='flex items-center gap-1'>
                   {coinData?.creator?.profile_photo ==="https://ibb.co/7zrpRwk"?<img className='w-4 h-4 rounded-md' src={logoSmall} alt="img" /> :  <img className='w-4 h-4 rounded-md' src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.creator?.profile_photo}`} alt="" />}
-                        <span className='Inter text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8281c9]'>{coinData?.creator?.user_name}</span>
+                       <Link to={`/userprofile/${coinData?.creator?._id}`  }> <span className='Inter hover:underline text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8281c9]'>{coinData?.creator?.user_name}</span></Link>
                         <p className='Inter text-black text-[10px] font-medium'>
                             {new Date(coinData?.time).toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}
                         </p>

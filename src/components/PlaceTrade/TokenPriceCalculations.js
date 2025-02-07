@@ -31,7 +31,7 @@ export const getBuySellInSolBuy =(amount,k,virtualSolReserves,virtualTokenReserv
 
 export const getBuySellInTokensBuy=(amount,k,virtualSolReserves,virtualTokenReserves)=>{
     try{
-        console.log("hey are you here")
+        console.log("hey are you here",amount,k,virtualSolReserves,virtualTokenReserves)
         const oneSOLInLamports = BigInt(Math.floor(amount * LAMPORTS_PER_SOL));
            
 

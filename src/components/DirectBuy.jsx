@@ -84,7 +84,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
 
 
             } else {
-                toast.error(`${buySuccess?.error}`)
+                toast.error(`${buySuccess?.data}`)
                 setIsLoading(false);
             }
         } catch (error) {
@@ -293,7 +293,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
             return toast.error("Token address not found!")
         }
         try {
-            const res = await reteriveTokenDetails(walletProvider, tokenAddress);
+            const res = await reteriveTokenDetails( tokenAddress);
             console.log("result from the tokens", res);
             const maxBuyPercentage = 100
             const percentage = (res?.totalTokens * maxBuyPercentage) / 100;

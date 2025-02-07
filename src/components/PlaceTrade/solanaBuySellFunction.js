@@ -496,7 +496,7 @@ const PUMPFUNTOKENINFO = async (program, programId, mintaddy, isDeployed) => {
 
 
 
-const reteriveTokenDetails = async (walletProvider, taddress) => {
+const reteriveTokenDetails = async ( taddress) => {
     try {
         window.Buffer = buffer.Buffer
         const programId = new PublicKey(
@@ -514,8 +514,9 @@ const reteriveTokenDetails = async (walletProvider, taddress) => {
 
 
         const r = await program.account.bondingCurve.fetch(C)
-
+console.log("full on r",r)
         const {
+            realSolReserves,
             virtualTokenReserves,
             virtualSolReserves,
             realTokenReserves,
@@ -538,9 +539,10 @@ const reteriveTokenDetails = async (walletProvider, taddress) => {
             tokenTotalSupply: tokenTotalSupplyStr,
             remainingTokens: parseFloat(realTokenReservesStr / 1000000),
             totalTokens: parseFloat(tokenTotalSupplyStr / 1000000),
+            realSolReserves:realSolReserves?.toString(),
             complete: complete,
         }
-
+console.log("formatted outpot",formattedOutput)
         return formattedOutput
     } catch (error) {
         console.log("error while retreving token details", error)
@@ -562,7 +564,7 @@ const calculateBondingCurveProgress = async (taddress, isDeployed) => {
     )
 
     const program = new Program(IDL1, programId, provider)
-    const calculateBondingCurveProgress = (remainingTokens, initialRealTokenReserves) => {
+    const calculateBondingCurveProgressPer = (remainingTokens, initialRealTokenReserves) => {
         // Calculate the Bonding Curve Progress
         return ((initialRealTokenReserves - remainingTokens) * 100) / initialRealTokenReserves;
     };
@@ -596,7 +598,7 @@ const calculateBondingCurveProgress = async (taddress, isDeployed) => {
 
         // Initial real token reserves based on your logic
         const initialRealTokenReserves = 800_000_000; // Fixed initial reserve from your requirements
-        const bondingCurveProgress = calculateBondingCurveProgress(remainingTokens, initialRealTokenReserves);
+        const bondingCurveProgress = calculateBondingCurveProgressPer(remainingTokens, initialRealTokenReserves);
 
         // Logging the specific properties in a formatted string
         const formattedOutput = {
@@ -685,13 +687,19 @@ const calculateKingOfTheHillProgress = async (taddress, isDeployed) => {
 
         // Remaining tokens in normal units
         const remainingTokens = parseFloat(realTokenReservesStr / 1000000);
+        let calaculateToken;
+        if(remainingTokens <400000000){
+            calaculateToken =400000000
+        }else{
+            calaculateToken =remainingTokens
+        }
         const totalTokens = parseFloat(tokenTotalSupplyStr / 1000000);
 
         // Initial real token reserves based on your logic
         const initialRealTokenReserves = 800_000_000; // Fixed initial reserve from your requirements
         const minValue = 800000000; // 0% progress
         const maxValue = 400000000; // 100% progress
-        const kingOfTheHillProgress = calculateProgress(remainingTokens, minValue, maxValue)
+        const kingOfTheHillProgress = calculateProgress(calaculateToken, minValue, maxValue)
 
         // Logging the specific properties in a formatted string
         const formattedOutput = {
@@ -820,11 +828,11 @@ const launchSolToken = async (
         const tokenFactor = new BN(10).pow(new BN(TOKEN_DECIMALS)); // 10^6 for Token
 
         // Adjusted token parameters
-        const tokenTotalSupply = new BN(1000000000).mul(tokenFactor); // 1 billion tokens, adjusted for 6 decimals
+         const tokenTotalSupply = new BN(1000000000).mul(tokenFactor); // 1 billion tokens, adjusted for 6 decimals
         const tokenMargin = new BN(200000000).mul(tokenFactor); // Margin adjusted for token decimals
         const initialVirtualTokenReserves = tokenTotalSupply.add(tokenMargin);
-        const initialRealTokenReserves = tokenTotalSupply.mul(new BN(80)).div(new BN(100)); // 80% of total supply
-
+    const initialRealTokenReserves = tokenTotalSupply.mul(new BN(80)).div(new BN(100)); // 80% of total supply
+       // const initialRealTokenReserves =new BN(793100000).mul(tokenFactor);
         const token_key = Keypair.generate();
        
 

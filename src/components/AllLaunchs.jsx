@@ -7,6 +7,8 @@ import { useNotificationContext } from '../context/NotificationContext';
 import PusherLaunchCard from './PusherLaunchCard';
 import Pagination from './Pagination';
 import { useWalletContext } from '../context/WalletContext';
+import { calculateBondingCurveProgresstest, testPumpFunTokenBondingCurve } from '../web3/testFunctions';
+import { reteriveTokenDetails } from './PlaceTrade/solanaBuySellFunction';
 
 const AllLaunchs = () => {
     const dispatch = useDispatch();
@@ -72,6 +74,8 @@ const AllLaunchs = () => {
     console.log("deployedCoins",deployedCoins,status)
     return (
         <div className='p-2 md:p-4 !pb-[50px]'>
+            {/* <button onClick={(()=>{reteriveTokenDetails("4NEmVi6TyGiz6Z5spz8uNwCbG4QjueJwgEcyDcynord7")})}>Check this </button>
+            <button onClick={(()=>{testPumpFunTokenBondingCurve()})}>Check this mainnet </button> */}
             <div className="w-full flex md:flex-row md:justify-between md:items-center items-start justify-between space-x-3 mb-4">
                 <div className='sm:flex items-center gap-3'>
                     
@@ -88,7 +92,7 @@ const AllLaunchs = () => {
                     </div>
                     <AnimationToggle />
                 </div>
-                <div className='flex items-end gap-2 md:mt-4'>
+               {activeTab === 'deployed' && <div className='flex items-end gap-2 md:mt-4'>
                     <div className="win2000-sort-select-container">
                         <select className="win2000-sort-select" value={sortOption} onChange={handleSortChange}>
                             <option value="">Sort: Featured</option>
@@ -98,7 +102,7 @@ const AllLaunchs = () => {
                             <option value="createdAt">Sort: Creation Time</option>
                         </select>
                     </div>
-                </div>
+                </div>}
             </div>
 
             {status === 'loading' && <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>}

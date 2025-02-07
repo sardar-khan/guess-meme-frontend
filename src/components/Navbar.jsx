@@ -96,7 +96,6 @@ const Navbar = () => {
     const animationClass = isShaking ? 'element-to-shake' : '';
 
 
-
     return (
         <div className='px-1 sm:px-2 primary-bg'>
             <div className='flex items-center justify-between px-0 py-2'>
@@ -145,16 +144,16 @@ const Navbar = () => {
                             <img
                                 src={
                                     !hasNotificationData
-                                        ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.coin_photo
+                                        ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.user_image
                                         }`
-                                        : notificationWithBlockChain?.coin_photo
+                                        : notificationWithBlockChain?.user_image
                                 }
                                 className="w-[12px] h-[12px] rounded-full"
                                 alt=""
                             />
                             <Link
-                                className="hover:underline truncate max-w-[150px]"
-                                href="/view/undefined"
+                                className="hover:underline  truncate max-w-[150px]"
+                                to={`${!hasNotificationData?`/userprofile/${latestnotifications?.latestTrade?.user_id}`:`/userprofile/${notificationWithBlockChain?.user_name}`}`}
                             >
                                 {!hasNotificationData
                                     ? latestnotifications?.latestTrade?.user_name
@@ -171,9 +170,9 @@ const Navbar = () => {
                             <img
                                 src={
                                     !hasNotificationData
-                                        ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.user_name
+                                        ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestTrade?.coin_photo
                                         }`
-                                        : notificationWithBlockChain?.user_name
+                                        : notificationWithBlockChain?.coin_photo
                                 }
                                 className="w-[12px] h-[12px] rounded-full"
                                 alt=""
@@ -189,14 +188,16 @@ const Navbar = () => {
                                 src={
                                     !hasCreateNotificationData || hasCreateNotificationData === undefined
                                         ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${latestnotifications?.latestCoin?.user_profile
+
                                         }`
-                                        : createNotificationWithBlockChain?.coin_photo
+                                        : createNotificationWithBlockChain?.user_profile
+
                                 }
                                 className="w-[12px] h-[12px] rounded-full"
                                 alt=""
                             />
                             <Link
-                                className="hover:underline truncate max-w-[150px]"
+                                className="hover:underline bounce truncate max-w-[150px]"
                                 href="/view/undefined"
                             >
                                 {!hasCreateNotificationData

@@ -18,6 +18,8 @@ console.log("hellos",id)
         // }, [dispatch, id]);
     }, []);
 
+    console.log("trades",trades)
+
     if (loading) return <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>;
     if (error) return <div>No Data Found</div>;
 
@@ -40,7 +42,7 @@ console.log("hellos",id)
                         <tr key={trade._id} className='border border-[#FFF] text-xs'>
                             <td className="px-4 py-4">
                                 <Link to={`/userprofile/${trade?.account?._id}`} className='flex items-center gap-1 ml-[-8px]'>
-                                    <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${trade?.token_id?.image}`} alt="" className="w-6 h-6 rounded-full" />
+                                  {trade?.account?.profile_photo ==="https://ibb.co/7zrpRwk"?<img className='w-4 h-4 rounded-md' src={logoSmall} alt="img" /> : <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${trade?.token_id?.image}`} alt="" className="w-6 h-6 rounded-full" />}
                                     <span className='Inter text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8E8DC7] hover:underline'>
                                         {trade.account.user_name}
                                     </span>

@@ -13,8 +13,8 @@ const CoinheldCard = ({ coinHeld }) => {
                 <h5 className='PixelOperatorbold text-xl'>{coinHeld?.name}</h5>
                 <p className='text-base'>64.7336 SOL</p>
                 <div className='flex justify-between items-center gap-10 w-full mt-2'>
-                    <p className='text-sm cursor-pointer'>Refresh</p>
-                    <Link to={`/trade/${coinHeld?.coinId}`} className='text-sm PixelOperator'>View Coins</Link>
+                 
+                    <Link to={`/trade/${coinHeld?.coinId}/${coinHeld?.token_address}`} className='text-sm PixelOperator hover:underline'>View Coin</Link>
                 </div>
             </div>
         </div>

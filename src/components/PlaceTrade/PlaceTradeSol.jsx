@@ -11,6 +11,7 @@ import { buy, reteriveTokenDetails, sell, TokenPriceCalculations } from "./solan
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useAppKitProvider } from '@reown/appkit/react';
+import logoSmall from '../../assets/icons/logoSmall.png'
 import SetSlipPage from "../Modals/SetSlipPage";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { useWalletContext } from "../../context/WalletContext";
@@ -23,7 +24,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
     const [showSOGs, setShowSOGs] = useState(false);
     const { block_chain } = useWalletContext()
     const tokenAddress_mint = tokenid && block_chain === 'SOL' ? new PublicKey(tokenid) : null;
-  
+
 
 
     const [amount, setAmount] = useState("");
@@ -48,10 +49,10 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
     const [prorityFee, setPriorityFee] = useState('');
 
     useEffect(() => {
-        console.log("checking",tokenid && walletProvider,tokenid , walletProvider)
+        console.log("checking", tokenid && walletProvider, tokenid, walletProvider)
         if (tokenid && walletProvider) {
             getUserBalances()
-          
+
             remaningAndMaxbuyTokens(tokenid)
         }
     }, [amount, coinData, wallet, tokenToBuy, walletProvider])
@@ -77,7 +78,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
             return toast.error("Token address not found!")
         }
         try {
-            const res = await reteriveTokenDetails(walletProvider, tokenAddress);
+            const res = await reteriveTokenDetails(tokenAddress);
             console.log("result from the tokens", res);
             const maxBuyPercentage = 100
             const percentage = (res?.totalTokens * maxBuyPercentage) / 100;
@@ -91,9 +92,10 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
     }
 
     const handleTrade = async () => {
-        setIsLoading(true);
+
         if (!isConnected) return toast.error("Please connect wallet")
-        if (!amount || isNaN(amount) || parseFloat(amount) <= 0) toast.error("Please enter a valid amount")
+        if (!amount || isNaN(amount) || parseFloat(amount) <= 0) return toast.error("Please enter a valid amount")
+        setIsLoading(true);
         if (block_chain === "SOL" && tradeType === 'buy') {
 
             buyTokens()
@@ -130,12 +132,12 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                     throw new Error(
                         `Failed to record ${tradeType} trade in the backend`
                     );
-                    
+
                 }
 
 
-            }else{
-                toast.error(`${buySuccess?.error}`)
+            } else {
+                toast.error(`${buySuccess?.data}`)
                 setIsLoading(false);
             }
         } catch (error) {
@@ -177,6 +179,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                     );
                 }
             } else {
+                console.log("issue",sellTrxHash)
                 toast.error(`${sellTrxHash?.error}`)
                 setIsLoading(false);
             }
@@ -199,14 +202,14 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
         )
 
         if (!showSOGs) {
-            if(!walletProvider){
-               return setAmountError((prevState) => ({
+            if (!walletProvider) {
+                return setAmountError((prevState) => ({
                     ...prevState,
                     error: true,
                     reason: 'Please connect your wallet!',
                 }))
             }
-           
+
 
             if (res?.tokensbuy > maxBuyTokens) {
 
@@ -215,10 +218,10 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                     error: true,
                     reason: 'max buy exceeded',
                 }))
-                
+
             }
 
-            if ( res?.tokensbuy > remaningTokens) {
+            if (res?.tokensbuy > remaningTokens) {
                 return setAmountError((prevState) => ({
                     ...prevState,
                     error: true,
@@ -226,7 +229,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                 }))
 
             }
-            
+
             if (val < userBalance?.solBalance) {
                 setSolAmount(val)
                 setAmount(val)
@@ -247,8 +250,8 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
             }
         }
         else {
-            if(!walletProvider){
-               return setAmountError((prevState) => ({
+            if (!walletProvider) {
+                return setAmountError((prevState) => ({
                     ...prevState,
                     error: true,
                     reason: 'Please connect your wallet!',
@@ -368,6 +371,20 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
     }
 
 
+    const selectTradeTab = (type) => {
+        setTradeType(type);
+        setAmountError((prevState) => ({
+            ...prevState,
+            error: false,
+            reason: "",
+        }))
+        setAmount('');
+        setSolAmount('')
+        type === "buy" ? setShowSOGs(false) : setShowSOGs(true);
+
+
+
+    }
     return (
         <div className="border flex justify-center items-center w-full ">
             <div className="relative w-full border-t-[1px] border-t-[#fff] border-l-[5px] border-l-[#fff] border-r-[2px] border-r-[#353535] border-b-[2px] border-b-[#353535]">
@@ -383,7 +400,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                                 ? "bg-[#4ADE80] text-[#202020]"
                                                 : "bg-[#1F2937] text-[gray]"
                                                 }`}
-                                            onClick={() => { setTradeType("buy"); setAmount(''); setSolAmount('') }}
+                                            onClick={() => {selectTradeTab("buy") }}
                                         >
                                             Buy
                                         </button>
@@ -392,7 +409,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                                 ? "bg-[#F87171] text-white"
                                                 : "bg-[#1F2937] text-[gray]"
                                                 }`}
-                                            onClick={() => { setTradeType("sell"); setShowSOGs(true); setAmount(''); setSolAmount('') }}
+                                            onClick={() => { selectTradeTab("sell") }}
                                         >
                                             Sell
                                         </button>
@@ -403,9 +420,9 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                         {tradeType === 'buy' && block_chain !== 'ETH' ?
                                             <span
                                                 className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
-                                                onClick={coinData?.status === "deployed" && handleSwitchClick}
+                                                onClick={ handleSwitchClick}
                                             >
-                                                {showSOGs ? `Switch to ${block_chain}` : `Switch to ${coinData?.name}`}
+                                                {showSOGs ? `Switch to ${block_chain}` :  coinData?.status !=="created"? `Switch to ${coinData?.name}`:`Switch to token`}
                                             </span>
                                             :
                                             <span></span>
@@ -459,7 +476,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                                             className="w-full px-2 py-3 pr-4"
                                                         />
 
-                                                        <div className="w-fit flex items-center gap-1 bg-white">
+                                                       {  coinData?.status !=="created"&& <div className="w-fit flex items-center gap-1 bg-white">
                                                             <span className="whitespace-nowrap text-black font-semibold text-sm SegoeUi">
                                                                 {!showSOGs && block_chain !== 'ETH' ? block_chain : coinData?.name}
                                                                 {/* {block_chain === "ETH" ? "ETH" : "SOL"} */}
@@ -474,7 +491,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                                                 className="w-[30px] mr-7 rounded-full"
                                                             />
 
-                                                        </div>
+                                                        </div>}
                                                     </div>
 
 
@@ -497,7 +514,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                                             className="w-full px-2 py-3 pr-4"
                                                         />
 
-                                                        <div className="w-fit flex items-center gap-1 bg-white">
+                                                        {  coinData?.status !=="created" &&<div className="w-fit flex items-center gap-1 bg-white">
                                                             <span className="whitespace-nowrap text-black font-semibold text-sm SegoeUi">
                                                                 {coinData?.name}
                                                             </span>
@@ -505,7 +522,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                                                 src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.image}`}
                                                                 className="w-[30px] mr-7 rounded-full"
                                                             />
-                                                        </div>
+                                                        </div>}
                                                     </div>
 
                                                 </div>
@@ -550,8 +567,8 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                     </div>
                                 }
 
-                                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && block_chain == "SOL" && <p p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? block_chain : coinData?.name}</p>}
-                                {amount != '' && <p p className="mt-2 ml-3"> {block_chain}</p>}
+                                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && block_chain == "SOL" && <p p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? block_chain :  coinData?.status !=="created"?coinData?.name: "tokens"}</p>}
+                                {/* {amount != '' && <p p className="mt-2 ml-3"> {block_chain}</p>} */}
 
                                 {amountError.error && <p className="text-red-700 mt-2 ml-3">{amountError.reason}</p>}
 

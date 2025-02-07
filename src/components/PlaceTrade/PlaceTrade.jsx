@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 
 import { fetchTrades } from "../../features/tradesSlice";
-import { buyTokensOnBlockchain, calculateTokenEthValues, evmTokenInfo, getPayAbleEtherAmount, getReturnedEthAmountonSell, sellTokensInfo, sellTokensOnBlockchain } from "./ether-trade-utils";
+import { buyTokensOnBlockchain, calculateEthTokenValue, calculateTokenEthValues, evmTokenInfo, getPayAbleEtherAmount, getReturnedEthAmountonSell, sellTokensInfo, sellTokensOnBlockchain } from "./ether-trade-utils";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useWriteContract } from 'wagmi'
@@ -83,7 +83,7 @@ const PlaceTrade = ({ coinData }) => {
   })
   console.log("coinDataPlaceTrade", coinData)
   const handleSwitchClick = async () => {
-
+setEthAmount('')
     setShowSOGs(!showSOGs);
     if (!showSOGs) {
       setAmount(tokenToBuy);
@@ -91,7 +91,7 @@ const PlaceTrade = ({ coinData }) => {
       setAmount(solAmount);
     }
   };
-
+// amount is being treated as amount user inputs in tokens 
   //load contract configuration
   useEffect(() => {
     if (coinData?.token_address && address) {
@@ -140,6 +140,7 @@ const PlaceTrade = ({ coinData }) => {
       toast.error("Connect Wallet First");
       return;
     }
+    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) return toast.error("Please enter a valid amount")
 
     try {
       setIsButtonDisabled(true)
@@ -247,6 +248,7 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
         reason: '',
       }))
       if (hasElevenDigits(amount)) {
+        setIsButtonDisabled(false)
 
         return setAmountError((prevState) => ({
           ...prevState,
@@ -256,11 +258,12 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
       }
       setAmount(amount);
       try {
-        const calculateEthValue = await calculateTokenEthValues(coinData?.token_address, amount, true);
+        const calculateEthValue = showSOGs? await  calculateTokenEthValues(coinData?.token_address, amount, true): await calculateEthTokenValue(coinData?.token_address, amount, true);
         console.log("calculateEthValue", calculateEthValue);
         setEthAmount(calculateEthValue)
         console.log("amount", userNativeBalance?.data?.formatted)
         if (parseFloat(amount) > parseFloat(tokenInfo?.data?.realTokenReserves)) {
+          setIsButtonDisabled(false)
           setAmountError((prevState) => ({
             ...prevState,
             error: true,
@@ -269,6 +272,7 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
 
         }
         if (parseFloat(calculateEthValue) > parseFloat(userNativeBalance?.data?.formatted)) {
+          setIsButtonDisabled(false)
           setAmountError((prevState) => ({
             ...prevState,
             error: true,
@@ -277,19 +281,12 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
 
         }
 
-        // if (calculateEthValue > tokenInfo?.data?.realTokenReserves) {
-        //   setAmountError((prevState) => ({
-        //     ...prevState,
-        //     error: true,
-        //     reason: 'Max token reserves reached',
-        //   }))
-
-        // }
 
       } catch (error) {
         console.error("Error calculating ETH value:", error);
       }
     } else {
+      setIsButtonDisabled(false)
       setAmountError((prevState) => ({
         ...prevState,
         error: true,
@@ -303,6 +300,7 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
 
     console.log("sell-value", val, tokenInfo?.data?.userTokenHoldings, parseFloat(val) > parseFloat(tokenInfo?.data?.userTokenHoldings))
     if (parseFloat(val) > parseFloat(tokenInfo?.data?.userTokenHoldings)) {
+      setIsButtonDisabled(false)
       return setAmountError((prevState) => ({
         ...prevState,
         error: true,
@@ -428,6 +426,25 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
     }
   }
 
+  const selectTradeTab = (type) => {
+    setTradeType(type);
+    setAmountError((prevState) => ({
+        ...prevState,
+        error: false,
+        reason: "",
+    }))
+    setAmount('');
+    setSolAmount('')
+    type === "buy" ? setShowSOGs(false) : setShowSOGs(true);
+
+
+
+}
+
+
+console.log("showSOGs",showSOGs)
+
+//false  = amount in eth & true = amount in tokens
   return (
     <div className="border flex justify-center items-center w-full ">
       <div className="relative w-full border-t-[1px] border-t-[#fff] border-l-[5px] border-l-[#fff] border-r-[2px] border-r-[#353535] border-b-[2px] border-b-[#353535]">
@@ -444,7 +461,7 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
                         ? "bg-[#4ADE80] text-[#202020]"
                         : "bg-[#1F2937] text-[gray]"
                         }`}
-                      onClick={() => { setTradeType("buy"); setAmount(''); setSolAmount('') }}
+                      onClick={() => { selectTradeTab('buy') }}
                     >
                       Buy
                     </button>
@@ -453,7 +470,7 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
                         ? "bg-[#F87171] text-white"
                         : "bg-[#1F2937] text-[gray]"
                         }`}
-                      onClick={() => { setTradeType("sell"); setShowSOGs(true); setAmount(''); setSolAmount('') }}
+                      onClick={() => { selectTradeTab("sell")}}
                     >
                       Sell
                     </button>}
@@ -461,7 +478,7 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
                   </div>
 
                   <div className="flex justify-end gap-3 px-3 pt-[35px]">
-                    {/* {tradeType === 'buy' && blockchainType !== 'ETH' ?
+                    {tradeType === 'buy'  ?
                       <span
                         className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
                         onClick={coinData?.status === "deployed" && handleSwitchClick}
@@ -470,7 +487,7 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
                       </span>
                       :
                       <span></span>
-                    } */}
+                    }
 
                     <div>
                       {/* <span
@@ -572,7 +589,7 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
                 {!showSOGs && tradeType === 'buy' &&
                   <div className='flex justify-start items-center gap-[3px] mt-3 ml-3'>
                     <span onClick={() => {
-                      setAmount(''); handleAmount(''); setAmountError((prevState) => ({
+                      setAmount(''); handleAmount(''); setEthAmount(''); setAmountError((prevState) => ({
                         ...prevState,
                         error: false,
                         reason: ``,
@@ -580,13 +597,13 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
                     }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                       reset
                     </span>
-                    <span onClick={() => { setAmount(0.1); handleAmount(0.1) }} className='Inter whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                    <span onClick={() => { setAmount(0.1); handleAmount(0.1); calculateTokenEthOnchange(0.1) }} className='Inter whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                       0.1 {blockchainType}
                     </span>
-                    <span onClick={() => { setAmount(0.5); handleAmount(0.5) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                    <span onClick={() => { setAmount(0.5); handleAmount(0.5); calculateTokenEthOnchange(0.5) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                       0.5 {blockchainType}
                     </span>
-                    <span onClick={() => { setAmount(1); handleAmount(1) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                    <span onClick={() => { setAmount(1); handleAmount(1); calculateTokenEthOnchange(0.1) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                       1 {blockchainType}
                     </span>
                   </div>
@@ -617,7 +634,7 @@ console.log("my girl",formattedAmount?.toString(),payAmount)
                   </div>
                 }
 
-                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && blockchainType == "SOL" && <p p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? blockchainType : coinData?.name}</p>}
+                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && blockchainType == "SOL" && <p p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? blockchainType : coinData?.status !=="created"?coinData?.name :"tokens"}</p>}
                 {amount != '' && <p p className="mt-2 ml-3">{ethAmount} {blockchainType}</p>}
 
                 {amountError.error && <p className="text-red-700 mt-2 ml-3">{amountError.reason}</p>}

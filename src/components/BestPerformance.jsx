@@ -10,7 +10,7 @@ const BestPerformance = () => {
         const fetchTopThreeCoins = async () => {
             try {
                 const data = await topThreeCoins();
-                console.log('Top Three Coins:', data);
+                 
                 setCoins(data?.topCoins);
             } catch (error) {
                 console.error('Error fetching top three coins:', error);
@@ -25,7 +25,7 @@ const BestPerformance = () => {
     }, [coins])
 
 
-    console.log('fetch Top Three Coins:', coins);
+     
 
     return (
         <div className='p-2 pt-10 md:p-10 pb-0'>

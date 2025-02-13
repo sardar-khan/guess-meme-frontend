@@ -39,7 +39,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
         setTokenAddress(e.target.value);
         getCoinByWalletAddress(e.target.value).then((res) => {
             if (res.status === 200) {
-                console.log("directyBuy", res)
+                 
                 setCoinData(res.data)
             } else {
                 setCoinData(null);
@@ -56,7 +56,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
         try {
             setIsLoading(true);
             const buySuccess = await buy(walletProvider, tokenToBuy, new PublicKey(coinData?.token_address));
-            console.log("bueysss",buySuccess)
+             
             if (buySuccess?.success) {
                 setAmount('')
                 setTokenToBuy('')
@@ -89,7 +89,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
             }
         } catch (error) {
             toast.error(error.message || `Error placing ${tradeType} trade`);
-            console.log("error while buying tokens", error)
+             
             setIsLoading(false);
         }
     }
@@ -259,7 +259,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
         tokenBalance: null,
         solBalance: null,
     })
-    console.log("states",userBalance,amountError,maxBuyTokens,remaningTokens);
+     
     //fetch price conversions for token
     const fetchPrice = async () => {
 
@@ -272,12 +272,12 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
                 isSoltoToken,
                 true
             );
-            console.log("result from the price", res);
+             
             
             setPrice(res);
             isSoltoToken ? setTokenToBuy(res?.tokensbuy) : setAmount(res?.tokensbuy)
-            console.log("after switch", isSoltoToken, "amunt", amount, "tokentobuy", tokenToBuy);
-            console.log("after switch", isSoltoToken, "tokentobuy", tokenToBuy, "amunt", amount,"userBalance",userBalance);
+             
+             
             checkBuyConditions(parseFloat(tokenToBuy), parseFloat   (amount))
             // Store the response in state to render it
         } catch (error) {
@@ -287,21 +287,21 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
 
     const remaningAndMaxbuyTokens = async (tokenAddress) => {
         if (!walletProvider) {
-            console.log("Please connect your wallet");
+             
         }
         if (!tokenAddress) {
             return toast.error("Token address not found!")
         }
         try {
             const res = await reteriveTokenDetails( tokenAddress);
-            console.log("result from the tokens", res);
+             
             const maxBuyPercentage = 100
             const percentage = (res?.totalTokens * maxBuyPercentage) / 100;
 
             setMaxBuyTokens(percentage)
             setRemaningTokens(res?.remainingTokens)
         } catch (error) {
-            console.log("error while fetching token details", error)
+             
 
         }
     }
@@ -309,7 +309,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
     const getUserBalances = async () => {
         try {
             if (!tokenAddress) { return }
-            console.log("walletProvider", walletProvider,walletProvider.publicKey)
+             
             //user-sol-balance
             const balance = await connection.getBalance(walletProvider.publicKey)
 
@@ -320,13 +320,13 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
                 await connection.getParsedTokenAccountsByOwner(walletProvider.publicKey, {
                     mint: tokenMintAddress,
                 })
-            console.log('tokens about to cook', tokenAccounts)
+             
             let tokenBalance
             if (tokenAccounts?.value?.length > 0) {
                 tokenBalance =
                     tokenAccounts?.value[0]?.account?.data?.parsed?.info
                         ?.tokenAmount.uiAmount
-                //console.log('user-token-balance', balance)
+                // 
             } else {
             }
             setUserBalance((prevState) => ({
@@ -335,14 +335,14 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
                 tokenBalance: tokenBalance === undefined ? 0 : tokenBalance,
             }))
         } catch (error) {
-            console.log('error while fetching user balance', error)
+             
         }
     }
 
    
     const checkBuyConditions = (tokens ,sol) => {
-        console.log("dewana",tokens,sol,maxBuyTokens,remaningTokens)
-        console.log("walletProvider", walletProvider)
+         
+         
         if (!walletProvider) {
             return setAmountError((prevState) => ({
                 ...prevState,
@@ -350,7 +350,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
                 reason: 'Please connect your wallet!',
             }))
         }
-        console.log("maxBuyTokens", tokens > maxBuyTokens,tokens , maxBuyTokens)
+         
         if (tokens > maxBuyTokens) {
             return setAmountError((prevState) => ({
                 ...prevState,
@@ -359,7 +359,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
             }))
         }
 
-        console.log("maxBuyTokens", tokens > remaningTokens,tokens , remaningTokens)
+         
         if (tokens > remaningTokens) {
             return setAmountError((prevState) => ({
                 ...prevState,
@@ -367,7 +367,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
                 reason: 'Max token reserved reached',
             }))
         }
-        console.log("userBalance", sol > userBalance?.solBalance,sol , userBalance?.solBalance)
+         
         if (sol > userBalance?.solBalance) {
             setAmountError((prevState) => ({
                 ...prevState,

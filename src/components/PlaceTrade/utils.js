@@ -71,7 +71,7 @@ function Buy_createTransactionInstruction(
       [Buffer.from("global")],
       programId
     );
-    console.log("iiiii",i.toString(),program)
+     
     const r = await program.account.global.fetch(i);
   
     return {
@@ -88,7 +88,7 @@ async function fetchLiquidityPool(_str,program1) {
 
 async function fetchPrice(purchaseAmount, hasLiquidity, bonding_curve) {
     let liquidityPool = await fetchLiquidityPool(bonding_curve);
-    console.log(liquidityPool.virtualSolReserves.toString());
+     
 
     function calculateFee(e) {
         return new BN(0);

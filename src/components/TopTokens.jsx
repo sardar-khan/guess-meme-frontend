@@ -1,12 +1,51 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { formatNumber } from '../utils/helper'
+import { calculateBondingCurveProgress } from './PlaceTrade/solanaBuySellFunction'
+import { calculateEthBondingCurveProgress } from './PlaceTrade/ether-trade-utils'
+import { useWalletContext } from '../context/WalletContext'
 
 const TopTokens = ({ key, topCoins }) => {
-    console.log("topCoinsssssss", topCoins)
+     
     const blockchainType = localStorage.getItem('blockchain')
 
+    const [ProgressCurveBond, setProgressCurveBond] = useState()
+    const { block_chain } = useWalletContext()
+
+    useEffect(() => {
+        if (!topCoins?.tokenDetails?.token_address) return
+
+        if (block_chain === "SOL") {
+            bondingProgressSol(topCoins?.tokenDetails?.token_address);
+        } else {
+            bondingProgressEth(topCoins?.tokenDetails?.token_address)
+        }
+    }, [topCoins])
+    const bondingProgressSol = async (token_address) => {
+        try {
+            const response = await calculateBondingCurveProgress(token_address, true);
+            
+            setProgressCurveBond(response?.bondingCurveProgress);
+        } catch (error) {
+            console.error('Error Progress_curve_bond:', error);
+            //  toast.error('Failed to Progress_curve_bond.');
+        }
+    };
+    const bondingProgressEth = async (token_address) => {
+        try {
+            const response = await calculateEthBondingCurveProgress(token_address, true);
+             
+           
+            setProgressCurveBond(response?.bondingCurveProgress);
+        } catch (error) {
+            console.error('Error Progress_curve_bond:', error);
+            //  toast.error('Failed to Progress_curve_bond.');
+        }
+    };
+
+
     return (
-        <Link to={`/trade/${topCoins?.tokenDetails?._id}`} className='relative mt-2'>
+        <Link to={`/trade/${topCoins?.tokenDetails?._id}/${topCoins?.tokenDetails?.token_address}`} className='relative mt-2'>
             <div className='absolute top-0 left-0 h-[5px] w-full bg-white'></div>
             <div className='absolute top-0 left-0 h-full w-[5px] bg-white'></div>
             <div className='absolute bottom-[1px] right-[1px] z-10 h-[98%] w-[8px] bg-[#7D73BF]'></div>
@@ -32,24 +71,24 @@ const TopTokens = ({ key, topCoins }) => {
                             <div className={`flex flex-col justify-between p-[5px] md:p-[8px] min-h-full border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff] border-r-[#fff]`}>
                                 <div>
                                     <h5 className='PixelOperatorbold text-[10px] md:text-[14px]'>Created by 💩 <Link to={`/userprofile/${topCoins?.tokenDetails?.creator?._id}`} className='hover:underline'>{topCoins?.tokenDetails?.creator.user_name}</Link></h5>
-                                    <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: {topCoins?.tokenDetails?.market_cap}</h5>
+                                    <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: { formatNumber(topCoins?.tokenDetails?.market_cap?.toFixed(2))}</h5>
                                     <div className=''>
                                         <div className='flex justify-between items-end w-full mt-[7px] md:mt-[15px]'>
                                             <h5 className='PixelOperatorbold text-[12px] md:text-[15px]'>Progress:</h5>
-                                            <h5 className='PixelOperatorbold text-[10px] md:text-[13px]'>{topCoins?.tokenDetails?.bonding_curve_progress || 0}% to {blockchainType === 'SOL' ? 'Radium' : 'Uniswap'}</h5>
+                                            <h5 className='PixelOperatorbold text-[10px] md:text-[13px]'>{ProgressCurveBond|| 0}% to {blockchainType === 'SOL' ? 'Radium' : 'Uniswap'}</h5>
                                         </div>
 
                                         {/* <div className='relative overflow-hidden bg-[#E9E9E9] h-[10px] mt-1 after:absolute after:bg-[#15C570] after:w-[100px] after:h-[full] after:bottom-[-5px] after:left-[0px] after:top-[0px]'></div> */}
                                         <div className='relative overflow-hidden bg-[#E9E9E9] h-[10px] mt-1'>
                                             <div
                                                 className='absolute bg-[#15C570] h-full'
-                                                style={{ width: `${topCoins?.tokenDetails?.bonding_curve_progress || 0}%` }}
+                                                style={{ width: `${ProgressCurveBond|| 0}%` }}
                                             ></div>
                                         </div>
                                     </div>
-                                    <div className='flex justify-end items-end w-full'>
+                                    {/* <div className='flex justify-end items-end w-full'>
                                         <h5 className='PixelOperatorbold text-[12px] md:text-[13px] mt-1'>{topCoins?.trust_score}/100</h5>
-                                    </div>
+                                    </div> */}
                                 </div>
 
 

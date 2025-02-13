@@ -27,17 +27,17 @@ const ChatRoom = ({ coinData }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const coin = useSelector((state) => selectCoinById(state, id));
-    console.log("trade Coin", coin)
+     
 
-    console.log("coinDatacoinData", coinData)
+     
 
 
     const { pusherThread, pusherNotificationThread } = useNotificationContext();
     const hasPusherThread = Object.keys(pusherThread).length > 0;
     const hasPusherNotificationThread = Object.keys(pusherNotificationThread).length > 0;
     // const checkNewPusherTokenStatus = createNotifications?.status;
-    console.log("pusherThread", pusherThread)
-    console.log("pusherNotificationThread", pusherNotificationThread)
+     
+     
 
 
     const fetchLikeStatuses = async () => {
@@ -47,7 +47,7 @@ const ChatRoom = ({ coinData }) => {
                 threads?.data?.map(async (item) => {
                     try {
                         const response = await checkLikeStatus(item?._id);
-                        console.log("Response Check like Status", response?.liked)
+                         
                         statuses[item?._id] = response.liked;
                     } catch (error) {
                         console.error(`Error fetching like status for thread ${item?._id}`, error);
@@ -61,7 +61,7 @@ const ChatRoom = ({ coinData }) => {
         fetchLikeStatuses();
     }, [threads]);
 
-    console.log("likeStatuses", likeStatuses)
+     
 
 
     const fetchThreadData = async () => {
@@ -69,7 +69,7 @@ const ChatRoom = ({ coinData }) => {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}thread/view/${id}`);
             setThreads(response.data);
             setError(null);
-            console.log("fetchThreadData", response.data);
+             
         } catch (error) {
             if (error.response && error.response.status === 404) {
                 setError("No trades found for the specified token.");
@@ -84,7 +84,7 @@ const ChatRoom = ({ coinData }) => {
     // const handleLikeStatus = async () => {
     //     try {
     //         const response = await checkLikeStatus('67484296002fa379b41e5b32');
-    //         console.log("reponse LikeStatus", response)
+    //          
     //     } catch (error) {
     //         console.error("Error while LikeStatus:", error);
     //     }
@@ -97,9 +97,9 @@ const ChatRoom = ({ coinData }) => {
 
 
     const handleModalSubmit = (data) => {
-        console.log("Comment:", data.comment, "Image:", data.image);
+         
     };
-    console.log("threads", threads)
+     
 
     const handleReplyId = (threadid) => {
         setIsModalOpen(true)
@@ -133,7 +133,7 @@ const ChatRoom = ({ coinData }) => {
 
             // Toggle like status through the API
             const response = await toggleLike(thread_id);
-            console.log("response Toggle Like", response);
+             
 
             // Fetch updated data
             fetchLikeStatuses();
@@ -146,7 +146,7 @@ const ChatRoom = ({ coinData }) => {
 
 
 
-console.log("image",coinData)
+ 
 
 
 
@@ -273,6 +273,7 @@ console.log("image",coinData)
                                 >
                                     <div className="flex items-center gap-2">
                                         <img
+                                        className='w-4 h-4 rounded-md'
                                             src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${item?.user_id?.profile_photo}`}
                                             alt=""
                                         />
@@ -422,11 +423,11 @@ console.log("image",coinData)
                 }
 
                 {refferalError && <div className='text-red-600 Inter'>{refferalError}</div>}
-                {/* <button
+                <button
                     onClick={() => { openModalReferral() }}
                     className='themeBtn w-fit px-5 py-4 SegoeUi mt-5'>
-                    <span>Referral</span>
-                </button> */}
+                    <span>post a reply</span>
+                </button>
 
                 {/* Referral Modal */}
                 <ReferralModal

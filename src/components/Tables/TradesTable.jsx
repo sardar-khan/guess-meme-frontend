@@ -9,16 +9,16 @@ const TradesTable = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const { trades, loading, error } = useSelector((state) => state.trades);
-    console.log("trades", trades)
+     
     const { pusherAfterTrade } = useNotificationContext();
     // latestTrades
-console.log("hellos",id)
+ 
     useEffect(() => {
         dispatch(fetchTrades(id));
         // }, [dispatch, id]);
     }, []);
 
-    console.log("trades",trades)
+     
 
     if (loading) return <div className='w-full flex justify-center items-center gap-2'><div className='loader'></div></div>;
     if (error) return <div>No Data Found</div>;

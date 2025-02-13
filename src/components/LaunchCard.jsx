@@ -6,8 +6,7 @@ import { formatNumber } from '../utils/helper'
 import { useWalletContext } from '../context/WalletContext'
 import { calculateEthBondingCurveProgress } from './PlaceTrade/ether-trade-utils'
 
-const LaunchCard = ({ key, setSpace, coinData, topCoins, status }) => {
- 
+const LaunchCard = ({  setSpace, coinData, topCoins, status }) => {
     const [ProgressCurveBond, setProgressCurveBond] = useState()
     const { block_chain } = useWalletContext()
 
@@ -23,8 +22,7 @@ const LaunchCard = ({ key, setSpace, coinData, topCoins, status }) => {
     const bondingProgressSol = async (token_address) => {
         try {
             const response = await calculateBondingCurveProgress(token_address, true);
-            console.log('finish her22', response
-            );
+            
             setProgressCurveBond(response?.bondingCurveProgress);
         } catch (error) {
             console.error('Error Progress_curve_bond:', error);
@@ -34,8 +32,8 @@ const LaunchCard = ({ key, setSpace, coinData, topCoins, status }) => {
     const bondingProgressEth = async (token_address) => {
         try {
             const response = await calculateEthBondingCurveProgress(token_address, true);
-            console.log('bonding curve progress eth', response
-            );
+             
+            
             setProgressCurveBond(response?.bondingCurveProgress);
         } catch (error) {
             console.error('Error Progress_curve_bond:', error);
@@ -44,9 +42,8 @@ const LaunchCard = ({ key, setSpace, coinData, topCoins, status }) => {
     };
 
     return (
-        // <Link to='' className='relative mt-2'>
         <Link to={`/trade/${coinData?.coin?._id}/${coinData?.coin?.token_address}`} className='relative mt-2'>
-            <div className='absolute top-0 left-0 h-[5px] w-full bg-white'></div>
+            <div className='absolute top-0 left-0 h-[5px] w-full bg-white' ></div>
             <div className='absolute top-0 left-0 h-full w-[5px] bg-white'></div>
             <div className='absolute bottom-[1px] right-[1px] z-10 h-[98%] w-[8px] bg-[#7D73BF]'></div>
             <div className='absolute bottom-0 right-0 w-[99.2%] h-[5px] bg-[#7D73BF]'></div>
@@ -74,7 +71,7 @@ const LaunchCard = ({ key, setSpace, coinData, topCoins, status }) => {
                         <div className={`relative bg-white w-[calc(100%-100px)] sm:w-[calc(100%-150px)] min-h-full border-[3px] border-b-[4px] border-r-[4px] border-[#353535] border-b-[#CBC7E5] border-r-[#CBC7E5] after:absolute after:h-[1px] after:w-full after:top-0 after:left-0 after:bg-[white]`}>
                             <div className={`flex flex-col justify-between p-[5px] md:p-[8px] min-h-full border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff] border-r-[#fff]`}>
                                 <div>
-                                    {status === 'deployed' && <h5 className='PixelOperatorbold text-[10px] md:text-[14px]'>Created by 💩 <Link to={`/userprofile/${coinData?.coin?.creator?._id}`} className='hover:underline'>{coinData?.coin?.creator?.user_name}</Link></h5>}
+                                    {status === 'deployed' && <h5 className='PixelOperatorbold text-[10px] md:text-[14px]'>Created by 💩 <span className='hover:underline'> <Link to={`/userprofile/${coinData?.coin?.creator?._id}`}>{coinData?.coin?.creator?.user_name}</Link> </span></h5>}
                                     <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: ${formatNumber(coinData?.coin?.market_cap?.toFixed(2))}</h5>
                                     {/* <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: {coinData?.coin?.market_cap}</h5> */}
                                     <div className=''>
@@ -91,9 +88,9 @@ const LaunchCard = ({ key, setSpace, coinData, topCoins, status }) => {
                                             ></div>
                                         </div>
                                     </div>
-                                    <div className='flex justify-end items-end w-full'>
+                                    {/* <div className='flex justify-end items-end w-full'>
                                         <h5 className='PixelOperatorbold text-[12px] md:text-[13px] mt-1'>{coinData?.trust_score}/100</h5>
-                                    </div>
+                                    </div> */}
                                 </div>
 
 

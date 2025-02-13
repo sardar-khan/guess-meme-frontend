@@ -63,7 +63,7 @@ const LaunchTokens = () => {
     const navigate = useNavigate();
     const currentChain = block_chain === "BNB" ? "bsc" : "sepolia"
 
-    console.log("currentChain", currentChain)
+     
 
     const { data: txHash, writeContract } = useWriteContract()
     const { data: buyTxHash, writeContract: useBuyTokens } = useWriteContract()
@@ -79,15 +79,15 @@ const LaunchTokens = () => {
     });
 
 
-    console.log("buy tx data", isBuying, isBuyed, txData)
+     
 
 
 
 
     useEffect(() => {
-        console.log("block-chain", block_chain)
+         
         GetContractConfiguration(block_chain).then(async (res) => {
-            console.log("block-info", res);
+             
             setContractInfo(res);
         })
 
@@ -167,7 +167,7 @@ const LaunchTokens = () => {
             const SelectedAbi = contractInfo.Abi
             const contractAddress = contractInfo.ContractAddress
             const totalSupply = parseUnits('1000000000', 18)
-            console.log("contratinfo - ", SelectedAbi, contractAddress, totalSupply, name, ticker, totalSupply)
+             
 
             writeContract({
                 address: contractAddress,
@@ -201,10 +201,10 @@ const LaunchTokens = () => {
     const createEthCoin = async ({ txHash, createCoinresult }) => {
         try {
 
-            //  console.log("entering the funtion to create the coin",txHash , createCoinresult)
+            //   
             const formattedRevealTime = new Date(revealTime).toISOString();
             if (txHash) {
-console.log("createCoinresult",createCoinresult,createCoinresult?.data?.logs[0]?.address);
+ 
 
                 // Step 2: If the transaction is successful, proceed with creating the coin
                 const response = await createCoin({
@@ -254,7 +254,7 @@ console.log("createCoinresult",createCoinresult,createCoinresult?.data?.logs[0]?
                 }
             }
         } catch (error) {
-            console.log("error while creating token", error)
+             
             setIsCreatingCoin(false);
             if (toastId) { toast.update(toastId, { render: "Failed to save coin", type: "error", isLoading: false, autoClose: 3000 }); }
 
@@ -301,7 +301,7 @@ console.log("createCoinresult",createCoinresult,createCoinresult?.data?.logs[0]?
             setPreTokenBuy(amount)
             const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
             const payAbleAmountEther = await getPayAbleEtherAmount(tokenAddress, amount, balanceData?.formatted)
-            console.log("get-balance", payAbleAmountEther?.data)
+             
             const SelectedAbi = contractInfo.Abi
             const contractAddress = contractInfo.ContractAddress
 
@@ -324,7 +324,7 @@ console.log("createCoinresult",createCoinresult,createCoinresult?.data?.logs[0]?
             })
 
         } catch (error) {
-            console.log("error while buying tokens", error)
+             
             setIsCreatingCoin(false);
             if (toastId) { toast.update(toastId, { render: "Failed to buy Tokens", type: "error", isLoading: false, autoClose: 3000 }); }
 
@@ -351,7 +351,7 @@ console.log("createCoinresult",createCoinresult,createCoinresult?.data?.logs[0]?
                     type: "buy",
                     transaction_hash: buyTxHash,
                 });
-                console.log("api response after buying", apiResponse)
+                 
 
                 if (apiResponse?.status === 201) {
                     if (toastId) {
@@ -382,7 +382,7 @@ console.log("createCoinresult",createCoinresult,createCoinresult?.data?.logs[0]?
             setIsCreatingCoin(false);
             if (toastId) { toast.update(toastId, { render: "Failed to record buy transaction", type: "error", isLoading: false, autoClose: 3000 }); }
 
-            console.log("error while buyin token", error)
+             
         }
     }
     return (

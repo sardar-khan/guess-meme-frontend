@@ -14,7 +14,7 @@ const ConnectButton = () => {
 
     const [connectedAddress, setConnectedAddress] = useState('');
 
-    // console.log("token", localStorage.getItem('token'))
+    //  
     const blockchain = localStorage.getItem('blockchain')
     // const checkBlockChain = blockchain === 'SOL' ? 'solana' : blockchain === 'ETH' ? 'ethereum' : blockchain === null ? 'solana' : 'solana';
     const checkBlockChain =
@@ -30,7 +30,7 @@ const ConnectButton = () => {
     if (checkBlockChain === null) {
         disconnect();
     }
-    console.log("signinType", blockchain)
+     
 
 
     // Handle the wallet sign-up and authentication
@@ -39,12 +39,12 @@ const ConnectButton = () => {
             if (!isConnected) return toast.error("Wallet address not connected");
             if (!address) return toast.error("Wallet Address is not valid")
             if (isConnected && address) {
-                console.log("shaka", isConnected, address, isConnected && address)
+                 
                 const response = await handleSignUp(address, checkBlockChain);
-                console.log("r  ", response)
+                 
                 if (response?.status === 201 || response?.status === 200) {
                     // toast.success(response.message, { autoClose: 1000 });
-                    console.log("Authentication:", response.message);
+                     
                 }
             }
         } catch (error) {
@@ -126,7 +126,7 @@ export default ConnectButton;
 
 //     const [connectedAddress, setConnectedAddress] = useState('');
 
-//     // console.log("token", localStorage.getItem('token'))
+//     //  
 //     const blockchain = localStorage.getItem('blockchain')
 //     // const checkBlockChain = blockchain === 'SOL' ? 'solana' : blockchain === 'ETH' ? 'ethereum' : blockchain === null ? 'solana' : 'solana';
 //     const checkBlockChain =
@@ -141,7 +141,7 @@ export default ConnectButton;
 //     if (checkBlockChain === null) {
 //         disconnect();
 //     }
-//     console.log("signinType", blockchain)
+//      
 
 
 //     // Handle the wallet sign-up and authentication
@@ -151,7 +151,7 @@ export default ConnectButton;
 //                 const response = await handleSignUp(address, checkBlockChain);
 //                 if (response?.status === 201 || response?.status === 200) {
 //                     // toast.success(response.message, { autoClose: 1000 });
-//                     console.log("Authentication:", response.message);
+//                      
 //                 }
 //             }
 //         } catch (error) {

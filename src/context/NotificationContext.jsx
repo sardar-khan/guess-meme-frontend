@@ -58,7 +58,7 @@ export const NotificationProvider = ({ children }) => {
 
         // Handle coin-created event
         coinChannel.bind('coin-created-solana', (data) => {
-            console.log("Coin Pusher Data Received:", data);
+             
             setCreateNotifications({
                 user_name: data.user_name,
                 action: data.action,
@@ -70,7 +70,6 @@ export const NotificationProvider = ({ children }) => {
                 token_id: data.token_id,
                 market_cap: data.market_cap,
                 bonding_curve: data.bonding_curve,
-                ticker: data.ticker,
                 name: data.name,
                 description: data.description,
             });
@@ -78,7 +77,7 @@ export const NotificationProvider = ({ children }) => {
 
         // Handle trade-initiated event
         channel.bind('solana-trade-initiated', (data) => {
-            console.log("Trade Data Received:", data);
+             
             setNotifications({
                 user_name: data.user_name,
                 action: data.action,
@@ -93,7 +92,7 @@ export const NotificationProvider = ({ children }) => {
         /***************** Ethereum Pusher *****************/
         // Handle coin-created event
         coinChannelEth.bind('coin-created-eth', (data) => {
-            console.log("Coin Pusher Data Received ETH:", data);
+             
             setCreateNotificationsEth({
                 user_name: data.user_name,
                 action: data.action,
@@ -105,7 +104,6 @@ export const NotificationProvider = ({ children }) => {
                 token_id: data.token_id,
                 market_cap: data.market_cap,
                 bonding_curve: data.bonding_curve,
-                ticker: data.ticker,
                 name: data.name,
                 description: data.description,
             });
@@ -113,7 +111,7 @@ export const NotificationProvider = ({ children }) => {
 
         // Handle trade-initiated event
         channelEth.bind('eth-trade-initiated', (data) => {
-            console.log("Trade Data Received ETH:", data);
+             
             setNotificationsEth({
                 user_name: data.user_name,
                 action: data.action,
@@ -128,13 +126,13 @@ export const NotificationProvider = ({ children }) => {
 
         // Handle coin-created event
         threadsChannel.bind('new-reply', (data) => {
-            console.log("threads Pusher Data Received:", data);
+             
             setPusherThread((prevThreads) => [...prevThreads, data]);
         });
 
         // Handle coin-created event
         tradeChannel.bind('new-percentage', (data) => {
-            console.log("pusherAfterTrade Pusher Data Received:", data);
+             
             setPusherAfterTrade(data);
             // setPusherAfterTrade((prevTrades) => [...prevTrades, data]);
         });
@@ -144,16 +142,16 @@ export const NotificationProvider = ({ children }) => {
         // Handle like event
         likeChannel.bind('like', (data) => {
             setPusherLike((prevLike) => [...prevLike, data]);
-            console.log("like Pusher Data Received:", data);
+             
         });
         // Handle follow event
         followChannel.bind('follow', (data) => {
             setPusherFollow((prevFollow) => [...prevFollow, data]);
-            console.log("Follow Pusher Data Received:", data);
+             
         });
         // Handle coin-created event
         threadNotificationChannel.bind('reply', (data) => {
-            console.log("threads Notification Pusher Data Received:", data);
+             
             setPusherNotificationThread((prevThreads) => [...prevThreads, data]);
         });
 

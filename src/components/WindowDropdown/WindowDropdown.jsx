@@ -15,7 +15,7 @@
 //   );
 
 //   const dropdownRef = useRef(null);
-//   console.log("selectedOption", selectedOption);
+//    
 
 //   const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -107,7 +107,7 @@ const WindowDropdown = () => {
   const [selectedOption, setSelectedOption] = useState(blockChain === null ? localStorage.setItem("blockchain", "SOL") : blockChain);
 
   const dropdownRef = useRef(null);
-  console.log("selectedOption", selectedOption)
+   
 
 
   const toggleDropdown = () => setIsOpen(!isOpen);
@@ -119,7 +119,7 @@ const WindowDropdown = () => {
   };
 
   const selectOption = async (option) => {
-    console.log("selected notiio",option,isConnected)
+     
    
   
     setSelectedOption(option);

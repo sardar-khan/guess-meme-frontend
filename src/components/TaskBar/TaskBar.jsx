@@ -6,6 +6,8 @@ import { NavLink } from 'react-router-dom';
 import ConnectButton from '../../web3/ConnectButton';
 import { viewUserprofile } from '../../utils/api';
 import { useAppKitAccount } from '@reown/appkit/react';
+import { FaInstagram, FaTiktok, FaXTwitter } from 'react-icons/fa6';
+import { FaTelegramPlane } from 'react-icons/fa';
 
 const TaskBar = () => {
     const [currentTime, setCurrentTime] = useState('');
@@ -23,19 +25,20 @@ const TaskBar = () => {
         try {
             const viewUserprofileData = await viewUserprofile();
 
-            console.log("viewUserprofileData", viewUserprofileData);
+             
             setUserProfileData(viewUserprofileData?.data);
         } catch (error) {
-            console.log("viewUserprofileData error", error);
+             
         }
     };
     useEffect(() => {
-        fetchMainUserProfile();
-    }, []);
+       if(!isConnected) return
+         fetchMainUserProfile();
+    }, [isConnected]);
 
 
     useEffect(() => {
-        console.log("userProfileData has changed:", userProfileData);
+         
     }, [userProfileData]);
 
 
@@ -95,7 +98,7 @@ const TaskBar = () => {
 
                             {isConnected &&
                                 <NavLink
-                                    to={`/userprofile/${userProfileData?._id}`}
+                                    to={`/profile/${userProfileData?._id}`}
                                     className={({ isActive }) => navLinkClass(isActive)}
                                     onClick={() => setIsDropdownOpen(false)}
                                 >
@@ -106,13 +109,20 @@ const TaskBar = () => {
                     </div>
                 )}
             </div>
-
+            <div className='flex items-center justify-center gap-3 md:gap-6'>
+            <div className='flex items-center  text-white gap-3 text-sm md:text-base'>
+                <FaXTwitter />
+                <FaInstagram />
+                <FaTiktok />
+                <FaTelegramPlane />
+            </div>
             <div className='h-full flex items-center gap-1 sm:gap-[10px] w-[90px] sm:w-[130px]'>
                 <span className='SegoeUi font-normal text-white text-[12px] sm:text-[14px]'>EN</span>
                 <div className='timeCls h-full w-full flex justify-center items-center gap-0 sm:gap-1'>
                     <img src={timeImg} className='w-[20px] sm:w-[20px]' alt="Clock Icon" />
                     <span className='SegoeUi font-normal text-white text-[12px] sm:text-[14px]'>{currentTime}</span>
                 </div>
+            </div>
             </div>
         </div>
     );

@@ -41,9 +41,9 @@ export const gettokenDetails = async (tokenAddress) => {
 export const calculateTokenEthValues = async (tokenAddress, amount, isDeployed) => {
   try {
     if (!isDeployed) {
-      console.log("ether-cal", tokenAddress, amount, isDeployed)
+       
       const data = await ethereumTokenInfo();
-      console.log("ether-token-info", data)
+       
       const virtualSolReserves = BigInt(data?.virtualSolReserves);
       const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
 
@@ -59,11 +59,11 @@ export const calculateTokenEthValues = async (tokenAddress, amount, isDeployed) 
 
       const payableAmount = await factoryContract.buyQuote(tokenAddress, formattedAmount);
       const fee = await factoryContract.calculateBuyFee(tokenAddress, formattedAmount);
-      console.log("payableAmount onchange", payableAmount);
+       
       const ethToPay = ethers.BigNumber.from(payableAmount).add(
         ethers.BigNumber.from(fee)
       );
-      console.log("Total ETH to pay Onchange:", ethers.utils.formatEther(ethToPay));
+       
       return ethers.utils.formatEther(ethToPay);
     }
   } catch (error) {
@@ -78,24 +78,24 @@ export const calculateTokenEthValues = async (tokenAddress, amount, isDeployed) 
 //   if (typeof value === "string") {
 //     value = Number(value); // Convert string to number first
 //   }
-//   console.log("yahello",value)
+//    
 // }
 export const calculateEthTokenValue = async(tokenAddress, amount, isDeployed)=>{
   try {
 
-      console.log("ether-cal", tokenAddress, amount, isDeployed)
+       
       const data = await tokenBondingCurveInfoWei(tokenAddress)
-      console.log("ether-token-info--sss", data)
-      console.log("val",amount)
+       
+       
       const amountInWei =ethers.utils.parseEther(amount?.toString())
-      console.log("amount-in wei",amountInWei)
+       
        const amountinBI =  BigInt(amountInWei?.toString());
-       console.log("amountin bi",amountinBI)
+        
 
       const virtualEthReserves = BigInt(data?.virtualEthReserves);
       const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
       const k_supply = virtualEthReserves * virtualTokenReserves;
-      console.log("supply here",k_supply)
+       
 
       const buyTokensAgainstSol = Number(
         virtualTokenReserves - (k_supply / (virtualEthReserves + amountinBI))
@@ -133,7 +133,7 @@ export const tokenToEthConversion = async (useReadContract, tokenAddress, amount
 
     const ethToPay = payableAmount + fee; // Summing up the ETH amount and fee
 
-    console.log("Total ETH to pay Onchange:", Number(ethToPay) / 10 ** 18); // Log ETH value in readable format
+     
     return (Number(ethToPay) / 10 ** 18).toString(); // Return as string for consistency
   } catch (error) {
     console.error("Error calculating token ETH values:", error);
@@ -157,20 +157,20 @@ export const buyTokensOnBlockchain = async (tokenAddress, amount, walletBalance)
 
     const factoryContract = await getFactoryContract();
 
-    console.log("Fetching quote and fee...");
+     
     const payableAmount = await factoryContract.buyQuote(tokenAddress, formattedAmount);
     const fee = await factoryContract.calculateBuyFee(tokenAddress, formattedAmount);
-    console.log("payableAmount", payableAmount)
+     
     // Add payableAmount and fee
     // const ethToPay = ethers.BigNumber.from(payableAmount).add(
     //   ethers.BigNumber.from(fee)
     // );
     const ethToPay = ethers.BigNumber.from(payableAmount).add(ethers.BigNumber.from(fee));
 
-    console.log("Total ETH to pay:", ethers.utils.formatEther(ethToPay));
+     
 
-    console.log("Wallet Balance (ETH):", ethers.utils.formatEther(walletBalance));
-    console.log("ETH Required to Buy Tokens:", ethers.utils.formatEther(ethToPay));
+     
+     
 
     // if (walletBalance.lt(ethToPay)) {
     if (ethers.utils.formatEther(walletBalance) < ethers.utils.formatEther(ethToPay)) {
@@ -180,13 +180,13 @@ export const buyTokensOnBlockchain = async (tokenAddress, amount, walletBalance)
     }
 
 
-    console.log("Executing buy transaction...");
+     
     const tx = await factoryContract.buyTokens(tokenAddress, formattedAmount, {
       value: ethToPay,
     });
     await tx.wait();
 
-    console.log("Buy transaction successful:", tx.hash);
+     
     return { success: true, transactionHash: tx.hash };
 
 
@@ -198,27 +198,27 @@ export const buyTokensOnBlockchain = async (tokenAddress, amount, walletBalance)
 
 export const getReturnedEthAmountonSell = async (tokenAddress, amount) => {
   try {
-    console.log("token-vals", tokenAddress, amount)
+     
     const tokenContract = await getTokenContract(tokenAddress);
-    console.log("token-contract", tokenContract)
+     
     const decimals = await tokenContract.decimals();
-    console.log("decimals", decimals)
+     
 
     const formattedAmount = ethers.utils.parseUnits(amount.toString(), decimals);
-    console.log("amontss", formattedAmount)
+     
     const factoryContract = await getFactoryContract();
-    console.log("factory-contract", factoryContract)
+     
     const payableAmount = await factoryContract.sellQuote(tokenAddress, formattedAmount);
-    console.log("payable amount", payableAmount)
-    console.log("Total ETH to pay:", ethers.utils.formatEther(payableAmount));
+     
+     
     return ethers.utils.formatEther(payableAmount);
   } catch (error) {
-    console.log("error while getting eth amount", error)
+     
   }
 }
 
 export const getPayAbleEtherAmount = async (tokenAddress, amount, walletBalance) => {
-  console.log("props", tokenAddress, amount, walletBalance)
+   
   try {
     if (!tokenAddress || !ethers.utils.isAddress(tokenAddress) || amount == '') {
       throw new Error(`Invalid token address: ${tokenAddress}`);
@@ -229,21 +229,21 @@ export const getPayAbleEtherAmount = async (tokenAddress, amount, walletBalance)
 
     const factoryContract = await getFactoryContract();
 
-    console.log("Fetching quote and fee...", factoryContract);
-    console.log("token address", formattedAmount?.toString())
+     
+     
     const payableAmount = await factoryContract.buyQuote(tokenAddress, formattedAmount?.toString());
-    console.log("payableAmount", payableAmount?.toString())
+     
     const fee = await factoryContract.calculateBuyFee(tokenAddress, formattedAmount?.toString());
-    console.log("fee", fee)
+     
     const feeInEther = ethers.utils.formatEther(fee?.toString());
     const payableAmountInEther = ethers.utils.formatEther(payableAmount);
-    console.log("amounts converted in ethers", payableAmountInEther, feeInEther)
+     
 
 
     const ethToPayFloat = parseFloat(payableAmount) + parseFloat(fee);
-    console.log("ehter-to-pay", ethToPayFloat)
+     
     const ethToPay = ethers.utils.formatEther(ethToPayFloat);
-    console.log("shentu neworks", ethToPay?.toString())
+     
 
 
     return {
@@ -277,7 +277,7 @@ export const sellTokensOnBlockchain = async (tokenAddress, amount) => {
     const formattedAmount = ethers.utils.parseUnits(amount.toString(), decimals);
 
     const tokenBalance = await tokenContract.balanceOf(signer.getAddress());
-    console.log("Token Balance:", ethers.utils.formatUnits(tokenBalance, decimals));
+     
 
     if (tokenBalance.lt(formattedAmount)) {
       throw new Error("Insufficient token balance.");
@@ -289,23 +289,23 @@ export const sellTokensOnBlockchain = async (tokenAddress, amount) => {
       signer.getAddress(),
       CONTRACT_ADDRESS
     );
-    console.log("Current Allowance:", ethers.utils.formatUnits(currentAllowance, decimals));
+     
 
     if (currentAllowance.lt(formattedAmount)) {
-      console.log("Setting new allowance...");
+       
       const approvalTx = await tokenContract.approve(CONTRACT_ADDRESS, formattedAmount);
       await approvalTx.wait();
       // toast.success("Approval successful:", approvalTx.hash);
-      console.log("Approval successful:", approvalTx.hash);
+       
     }
 
-    console.log("Executing sell transaction...");
+     
     const tx = await factoryContract.sellTokens(tokenAddress, formattedAmount, {
       gasLimit: ethers.utils.hexlify(200000), // Adjust as needed
     });
     await tx.wait();
     // toast.success("Sell transaction successful:", tx.hash);
-    console.log("Sell transaction successful:", tx.hash);
+     
 
     return { success: true, transactionHash: tx.hash };
   } catch (error) {
@@ -315,7 +315,7 @@ export const sellTokensOnBlockchain = async (tokenAddress, amount) => {
 };
 export const sellTokensInfo = async (tokenAddress, address, amount, contractInfo) => {
   try {
-    console.log("address", tokenAddress, address, amount, contractInfo)
+     
 
     const tokenContract = await getTokenContract(tokenAddress);
 
@@ -334,8 +334,8 @@ export const sellTokensInfo = async (tokenAddress, address, amount, contractInfo
       address,
       contractInfo?.ContractAddress
     );
-    console.log("Current Allowance:", ethers.utils.formatUnits(currentAllowance, decimals));
-    console.log("allowance", tokenBalance.lt(formattedAmount), tokenBalance?.toString(), formattedAmount?.toString())
+     
+     
     return {
       success: true,
       error: null,
@@ -367,14 +367,14 @@ export const buyTokensEthereum = async (tokenAddress, sendTransaction, balance, 
 
 
   } catch (error) {
-    console.log("error while buying tokens", error)
+     
   }
 }
 
 
 export const evmTokenInfo = async (tokenAddress, address) => {
   try {
-    console.log("token-address", tokenAddress)
+     
     const factoryContract = await getFactoryContract();
     const tokenContract = await getTokenContract(tokenAddress);
     const userTokenHoldings = await tokenContract.balanceOf(address);
@@ -389,11 +389,11 @@ export const evmTokenInfo = async (tokenAddress, address) => {
       maxSupplyPercentage: bondingCurveInfo[5].toString(),
       isCompleted: bondingCurveInfo[6].toString(),
     }
-    console.log("token-info", tokenInfo)
+     
     return tokenInfo
 
   } catch (error) {
-    console.log("error while getting evmTokenInfo", error)
+     
   }
 }
 
@@ -410,11 +410,11 @@ export const tokenBondingCurveInfoWei = async (tokenAddress, address) => {
       maxSupplyPercentage: bondingCurveInfo[5].toString(),
       isCompleted: bondingCurveInfo[6].toString(),
     }
-    console.log("token-info", tokenInfo)
+     
     return tokenInfo
 
   } catch (error) {
-    console.log("error while getting evmTokenInfo", error)
+     
   }
 }
 
@@ -431,11 +431,11 @@ export const tokenBondingCurveInfo = async (tokenAddress, address) => {
       maxSupplyPercentage: bondingCurveInfo[5].toString(),
       isCompleted: bondingCurveInfo[6].toString(),
     }
-    console.log("token-info", tokenInfo)
+     
     return tokenInfo
 
   } catch (error) {
-    console.log("error while getting evmTokenInfo", error)
+     
   }
 }
 const calculateBondingCurveProgressPer = (remainingTokens, initialRealTokenReserves) => {
@@ -445,13 +445,13 @@ const calculateBondingCurveProgressPer = (remainingTokens, initialRealTokenReser
 export const calculateEthBondingCurveProgress = async (tokenAddress) => {
   try {
     const bondingCurveInfo = await tokenBondingCurveInfo(tokenAddress);
-    console.log("infossss",bondingCurveInfo)
+     
     const initialRealTokenReserves = 800_000_000; // Fixed initial reserve from your requirements
     const bondingCurveProgress =  calculateBondingCurveProgressPer(bondingCurveInfo.realTokenReserves, initialRealTokenReserves);
-    console.log("bonding-progress-eth",bondingCurveProgress);
+     
     return { bondingCurveProgress: bondingCurveProgress.toFixed(2) }
 
   } catch (error) {
-    console.log("error ", error)
+     
   }
 }

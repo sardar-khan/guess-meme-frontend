@@ -17,7 +17,7 @@ import { calculateTokenEthValues } from '../PlaceTrade/ether-trade-utils';
 const EthCreatorBuyToken = ({ isOpen, onClose, tokenName, isEthToToken, setIsEthToToken, tokenToBuy, setTokenToBuy, amount, setAmount, handleLaunchToken, userSolBalnace, imageUrl, setIsCreatingCoin }) => {
     const {block_chain} = useWalletContext()
    
-console.log("user-sol-balane",tokenToBuy)
+ 
     const [accountSolBalance, setAccountSolBalance] = useState({
         reason: "0",
         hasError: 0,
@@ -166,7 +166,7 @@ const PriceCalculations = ({ amount, setAmount, isEthToToken, tokenToBuy, setTok
 
     //  useEffect(()=>{
     //         GetContractConfiguration(block_chain).then(async(res)=>{
-    //         console.log("block-info",res);
+    //          
     //         setContractInfo(res);
     //       })
           
@@ -192,7 +192,7 @@ const PriceCalculations = ({ amount, setAmount, isEthToToken, tokenToBuy, setTok
             );
             setPrice(res);
             isEthToToken ? setTokenToBuy(res?.tokensbuy) : setAmount(res?.tokensbuy)
-            console.log("after switch", "amunt", amount, "tokentobuy", tokenToBuy);
+             
             // Store the response in state to render it
         } catch (error) {
             console.error("Error fetching token price:", error);

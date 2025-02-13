@@ -13,6 +13,8 @@ import { getLatestNotifications } from '../utils/api';
 import { useNotificationContext } from '../context/NotificationContext';
 import { useWalletContext } from '../context/WalletContext';
 import DirectBuyEth from './DirectBuyEth';
+import { FaInstagram, FaTiktok, FaXTwitter } from 'react-icons/fa6';
+import { FaTelegramPlane } from 'react-icons/fa';
 
 
 const Navbar = () => {
@@ -29,12 +31,12 @@ const Navbar = () => {
     //////////////////////// Pusher ////////////////////////
     const notificationWithBlockChain = blockChain === "SOL" ? notifications : notificationsEth;
     const createNotificationWithBlockChain = blockChain === "SOL" ? createNotifications : createNotificationsEth;
-    console.log("notificationWithBlockChain", notificationWithBlockChain)
-    console.log("notificationWithBlockChain", createNotificationWithBlockChain)
+     
+     
     //////////////////////// Pusher////////////////////////
 
     const triggerAnimation = notifications || createNotifications || notificationsEth || createNotificationsEth !== "" || undefined || null || [] || {}
-    console.log("triggerAnimation", triggerAnimation)
+     
     const [isShaking, setIsShaking] = useState(false);
     const handleAnimationEnd = () => {
         setIsShaking(false);
@@ -58,20 +60,20 @@ const Navbar = () => {
                 const data = await getLatestNotifications();
                 setLatestNotifications(data?.data);
             } catch (err) {
-                console.log("Failed to fetch notifications. Please try again later.");
+                 
             }
         };
 
         fetchNotifications();
     }, []);
-    console.log("latestnotifications", latestnotifications)
+     
 
 
     const hasNotificationData = Object.keys(notificationWithBlockChain).length > 0;
     const hasCreateNotificationData = Object.keys(createNotificationWithBlockChain).length > 0;
 
-    console.log('hasCreateNotificationData', hasNotificationData)
-    console.log('hasCreateNotificationData', hasCreateNotificationData)
+     
+     
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -100,11 +102,14 @@ const Navbar = () => {
         <div className='px-1 sm:px-2 primary-bg'>
             <div className='flex items-center justify-between px-0 py-2'>
                 {/* Logo Section */}
-                <div className='flex items-end gap-3'>
+                <div className='flex items-end gap-1 md:gap-3'>
+                    <div className='flex flex-xol'>
                     <Link to='/' className='flex items-center'>
                         <img src={logo} className='w-[40px] sm:w-[30px] mt-[-4px]' alt="Logo" />
-                        <h2 className='PixelOperatorbold text-white font-extrabold !text-[28px]'>Guess.Meme</h2>
+                        <h2 className='PixelOperatorbold text-white font-extrabold !text-[28px] max-[720px]:hidden'>Guess.Meme</h2>
+                        
                     </Link>
+                    </div>
 
                     {/* <div className='flex items-center gap-1'>
                         
@@ -135,9 +140,9 @@ const Navbar = () => {
                         </div>
 
                     </div> */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 ">
                         <div
-                            className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-xs font-semibold rounded bg-white max-[930px]:hidden`}
+                            className={`${animationClass} PixelOperatorbold tracking-tight md:tracking-normal text-[10px] flex items-center gap-1 py-2 px-1 md:p-2 md:text-xs font-semibold rounded bg-white `}
                             onAnimationEnd={handleAnimationEnd}
                             onAnimationStart={() => setIsShaking(true)}
                         >
@@ -180,7 +185,7 @@ const Navbar = () => {
                         </div>
 
                         <div
-                            className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-xs font-semibold rounded bg-white max-[930px]:hidden`}
+                            className={`${animationClass} PixelOperatorbold flex items-center gap-1 p-2 text-xs font-semibold rounded  max-[930px]:hidden bg-white `}
                             onAnimationEnd={handleAnimationEnd}
                             onAnimationStart={() => setIsShaking(true)}
                         >
@@ -237,9 +242,9 @@ const Navbar = () => {
                 </div>
 
                 {/* Hamburger Icon for Mobile */}
-                <div className='lg:hidden'>
+                <div className='lg:hidden  flex items-center justify-center '>
                     <button
-                        className='text-white text-3xl focus:outline-none'
+                        className='text-white w-[40px] md:w-full text-3xl focus:outline-none'
                         onClick={toggleMenu}
                     >
                         <img src={burger} alt="" />
@@ -256,7 +261,7 @@ const Navbar = () => {
                         <span className='mt-[-8px]'>⚡</span>
                     </Link> */}
                     <button
-                        className='themeBtn w-[35px] min-w-[50px] uppercase'
+                        className='themeBtn w-[35px] md:min-w-[50px] uppercase'
                         onClick={() => setIsModalOpen(true)}
                     >
                         <span className='mt-[-8px]'>⚡</span>
@@ -272,7 +277,7 @@ const Navbar = () => {
             </div>
 
             {/* Sidebar Menu for Mobile */}
-            <div className={`lg:hidden fixed top-0 left-0 w-[260px] h-full bg-[#1a1a1a] z-50 transform ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
+            <div className={`lg:hidden fixed top-0 left-0 md:w-[260px] h-full bg-[#1a1a1a] z-50 transform ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
                 <div className='flex justify-between items-center p-4'>
                     <Link to='/' className='flex items-center' onClick={closeMenu}>
                         <img src={logo} className='w-[30px] mb-[-8px]' alt="Logo" />

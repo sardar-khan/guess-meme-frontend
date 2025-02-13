@@ -3,7 +3,7 @@ import userprofileImg from '../assets/images/userprofile.png'
 import { Link } from 'react-router-dom'
 
 const CoinheldCard = ({ coinHeld }) => {
-    console.log("coinHeld", coinHeld)
+     
     return (
         <div className='flex flex-col items-center justify-center'>
             <div className='w-[80px] h-[80px] border rounded-full flex object-cover overflow-hidden'>

@@ -56,7 +56,7 @@ const DirectBuyEth = ({ isOpen, onClose }) => {
         setTokenAddress(e.target.value);
         getCoinByWalletAddress(e.target.value).then((res) => {
             if (res.status === 200) {
-                console.log("directyBuy", res)
+                 
                 setCoinData(res.data)
             } else {
                 setCoinData(null);
@@ -223,7 +223,7 @@ const SwitchBuyToken = ({ tokenName, isSoltoToken, setIsSoltoToken }) => {
 
 
 const SelectedImage = ({ isSoltoToken, block_chain, imageUrl, tokenName }) => {
-console.log("hee",block_chain)
+ 
     return (
         <> {block_chain !== "SOL" ?
             <img
@@ -269,13 +269,13 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
               }))
             })
           }
-          console.log("block-chain", block_chain)
+           
           GetContractConfiguration(block_chain).then(async (res) => {
-            console.log("block-info", res);
+             
             setContractInfo(res);
           })
         }, [coinData?.token_address, address,isButtonDisabled])
-   // console.log("states",userBalance,amountError,maxBuyTokens,remaningTokens);
+   //  
     //fetch price conversions for token
     // const fetchPrice = async () => {
 
@@ -288,12 +288,12 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
     //             isSoltoToken,
     //             true
     //         );
-    //         console.log("result from the price", res);
+    //          
             
     //         setPrice(res);
     //         isSoltoToken ? setTokenToBuy(res?.tokensbuy) : setAmount(res?.tokensbuy)
-    //         console.log("after switch", isSoltoToken, "amunt", amount, "tokentobuy", tokenToBuy);
-    //         console.log("after switch", isSoltoToken, "tokentobuy", tokenToBuy, "amunt", amount,"userBalance",userBalance);
+    //          
+    //          
     //         checkBuyConditions(parseFloat(tokenToBuy), parseFloat   (amount))
     //         // Store the response in state to render it
     //     } catch (error) {
@@ -303,21 +303,21 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
 
     // const remaningAndMaxbuyTokens = async (tokenAddress) => {
     //     if (!walletProvider) {
-    //         console.log("Please connect your wallet");
+    //          
     //     }
     //     if (!tokenAddress) {
     //         return toast.error("Token address not found!")
     //     }
     //     try {
     //         const res = await reteriveTokenDetails(walletProvider, tokenAddress);
-    //         console.log("result from the tokens", res);
+    //          
     //         const maxBuyPercentage = 100
     //         const percentage = (res?.totalTokens * maxBuyPercentage) / 100;
 
     //         setMaxBuyTokens(percentage)
     //         setRemaningTokens(res?.remainingTokens)
     //     } catch (error) {
-    //         console.log("error while fetching token details", error)
+    //          
 
     //     }
     // }
@@ -325,7 +325,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
     // const getUserBalances = async () => {
     //     try {
     //         if (!tokenAddress) { return }
-    //         console.log("walletProvider", walletProvider,walletProvider.publicKey)
+    //          
     //         //user-sol-balance
     //         const balance = await connection.getBalance(walletProvider.publicKey)
 
@@ -336,13 +336,13 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
     //             await connection.getParsedTokenAccountsByOwner(walletProvider.publicKey, {
     //                 mint: tokenMintAddress,
     //             })
-    //         console.log('tokens about to cook', tokenAccounts)
+    //          
     //         let tokenBalance
     //         if (tokenAccounts?.value?.length > 0) {
     //             tokenBalance =
     //                 tokenAccounts?.value[0]?.account?.data?.parsed?.info
     //                     ?.tokenAmount.uiAmount
-    //             //console.log('user-token-balance', balance)
+    //             // 
     //         } else {
     //         }
     //         setUserBalance((prevState) => ({
@@ -351,14 +351,14 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
     //             tokenBalance: tokenBalance === undefined ? 0 : tokenBalance,
     //         }))
     //     } catch (error) {
-    //         console.log('error while fetching user balance', error)
+    //          
     //     }
     // }
 
    
     // const checkBuyConditions = (tokens ,sol) => {
-    //     console.log("dewana",tokens,sol,maxBuyTokens,remaningTokens)
-    //     console.log("walletProvider", walletProvider)
+    //      
+    //      
     //     if (!walletProvider) {
     //         return setAmountError((prevState) => ({
     //             ...prevState,
@@ -366,7 +366,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
     //             reason: 'Please connect your wallet!',
     //         }))
     //     }
-    //     console.log("maxBuyTokens", tokens > maxBuyTokens,tokens , maxBuyTokens)
+    //      
     //     if (tokens > maxBuyTokens) {
     //         return setAmountError((prevState) => ({
     //             ...prevState,
@@ -375,7 +375,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
     //         }))
     //     }
 
-    //     console.log("maxBuyTokens", tokens > remaningTokens,tokens , remaningTokens)
+    //      
     //     if (tokens > remaningTokens) {
     //         return setAmountError((prevState) => ({
     //             ...prevState,
@@ -383,7 +383,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
     //             reason: 'Max token reserved reached',
     //         }))
     //     }
-    //     console.log("userBalance", sol > userBalance?.solBalance,sol , userBalance?.solBalance)
+    //      
     //     if (sol > userBalance?.solBalance) {
     //         setAmountError((prevState) => ({
     //             ...prevState,
@@ -403,7 +403,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
         return /^\d{11}$/.test(amountCheck.toString());
       }
     useEffect(() => {
-        console.log("amounttt",amount)
+         
        if(amount) calculateTokenEthOnchange(amount)
     }, [amount]);
 
@@ -427,9 +427,9 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
           setAmount(amount);
           try {
             const calculateEthValue = await calculateTokenEthValues(coinData?.token_address, amount, true);
-            console.log("calculateEthValue", calculateEthValue);
+             
             setEthAmount(calculateEthValue)
-            console.log("amount", userNativeBalance?.data?.formatted)
+             
             if (parseFloat(amount) > parseFloat(tokenInfo?.data?.realTokenReserves)) {
               setAmountError((prevState) => ({
                 ...prevState,
@@ -476,8 +476,8 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
 const BuyButtons = ({isLoading , closeModal, coinData,amount,setAmount,isButtonDisabled,setIsButtonDisabled,block_chain,userNativeBalance,address,isConnected,contractInfo, setContractInfo,setEthAmount})=>{
   const currentChain = block_chain === "BNB" ? "bsc" : "sepolia"
 
-  console.log("currentChain", currentChain)
-    console.log("contractInfo",contractInfo)
+   
+     
      //buy-tokens-blockchain-calls
      const { data: buyTxHash, writeContract: useBuyTokens } = useWriteContract()
      const { isLoading: isBuying, isSuccess: isBuyed, data: txData } = useWaitForTransactionReceipt({
@@ -495,16 +495,16 @@ const BuyButtons = ({isLoading , closeModal, coinData,amount,setAmount,isButtonD
       
      const buyTokens = async (amount, tokenAddress ) => {
         try {
-          console.log("handle-buy-tokens", amount, tokenAddress)
+           
           const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
           const payAbleAmountEther = await getPayAbleEtherAmount(tokenAddress, amount, userNativeBalance?.data?.formatted)
-          console.log("get-balance", payAbleAmountEther?.data)
+           
           const SelectedAbi = contractInfo.Abi
           const contractAddress = contractInfo.ContractAddress
     
           const payAmount = payAbleAmountEther?.data
     
-    console.log("asd",SelectedAbi,contractAddress,payAmount)
+     
           useBuyTokens({
             address: contractAddress,
             abi: SelectedAbi,
@@ -519,7 +519,7 @@ const BuyButtons = ({isLoading , closeModal, coinData,amount,setAmount,isButtonD
     
         } catch (error) {
           setIsButtonDisabled(false)
-          console.log("error while buying tokens", error)
+           
           // setIsCreatingCoin(false);
           // if (toastId) { toast.update(toastId, { render: "Failed to buy Tokens", type: "error", isLoading: false, autoClose: 3000 }); }
     
@@ -538,7 +538,7 @@ const BuyButtons = ({isLoading , closeModal, coinData,amount,setAmount,isButtonD
               type: "buy",
               transaction_hash: buyTxHash,
             });
-            console.log("api response after buying", apiResponse)
+             
     
             if (apiResponse?.status === 201) {
               setAmount('')
@@ -559,7 +559,7 @@ const BuyButtons = ({isLoading , closeModal, coinData,amount,setAmount,isButtonD
     
         } catch (error) {
           setIsButtonDisabled(false)
-          console.log("error while buyin token", error)
+           
         }
       }
     return(

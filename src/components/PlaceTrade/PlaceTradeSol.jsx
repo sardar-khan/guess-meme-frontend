@@ -49,7 +49,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
     const [prorityFee, setPriorityFee] = useState('');
 
     useEffect(() => {
-        console.log("checking", tokenid && walletProvider, tokenid, walletProvider)
+         
         if (tokenid && walletProvider) {
             getUserBalances()
 
@@ -72,21 +72,21 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
 
     const remaningAndMaxbuyTokens = async (tokenAddress) => {
         if (!walletProvider) {
-            console.log("Please connect your wallet");
+             
         }
         if (!tokenAddress) {
             return toast.error("Token address not found!")
         }
         try {
             const res = await reteriveTokenDetails(tokenAddress);
-            console.log("result from the tokens", res);
+             
             const maxBuyPercentage = 100
             const percentage = (res?.totalTokens * maxBuyPercentage) / 100;
 
             setMaxBuyTokens(percentage)
             setRemaningTokens(res?.remainingTokens)
         } catch (error) {
-            console.log("error while fetching token details", error)
+             
 
         }
     }
@@ -142,7 +142,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
             }
         } catch (error) {
             toast.error(error.message || `Error placing ${tradeType} trade`);
-            console.log("error while buying tokens", error)
+             
             setIsLoading(false);
         }
     }
@@ -179,7 +179,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                     );
                 }
             } else {
-                console.log("issue",sellTrxHash)
+                 
                 toast.error(`${sellTrxHash?.error}`)
                 setIsLoading(false);
             }
@@ -187,7 +187,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
         } catch (error) {
             setIsLoading(false);
             toast.error(error.message || `Error placing ${tradeType} trade`);
-            console.log("error while selling tokens", error)
+             
         }
     }
 
@@ -342,13 +342,13 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                 await connection.getParsedTokenAccountsByOwner(walletProvider.publicKey, {
                     mint: tokenMintAddress,
                 })
-            console.log('tokens about to cook', tokenAccounts)
+             
             let tokenBalance
             if (tokenAccounts?.value?.length > 0) {
                 tokenBalance =
                     tokenAccounts?.value[0]?.account?.data?.parsed?.info
                         ?.tokenAmount.uiAmount
-                //console.log('user-token-balance', balance)
+                // 
             } else {
             }
             setUserBalance((prevState) => ({
@@ -357,7 +357,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                 tokenBalance: tokenBalance === undefined ? 0 : tokenBalance,
             }))
         } catch (error) {
-            console.log('error while fetching user balance', error)
+             
         }
     }
 
@@ -545,6 +545,9 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                         <span onClick={() => { setAmount(1); handleAmount(1) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                                             1 {block_chain}
                                         </span>
+                                        {/* <span onClick={() => { setAmount(1); handleAmount(1) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                                            1 {block_chain}
+                                        </span> */}
                                     </div>
                                 }
                                 {tradeType === 'sell' &&

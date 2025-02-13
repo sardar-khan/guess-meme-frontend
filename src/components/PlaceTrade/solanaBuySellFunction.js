@@ -13,12 +13,12 @@ import { getBuySellInSolBuy, getBuySellInTokensBuy, retrieveTokenInfo } from "./
 
 async function buy(walletProvider, amount, mintaddy, maxSlippage, priorityFee) {
     try{
-        console.log("amount for sol", Number(amount) * 10 ** 6);
+         
         const buy_value = maxSlippage ? maxSlippage?.toString() : '10'
-        console.log(walletProvider, "wallet Provider");
+         
         const programId = new PublicKey("7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh");
     
-        console.log("mintaddy", mintaddy);
+         
         // const buy_value = "0.1"; // Just for setting high slippage basically
         const tokenamt = Number(amount) * 10 ** 6; // Remaining token amount based on calling ts-node retrieve.ts
     
@@ -33,14 +33,14 @@ async function buy(walletProvider, amount, mintaddy, maxSlippage, priorityFee) {
     
         const program = new Program(IDL1, programId, walletProvider);
     
-        console.log("Mint authority: " + S.toBase58());
-        console.log("Bonding curve: " + C.toBase58());
+         
+         
     
         const [O] = PublicKey.findProgramAddressSync(
             [Buffer.from("global")],
             programId
         );
-        console.log(O, "Global PDA");
+         
     
         let atains;
         const r = b(mintaddy, walletProvider.publicKey, false);
@@ -227,11 +227,11 @@ const sell = async (
         )
 
         a = await sellQuote(el)
-        // console.log(el.toNumber(), a.toNumber())
+        //  
 
         let total = a.sub(a.mul(new BN(Math.floor(10 * j))).div(new BN(1e3)))
 
-        console.log(total)
+         
 
         let sellTx = await program.methods
             .sell(el, total)
@@ -258,14 +258,14 @@ const sell = async (
         sellTx.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
 
         const signature = await walletProvider.signAndSendTransaction(sellTx);
-        // console.log('Sell transaction signature: ', sellTx,signature)
+        //  
         return {
             error: false,
             data: signature,
             success: true,
         }
     } catch (error) {
-        console.log('error while selling tokens', error)
+         
         return {
             error: error.message,
             data: null,
@@ -301,14 +301,14 @@ const retrieveTokenMetaData= async (tokenAddress) => {
           MPL_TOKEN_METADATA_PROGRAM_ID
         );
     
-        console.log("Metadata Address:", metadataPDA.toBase58());
+         
       } catch (error) {
         console.error("Error while fetching token metadata", error);
       }
 }
 
 const TokenPriceCalculations = async (taddress, amount, isSolToToken, isDeployed) => {
-    // console.log("not-okay", taddress, amount, isSolToToken, isDeployed)
+    //  
     window.Buffer = buffer.Buffer
     if (isDeployed) {
 
@@ -514,7 +514,7 @@ const reteriveTokenDetails = async ( taddress) => {
 
 
         const r = await program.account.bondingCurve.fetch(C)
-console.log("full on r",r)
+ 
         const {
             realSolReserves,
             virtualTokenReserves,
@@ -542,10 +542,10 @@ console.log("full on r",r)
             realSolReserves:realSolReserves?.toString(),
             complete: complete,
         }
-console.log("formatted outpot",formattedOutput)
+ 
         return formattedOutput
     } catch (error) {
-        console.log("error while retreving token details", error)
+         
     }
 
 }
@@ -564,9 +564,12 @@ const calculateBondingCurveProgress = async (taddress, isDeployed) => {
     )
 
     const program = new Program(IDL1, programId, provider)
-    const calculateBondingCurveProgressPer = (remainingTokens, initialRealTokenReserves) => {
-        // Calculate the Bonding Curve Progress
-        return ((initialRealTokenReserves - remainingTokens) * 100) / initialRealTokenReserves;
+    const calculateBondingCurveProgressPer = (tokenTotalSupply,realTokenReserves) => {
+        const reservedTokens=new BN(206900000).mul(new BN(1000_000));
+        const initialRealTokenReserves=tokenTotalSupply.sub(reservedTokens);
+          const bondingCurveProgress= new BN(100).sub(realTokenReserves.mul(new BN(100)).div(initialRealTokenReserves))
+         
+        return bondingCurveProgress.toString(10)
     };
 
     if (isDeployed) {
@@ -596,9 +599,7 @@ const calculateBondingCurveProgress = async (taddress, isDeployed) => {
         const remainingTokens = parseFloat(realTokenReservesStr / 1000000);
         const totalTokens = parseFloat(tokenTotalSupplyStr / 1000000);
 
-        // Initial real token reserves based on your logic
-        const initialRealTokenReserves = 800_000_000; // Fixed initial reserve from your requirements
-        const bondingCurveProgress = calculateBondingCurveProgressPer(remainingTokens, initialRealTokenReserves);
+        const bondingCurveProgress = calculateBondingCurveProgressPer(tokenTotalSupply, realTokenReserves);
 
         // Logging the specific properties in a formatted string
         const formattedOutput = {
@@ -608,7 +609,7 @@ const calculateBondingCurveProgress = async (taddress, isDeployed) => {
             tokenTotalSupply: tokenTotalSupplyStr,
             remainingTokens: remainingTokens,
             totalTokens: totalTokens,
-            bondingCurveProgress: bondingCurveProgress.toFixed(2), // Add bonding curve progress
+            bondingCurveProgress: bondingCurveProgress, // Add bonding curve progress
             complete: complete,
         };
 
@@ -635,7 +636,7 @@ const calculateBondingCurveProgress = async (taddress, isDeployed) => {
             tokenTotalSupply: tokenTotalSupply,
             remainingTokens: remainingTokens,
             totalTokens: totalTokens,
-            bondingCurveProgress: bondingCurveProgress.toFixed(2), // Add bonding curve progress
+            bondingCurveProgress: bondingCurveProgress, // Add bonding curve progress
             complete: false,
         };
 
@@ -788,7 +789,7 @@ const reterieveUserSolanaBalance = async (walletProvider) => {
         const balance = await connection.getBalance(walletProvider.publicKey)
         return balance
     } catch (error) {
-        console.log('error while fetching user balance', error)
+         
     }
 }
 
@@ -829,10 +830,10 @@ const launchSolToken = async (
 
         // Adjusted token parameters
          const tokenTotalSupply = new BN(1000000000).mul(tokenFactor); // 1 billion tokens, adjusted for 6 decimals
-        const tokenMargin = new BN(200000000).mul(tokenFactor); // Margin adjusted for token decimals
-        const initialVirtualTokenReserves = tokenTotalSupply.add(tokenMargin);
-    const initialRealTokenReserves = tokenTotalSupply.mul(new BN(80)).div(new BN(100)); // 80% of total supply
-       // const initialRealTokenReserves =new BN(793100000).mul(tokenFactor);
+       // const tokenMargin = new BN(200000000).mul(tokenFactor); // Margin adjusted for token decimals
+        const initialVirtualTokenReserves = new BN(1073000191).mul(tokenFactor);
+       // const initialRealTokenReserves = tokenTotalSupply.mul(new BN(80)).div(new BN(100)); // 80% of total supply
+        const initialRealTokenReserves =new BN(793100000).mul(tokenFactor);
         const token_key = Keypair.generate();
        
 
@@ -986,19 +987,26 @@ const launchSolToken = async (
     } catch (err) {
         //setLoading(false)
         setIsCreatingCoin(false)
-        console.log('Error while creating coin', err)
-        if (err.message.includes('User rejected the request')) {
-            toast.error('Transaction request was rejected by the user.')
-        } else {
-            toast.error('Something went wrong. Please try again.')
-        }
-
-        return {
+         
+        if (err.message.includes('User rejected the request')) { return {
             success: false,
+            error:'User rejected the request',
             token_address: null,
             tx_hash: null,
             bonding_curve: null,
         }
+        } else {
+            toast.error('Something went wrong. Please try again.')
+            return {
+                success: false,
+                error:'Something went wrong. Please try again',
+                token_address: null,
+                tx_hash: null,
+                bonding_curve: null,
+            }
+        }
+
+       
     }
 }
 

@@ -10,7 +10,7 @@ const ReferralModal = ({ isOpen, onClose, onSubmit, threadID, fetchThreadData })
     const [imageUrl, setImageUrl] = useState('');
     const fileInputRef = useRef(null);
     const { id } = useParams();
-    console.log("threadID", comment)
+     
     useEffect(() => {
     }, [threadID, comment])
 
@@ -55,7 +55,7 @@ const ReferralModal = ({ isOpen, onClose, onSubmit, threadID, fetchThreadData })
                 reply_id: threadID,
                 image: imageUrl
             });
-            console.log("Comment data", data)
+             
             toast.success(data?.message);
             setImageUrl('');
             // fetchThreadData();

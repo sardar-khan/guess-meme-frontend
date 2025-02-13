@@ -10,13 +10,13 @@ const PusherLaunchCard = ({ pusherData }) => {
     const { notifications, createNotifications, notificationsEth, createNotificationsEth } = useNotificationContext();
 
     const triggerAnimation = notifications || createNotifications || notificationsEth || createNotificationsEth !== "" || undefined || null || [] || {}
-    console.log("triggerAnimation", triggerAnimation)
+     
     const [isShaking, setIsShaking] = useState(false);
 
     const handleAnimationEnd = () => {
         setIsShaking(false);
     };
-    console.log("pusherData", pusherData)
+     
 
 
     const blockchainType = localStorage.getItem('blockchain')

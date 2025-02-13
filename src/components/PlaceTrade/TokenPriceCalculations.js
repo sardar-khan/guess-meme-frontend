@@ -4,7 +4,6 @@ import * as buffer from 'buffer'
 
 export const getBuySellInSolBuy =(amount,k,virtualSolReserves,virtualTokenReserves)=>{
     try{
-        console.log("hey are you here asd")
         const tokenAmountBN = BigInt(Math.floor(amount * 1_000_000)); // Assuming 6 decimal tokens
 
       
@@ -16,9 +15,13 @@ export const getBuySellInSolBuy =(amount,k,virtualSolReserves,virtualTokenReserv
         const sellSolAgainstTokens = Math.abs(Number(
             (k / (virtualTokenReserves + tokenAmountBN)) - virtualSolReserves
         ));
-        console.log("hey are you here asd",{
+
+        const tokensObtained = virtualTokenReserves - (k / (virtualSolReserves + tokenAmountBN));
+
+        console.log("token calculation",{
             tokensbuy: buySolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
             tokensell: sellSolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
+            
         })
         return {
             tokensbuy: buySolAgainstTokens / 1_000_000_000, // Convert lamports to SOL
@@ -31,7 +34,6 @@ export const getBuySellInSolBuy =(amount,k,virtualSolReserves,virtualTokenReserv
 
 export const getBuySellInTokensBuy=(amount,k,virtualSolReserves,virtualTokenReserves)=>{
     try{
-        console.log("hey are you here",amount,k,virtualSolReserves,virtualTokenReserves)
         const oneSOLInLamports = BigInt(Math.floor(amount * LAMPORTS_PER_SOL));
            
 
@@ -63,7 +65,7 @@ export const getBuySellInTokensBuy=(amount,k,virtualSolReserves,virtualTokenRese
         
 
        
-       console.log("heiossy",{
+       console.log("token cal",{
         tokenPriceInSol,
         sellTokenPriceInSol,
         tokensbuy,

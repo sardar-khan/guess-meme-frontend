@@ -1,103 +1,120 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { createChart } from 'lightweight-charts';
-import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from "react";
+import { createChart } from "lightweight-charts";
+import { TradeGraphData } from "../../utils/api";
 
-const LightweightCandlestickChart = () => {
+const LightweightCandlestickChart = ({ coinId }) => {
     const chartContainerRef = useRef();
     const chartRef = useRef(null);
     const candlestickSeriesRef = useRef(null);
-    const { id } = useParams();
     const [error, setError] = useState(null);
-    const apiUrl = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
+        if (!chartContainerRef.current) return;
+
+        // Destroy existing chart before creating a new one
+        if (chartRef.current) {
+            chartRef.current.remove();
+            chartRef.current = null;
+        }
+
+        chartRef.current = createChart(chartContainerRef.current, {
+            width: chartContainerRef.current.clientWidth,
+            height: 450,
+            layout: {
+                background: { color: "#161A25" },
+                textColor: "#E0E0E0",
+                fontFamily: "Roboto, Ubuntu, Arial, sans-serif",
+            },
+            grid: {
+                vertLines: { color: "#333" },
+                horzLines: { color: "#333" },
+            },
+            priceScale: {
+                borderColor: "#888",
+                autoScale: true,
+                visible: true,
+            },
+            timeScale: {
+                borderColor: "#888",
+                timeVisible: true,
+                secondsVisible: false,
+            },
+        });
+
+        candlestickSeriesRef.current = chartRef.current.addCandlestickSeries({
+            upColor: "#00C853",
+            downColor: "#D50000",
+            borderUpColor: "#00C853",
+            borderDownColor: "#D50000",
+            wickUpColor: "#00C853",
+            wickDownColor: "#D50000",
+            priceFormat: {
+                minMove: 0.000000001,
+                precision: 9,
+            },
+        });
+
+        // Resize observer for responsiveness
+        const resizeObserver = new ResizeObserver(() => {
+            if (chartRef.current) {
+                chartRef.current.applyOptions({
+                    width: chartContainerRef.current.clientWidth,
+                });
+                chartRef.current.timeScale().fitContent();
+            }
+        });
+
+        resizeObserver.observe(chartContainerRef.current);
+
+        return () => {
+            resizeObserver.disconnect();
+            if (chartRef.current) {
+                chartRef.current.remove();
+                chartRef.current = null;
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!coinId) return;
+
         const fetchCoinData = async () => {
             try {
-                const response = await axios.get(`${apiUrl}trade/graph-data?token_id=${id}`);
-                if (response.data && response.data.data) {
-                    const formattedData = response.data.data.map((item) => ({
-                        time: Math.floor(new Date(item.time).getTime() / 1000), // Convert to seconds
+                const response = await TradeGraphData(coinId);
+                // 
+
+                if (response.status === 200 && Array.isArray(response.data)) {
+                    const formattedData = response.data.map(item => ({
+                        time: Math.floor(new Date(item.time).getTime() / 1000),
                         open: item.open,
                         high: item.high,
                         low: item.low,
                         close: item.close,
                     }));
-
-                    initializeChart(formattedData);
-                } else {
-                    setError('No trades found for the specified token.');
+                   // formattedData.sort((a, b) => a.time - b.time);
+                     
+                    if (candlestickSeriesRef.current) {
+                        candlestickSeriesRef.current.setData(formattedData);
+                    }
                 }
             } catch (err) {
-                console.error('Error fetching coin data:', err);
-                setError('Error fetching coin data.');
+                console.error("Error fetching coin data:", err);
+                setError("Something went wrong. Please refresh the page.");
             }
         };
 
         fetchCoinData();
-    }, [id]);
+        const interval = setInterval(fetchCoinData, 20000);
 
-    const initializeChart = (data) => {
-        // If chart already exists, clear it
-        if (chartRef.current) {
-            chartRef.current.remove();
-        }
-
-        // Create the chart
-        const chart = createChart(chartContainerRef.current, {
-            width: chartContainerRef.current.clientWidth,
-            height: 450,
-            layout: {
-                backgroundColor: '#231930',
-                textColor: '#ffffff',
-            },
-            grid: {
-                vertLines: { color: '#444' },
-                horzLines: { color: '#444' },
-            },
-            priceScale: {
-                borderColor: '#555',
-            },
-            timeScale: {
-                borderColor: '#555',
-                timeVisible: true,
-                secondsVisible: true,
-            },
-        });
-
-        // Add candlestick series
-        const candlestickSeries = chart.addCandlestickSeries({
-            upColor: '#00C853',
-            downColor: '#D50000',
-            borderUpColor: '#00C853',
-            borderDownColor: '#D50000',
-            wickUpColor: '#00C853',
-            wickDownColor: '#D50000',
-        });
-
-        candlestickSeries.setData(data);
-
-        // Save references for cleanup
-        chartRef.current = chart;
-        candlestickSeriesRef.current = candlestickSeries;
-
-        // Resize chart dynamically
-        const resizeObserver = new ResizeObserver(() => {
-            chart.applyOptions({
-                width: chartContainerRef.current.clientWidth,
-            });
-        });
-        resizeObserver.observe(chartContainerRef.current);
-
-        return () => resizeObserver.disconnect();
-    };
+        return () => clearInterval(interval);
+    }, [coinId]);
 
     return (
         <div className="w-full">
             {error ? (
                 <p className="text-red-500 text-center">{error}</p>
             ) : (
-                <div ref={chartContainerRef} style={{ width: '100%', height: '450px' }} />
+                <div ref={chartContainerRef} style={{ width: "100%", height: "450px" }} />
             )}
         </div>
     );

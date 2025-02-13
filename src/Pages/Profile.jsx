@@ -28,9 +28,10 @@ const Profile = () => {
             })).unwrap();
 
             toast.success(data?.message, { autoClose: 1000 });
-            console.log('Profile updated successfully:', data);
+             
             setIsEditing(false);
         } catch (error) {
+            console.log("error geeked out",error)
             toast.error(error.response?.data?.message || 'Error updating profile', { autoClose: 1000 });
         }
     };

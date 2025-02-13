@@ -8,7 +8,7 @@ export const WalletApi = ({ children }) => {
 
     useEffect(() => {
         setBlock_chain(localStorage.getItem('blockchain'))
-        console.log("getBlockChain IN context", block_chain)
+         
     }, [block_chain, localStorage.getItem('blockchain')])
 
 

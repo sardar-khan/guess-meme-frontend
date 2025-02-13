@@ -94,7 +94,7 @@ const LaunchTokenSolana = () => {
 
                 try {
                     const data = await uploadImage(formData);
-                    console.log("imageUrl", data.imageUrl);
+                     
                     setImageUrl(data.imageUrl);
                     toast.success('Image uploaded successfully!');
                 } catch (error) {
@@ -187,7 +187,7 @@ const LaunchTokenSolana = () => {
         try {
             if (!walletProvider) {
                 // return toast.error("Please connect your wallet");
-                console.log("Please connect your wallet");
+                 
             }
             const formattedRevealTime = new Date(revealTime).toISOString();
 
@@ -205,9 +205,9 @@ const LaunchTokenSolana = () => {
 
             );
 
-            console.log("transactionSuccess", isTokenCreated)
+             
             if (!isTokenCreated.success) {
-                toast.error('Transaction failed. Please try again now.');
+                toast.error(isTokenCreated?.error);
                 return;
             }
 
@@ -230,7 +230,7 @@ const LaunchTokenSolana = () => {
                 bondingCurve: isTokenCreated?.bonding_curve,
                 tokenAddress: isTokenCreated?.token_address
             });
-            console.log("response-creating-token", response)
+             
             if (response.status === 200) {
                 toast.success(response.message);
                 resetForm();

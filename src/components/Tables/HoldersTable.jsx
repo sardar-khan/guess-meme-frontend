@@ -23,13 +23,13 @@ const HoldersTable = () => {
                 setCoins(data);
 
                 const filteredCoin = data?.data?.find(coin => coin.coin?._id === id);
-                console.log("filteredCoinfilteredCoinfilteredCoin", filteredCoin)
+                 
 
                 if (filteredCoin) {
                     const tokenAddress = filteredCoin.coin?.token_address;
 
                     const topholderdata = await getTopHolders(tokenAddress);
-                    console.log("getTopHoldersgetTopHolders", topholderdata);
+                     
                     setHolders(topholderdata);
                 } else {
                     setError("Coin not found");
@@ -43,8 +43,8 @@ const HoldersTable = () => {
 
         fetchHolders();
     }, [id]);
-    console.log("coinscoinscoinscoins", coins)
-    console.log("holders", holders)
+     
+     
 
 
     const handleCopy = (address) => {

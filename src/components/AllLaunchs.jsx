@@ -47,9 +47,9 @@ const AllLaunchs = () => {
     };
 
     useEffect(() => {
-        console.log("this got hit")
+         
         if (status === 'idle') {
-            console.log("this got hit 2")
+             
             dispatch(fetchCoins({sortBy:"deployed",coinSorting:""}));
         }
     }, [status, dispatch, sortOption]);
@@ -71,7 +71,6 @@ const AllLaunchs = () => {
         
     };
 
-    console.log("deployedCoins",deployedCoins,status)
     return (
         <div className='p-2 md:p-4 !pb-[50px]'>
             {/* <button onClick={(()=>{reteriveTokenDetails("4NEmVi6TyGiz6Z5spz8uNwCbG4QjueJwgEcyDcynord7")})}>Check this </button>
@@ -142,7 +141,7 @@ const AllLaunchs = () => {
                         ) : (
                             <>
                                 {deployedCoins.map((coin, index) => (
-                                    <LaunchCard key={index} setSpace="medium" coinData={coin} status={"deployed"} />
+                                    <LaunchCard key={coin?.coin?._id} setSpace="medium" coinData={coin} status={"deployed"} />
                                 ))}
                             </>
                         )}
@@ -156,7 +155,7 @@ const AllLaunchs = () => {
                         ) : (
                             <>
                                 {createdCoins.map((coin, index) => (
-                                    <LaunchCard key={index} setSpace="medium" coinData={coin} status={"created"} />
+                                    <LaunchCard id={index+"created"} setSpace="medium" coinData={coin} status={"created"} />
                                 ))}
                             </>
                         )}

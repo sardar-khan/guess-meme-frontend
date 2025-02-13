@@ -20,7 +20,7 @@ const checkBlockChain =
                     blockchain === null ? 'solana' :
                         'solana';
 
-console.log("blockchainssss", blockchain)
+ 
 const apiInstance = axios.create({
     baseURL: apiUrl,
 });
@@ -61,7 +61,7 @@ export const handleSignUp = async (address, blockchain) => {
 export const viewProfile = async () => {
     try {
         const response = await apiInstance.get('user/view-profile');
-        console.log('viewProfile', response.data);
+         
         return response.data;
     } catch (error) {
         console.error('Error fetching profile:', error);
@@ -77,21 +77,21 @@ export const editProfile = async ({ user_name, bio, profile_photo }) => {
             bio,
             profile_photo,
         });
-       // console.log('editProfile', response.data);
+       //  
         return response.data;
     } catch (error) {
         console.error('Error during edit Profile:', error);
-        throw error;
+        throw error?.response?.data?.message ;
     }
 };
 
 // viewCoins function
 export const viewCoins = async ({sortBy,coinSorting}) => {
     try {
-        
+
         const url = sortBy ? `user/view-coins?status=${sortBy?.toLowerCase()}&type=${checkBlockChain}&sortBy=${coinSorting?.toLowerCase()}` : `user/view-coins?status=deployed&type=${checkBlockChain}`;
         const response = await apiInstance.get(url);
-        
+
         return response.data;
     } catch (error) {
         console.error('Error fetching coins:', error);
@@ -104,7 +104,7 @@ export const kingoftheHill_progress = async (token_address) => {
         const response = await apiInstance.post('trade/king-of-hill-progress', {
             token_address: token_address
         });
-       // console.log('kingoftheHill_progress', response.data);
+       //  
         return response.data;
     } catch (error) {
         console.error('Error during kingoftheHill_progress:', error);
@@ -118,7 +118,7 @@ export const Progress_curve_bond = async (token_address) => {
         const response = await apiInstance.post('trade/progress-curve-bond', {
             token_address: token_address
         });
-        console.log('Progress_curve_bondssss', response.data);
+         
         return response.data;
     } catch (error) {
         console.error('Error during Progress_curve_bond:', error);
@@ -148,7 +148,7 @@ export const createCoin = async ({ name, ticker, description, image, max_supply,
             token_address: tokenAddress,
         });
 
-        console.log('createCoin', response.data);
+         
         return response.data;
     } catch (error) {
         console.error('Error during createCoin:', error);
@@ -167,7 +167,7 @@ export const uploadImage = async (formData) => {
         });
         return response.data;
     } catch (error) {
-        console.log("errorerrorerrorerror", error)
+         
         throw new Error(error.response?.data?.message || 'Image upload failed');
     }
 };
@@ -182,7 +182,7 @@ export const submitComment = async ({ text, token_id, reply_id, image }) => {
             reply_id,
             image,
         });
-        console.log('submitComment', response.data);
+         
         return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.message || 'Failed to post comment');
@@ -200,7 +200,7 @@ export const BuyToken = async ({ account_type, amount, token_amount, token_id, t
             type,
             transaction_hash,
         });
-        console.log('BuyToken', response.data);
+         
         return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.message || 'Failed to Buy Token');
@@ -254,8 +254,8 @@ export const getTopHolders = async (tokenAddress) => {
 export const viewCoin = async (coinId) => {
     try {
         const response = await apiInstance.post(`user/view-token/${coinId} `);
-        console.log("coinId", coinId)
-        console.log("responseData", response.data)
+         
+         
         return response.data;
     } catch (error) {
         console.error('Error in View Coin:', error);
@@ -265,8 +265,8 @@ export const viewCoin = async (coinId) => {
 export const getCoinByWalletAddress = async (coinId) => {
     try {
         const response = await apiInstance.post(`user/token-details/${coinId} `);
-        console.log("coinId", coinId)
-        console.log("responseData", response.data)
+         
+         
         return response.data;
     } catch (error) {
         console.error('Error in View Coin:', error);
@@ -294,7 +294,7 @@ export const topThreeCoins = async () => {
 export const adminTokenAddress = async () => {
     try {
         const response = await apiInstance.get(`/admin/admin-addresses/${checkBlockChain}`);
-        console.log("adminTokenAddress", response.data)
+         
         return response.data;
     } catch (error) {
         console.error('Error in ViewUser:', error);
@@ -307,7 +307,7 @@ export const adminTokenAddress = async () => {
 export const viewUserprofile = async () => {
     try {
         const response = await apiInstance.get(`/user/view-profile`);
-        console.log("viewUserprofile", response.data)
+         
         return response.data;
     } catch (error) {
         console.error('Error in ViewUser:', error);
@@ -321,10 +321,10 @@ export const CheckFollow = async (id) => {
         const response = await apiInstance.post('user/check-follow', {
             user_id: id
         });
-        console.log('CheckFollow', response.data);
+         
         return response.data;
     } catch (error) {
-        console.log(error);
+         
     }
 };
 
@@ -335,10 +335,10 @@ export const toggleFollow = async (id) => {
         const response = await apiInstance.post('user/toggle-follow', {
             user_id: id
         });
-        console.log('toggleFollow', response.data);
+         
         return response.data;
     } catch (error) {
-        console.log(error);
+         
     }
 };
 
@@ -348,10 +348,10 @@ export const toggleLike = async (thread_id) => {
         const response = await apiInstance.post('thread/toggle-like', {
             thread_id: thread_id,
         });
-        console.log('toggleLike', response.data);
+         
         return response.data;
     } catch (error) {
-        console.log(error);
+         
     }
 };
 
@@ -360,10 +360,10 @@ export const checkLikeStatus = async (thread_id) => {
         const response = await apiInstance.post('thread/check-like-status', {
             thread_id: thread_id,
         });
-        console.log('toggleLike', response.data);
+         
         return response.data;
     } catch (error) {
-        console.log(error);
+         
     }
 };
 
@@ -400,3 +400,15 @@ export const getLatestNotifications = async () => {
         throw error;
     }
 };
+
+
+export const TradeGraphData = async(coinId)=>{
+    try {
+         const  response  = await apiInstance.get(`/trade/graph-data?token_id=${coinId}&time=1day&bucketSize=2&bucketUnit=minute`)
+       // const  response  = await apiInstance.get(`/trade/graph-random-data`)
+        return response.data;
+    } catch (error) {
+         
+        throw error;
+    }
+}

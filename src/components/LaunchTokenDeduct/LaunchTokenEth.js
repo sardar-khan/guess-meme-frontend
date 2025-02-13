@@ -22,20 +22,20 @@
 //         address: address,
 //     })
     
-//     console.log("user ethereum balanace", result?.data?.formatted);
+//      
 //     const handleLaunchToken = async () => {
 //         try {
 //             const adminAddress = await adminTokenAddress();
-//             console.log("admin-Address",adminAddress?.ad)
+//              
 //             if(!adminAddress?.address){return toast.error("somehting went wrong please try again!")}
-//             console.log("Initiating Pol transfer...");
+//              
 //             const userBalance = result?.data?.formatted ? parseFloat(result?.data?.formatted) : 0
-//             console.log("userbalane",userBalance);
+//              
 //             if (userBalance < 0.05) { return toast.error("Insufficent balance in wallet!")}
 //             const toAddress = adminAddress?.address;
 //             const txResponse = await sendTransaction({toAddress,  value: parseEther("0.05"),})
 
-//            // console.log("transaction hash",txResponse.hash)
+//            //  
             
 //         } catch (error) {
 //             console.error("Error while transferring eth:", error);
@@ -72,7 +72,7 @@
 //         address: address,
 //     });
 
-//     console.log("user ethereum balance", result?.data?.formatted);
+//      
 
 //     const handleLaunchToken = async () => {
 //         return new Promise(async (resolve, reject) => {

@@ -18,6 +18,7 @@ import { useWalletContext } from '../context/WalletContext';
 import PlaceTradeSol from '../components/PlaceTrade/PlaceTradeSol';
 import { calculateBondingCurveProgress, calculateKingOfTheHillProgress } from '../components/PlaceTrade/solanaBuySellFunction';
 import { calculateEthBondingCurveProgress } from '../components/PlaceTrade/ether-trade-utils';
+import LightweightCandlestickChart from '../components/Charts/LightweightCandlestickChart ';
 
 
 const SocialLinks = ({ coinData }) => {
@@ -84,8 +85,8 @@ const Threads = () => {
     const bondingProgressEth = async (token_address) => {
         try {
             const response = await calculateEthBondingCurveProgress(token_address, true);
-            console.log('bonding curve progress eth', response
-            );
+             
+        
             setProgressCurveBond(response?.bondingCurveProgress);
         } catch (error) {
             console.error('Error Progress_curve_bond:', error);
@@ -109,7 +110,7 @@ const Threads = () => {
         });
     };
 
-    console.log("coin-data", coinData)
+     
     return (
         <div className='py-10 px-4 !pb-[100px] md:p-10'>
             <Link to='/' className='flex items-center gap-2 w-fit'>
@@ -161,8 +162,9 @@ const Threads = () => {
                         </div> : <></>}
                     </div>
                     {/* <CandlestickComboChart /> */}
-                    <HighchartsReactNew />
-                    {/* <LightweightCandlestickChart /> */}
+                    {/* <HighchartsReactNew /> */}
+                    <LightweightCandlestickChart coinId={id} />
+                    
                     {/* <AdvancedTradingViewChart symbol="BINANCE:ETHUSDT" /> */}
 
                     <ChatRoom coinData={coinData} />
@@ -177,8 +179,9 @@ const Threads = () => {
                     }
 
                     <SocialLinks coinData={coinData} />
-                    <Progress title="Bonding curve progress" progress={ProgressCurveBond} pusherProgress={ProgressCurveBond} />
-                    <Progress title="Guess master" progress={kingoftheHill} pusherProgress={kingoftheHill} />
+                    <Progress title="Bonding curve progress" progress={ProgressCurveBond} pusherProgress={ProgressCurveBond} isBondingCurve={true} />
+                   
+                    <Progress title="Guess master" progress={kingoftheHill} pusherProgress={kingoftheHill} isBondingCurve={false}/>
                     <TradesTable />
                     <HoldersTable />
 

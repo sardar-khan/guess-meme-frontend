@@ -5,13 +5,13 @@ import { LaunchTokenEthValue } from '../../services/config';
 
 
 const LaunchTokenPolygon = (address, sendTransaction, balance, amount) => {
-    console.log("poly amount", amount, LaunchTokenEthValue);
+     
 
     const amountParse = parseFloat(amount)
     const TokenEthValue = parseFloat(LaunchTokenEthValue)
 
     const AMOUNT_TO_SEND = amount === undefined || null ? TokenEthValue : amountParse + TokenEthValue;
-    console.log("AMOUNT_TO_SEND", AMOUNT_TO_SEND)
+     
 
 
     return async () => {
@@ -24,7 +24,7 @@ const LaunchTokenPolygon = (address, sendTransaction, balance, amount) => {
             }
 
             const userBalance = balance ? parseFloat(balance) : 0;
-            console.log("userBalance", userBalance)
+             
             // if (userBalance < 0.05) {
             if (userBalance < AMOUNT_TO_SEND) {
                 toast.error("Insufficient balance in wallet!");
@@ -36,7 +36,7 @@ const LaunchTokenPolygon = (address, sendTransaction, balance, amount) => {
                 value: parseEther(AMOUNT_TO_SEND.toString()),
                 // value: parseEther("0.05"),
             });
-            console.log("txt-respnse", txResponse);
+             
             // toast.info('Buying Token')
             if (txResponse) {
                 // toast.dismiss()

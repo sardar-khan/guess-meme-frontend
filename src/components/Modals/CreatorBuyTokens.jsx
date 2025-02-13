@@ -161,7 +161,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
 
     //  useEffect(()=>{
     //         GetContractConfiguration(block_chain).then(async(res)=>{
-    //         console.log("block-info",res);
+    //          
     //         setContractInfo(res);
     //       })
           
@@ -187,7 +187,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
             );
             setPrice(res);
             isSoltoToken ? setTokenToBuy(res?.tokensbuy) : setAmount(res?.tokensbuy)
-            console.log("after switch", "amunt", amount, "tokentobuy", tokenToBuy);
+             
             // Store the response in state to render it
         } catch (error) {
             console.error("Error fetching token price:", error);

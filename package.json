@@ -38,6 +38,7 @@
     "ethers": "^5.7.2",
     "highcharts": "^12.1.0",
     "highcharts-react-official": "^3.2.1",
+    "js-cookie": "^3.0.5",
     "lightweight-charts": "^4.2.2",
     "pusher": "^5.2.0",
     "pusher-js": "^8.4.0-rc2",

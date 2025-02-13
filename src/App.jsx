@@ -17,6 +17,8 @@ import Footer from './components/Footer';
 import PrivacyPolicy from './Pages/PrivacyPolicy';
 import TermsOfService from './Pages/TermsOfService';
 import LaunchTokenSolana from './Pages/LaunchTokenSolana';
+import CookieConsent from './components/Modals/CookieConsent';
+import ViewUserProfile from './Pages/ViewUserProfile';
 
 function App() {
   // localStorage.setItem('blockchain', 'SOL')
@@ -27,12 +29,14 @@ function App() {
       <Router>
         <ToastContainer />
         <Navbar />
+        <CookieConsent/>
         <Routes>
           <Route index path='/' element={<Home />} />
           <Route index path='/Test' element={<Test />} />
           <Route path='/launchToken' element={block ==='SOL'?<LaunchTokenSolana />:<LaunchTokens />} />
           <Route path='/editprofile' element={<Profile />} />
-          <Route path='/userprofile/:id' element={<UserProfile />} />
+          <Route path='/profile/:id' element={<UserProfile />} />
+          <Route path='/userprofile/:id' element={<ViewUserProfile />} />
           <Route path='/comingSoon' element={<ComingSoon />} />
           <Route path='/howitworks' element={<HowItWorks />} />
           <Route path='/revealsBestPerformers' element={<RevealsBestPerformers />} />

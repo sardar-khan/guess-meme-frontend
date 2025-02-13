@@ -22,7 +22,7 @@ import { useNotificationContext } from '../context/NotificationContext'
 import { useWalletContext } from '../context/WalletContext'
 
 
-const UserProfile = () => {
+const ViewUserProfile = () => {
     const { id } = useParams();
 
     const [activeTab, setActiveTab] = useState('coins created');
@@ -53,24 +53,23 @@ const UserProfile = () => {
     });
 
     useEffect(() => {
-        const fetchMainUserProfile = async () => {
-            try {
-                const viewUserprofileData = await viewUserprofile();
+        if (!isConnected) return
+        fetchMainUserProfile();
+    }, [showUserData, id, isConnected]);
+    const fetchMainUserProfile = async () => {
+        try {
+            const viewUserprofileData = await viewUserprofile();
 
-                 
-                 
+            console.log("progile dat", viewUserprofileData?.data?._id, id)
 
-                viewUserprofileData?.data?._id === id ? setShowUserData(true) : setShowUserData(false)
-                setUserID(viewUserprofileData?.data?._id)
-                setUserProfileData(viewUserprofileData?.data)
-            } catch (error) {
-                 
-            }
+
+            viewUserprofileData?.data?._id === id ? setShowUserData(true) : setShowUserData(false)
+            setUserID(viewUserprofileData?.data?._id)
+            setUserProfileData(viewUserprofileData?.data)
+        } catch (error) {
+
         }
-
-     if(isConnected) fetchMainUserProfile();
-    }, [showUserData, userID,id, isConnected]);
-
+    }
 
     const fetchUserProfile = async () => {
         try {
@@ -91,7 +90,7 @@ const UserProfile = () => {
     };
     useEffect(() => {
         fetchUserProfile();
-    }, [id]);
+    }, [id, isConnected]);
 
 
     useEffect(() => {
@@ -99,40 +98,40 @@ const UserProfile = () => {
             try {
                 const CheckFollowData = await CheckFollow(id);
                 setCheckFollow(CheckFollowData.follow_status);
-                 
+
 
             } catch (error) {
-                 
+
             }
         }
 
         FetchCheckFollowData();
-    }, [checkFollow, notifications,id]);
+    }, [checkFollow, notifications, id, isConnected]);
 
     useEffect(() => {
         const FetchNotifications = async () => {
             try {
                 const reponse = await getNotifications();
                 setNotifications(reponse.data);
-                 
+
             } catch (error) {
-                 
+
             }
         }
 
         FetchNotifications();
-    }, [id]);
+    }, [id, isConnected]);
 
     const handleToggleFollow = async () => {
         try {
             const response = await toggleFollow(id);
             if (response) {
-                 
+
                 const refetchFollowData = await CheckFollow(id);
                 setCheckFollow(refetchFollowData.follow_status);
-                 
+
             } else {
-                 
+
             }
         } catch (error) {
             console.error("Error while toggling follow:", error);
@@ -147,7 +146,7 @@ const UserProfile = () => {
 
 
     const handleNotificationCount = async (tabId) => {
-        tabId === 'notification' ? handleNotificationReCount():null
+        tabId === 'notification' ? handleNotificationReCount() : null
     }
 
 
@@ -157,7 +156,7 @@ const UserProfile = () => {
             if (response.status === 200) {
                 // fetchUserProfile()
                 setNotificationsTab("")
-                 
+
 
             }
         } catch (error) {
@@ -165,7 +164,7 @@ const UserProfile = () => {
         }
     }
 
-
+    console.log("hello", showUserData, isConnected)
     return (
         <div className=' '>
 
@@ -296,7 +295,7 @@ const UserProfile = () => {
                         </>
                     }
                     {activeTab === 'notification' && showUserData &&
-                        <div className='bg-black w-full'>
+                        <div className='md:pl-20 w-full'>
                             {notifications?.length === 0 ?
                                 <div className='PixelOperator text-2xl text-center'>
                                     No Notifications
@@ -379,4 +378,4 @@ const UserProfile = () => {
     )
 }
 
-export default UserProfile
+export default ViewUserProfile

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNotificationContext } from '../context/NotificationContext';
 
-const Progress = ({ title, progress, pusherProgress }) => {
+const Progress = ({ title, progress, pusherProgress, isBondingCurve }) => {
 
 
     return (
@@ -16,7 +16,9 @@ const Progress = ({ title, progress, pusherProgress }) => {
                     className='absolute bg-[#15C570] h-full '
                     style={{ width: `${pusherProgress ? parseFloat(pusherProgress) : parseFloat(progress)}%` }}
                 ></div>
+                
             </div>
+            {/* isBondingCurve <span className='SegoeUi text-xs font-base'>graduate this coin to raydium at $81,026 market cap. <br/>there is 1 SOL in the bonding curve.</span> */}
         </div>
     )
 }

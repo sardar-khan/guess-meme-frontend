@@ -5,7 +5,7 @@ export const PusherContext = createContext();
 
 const PusherProvider = ({ children }) => {
     const [data, setData] = useState([]);
-    console.log("datasssssssssssssssss:", data)
+     
 
     useEffect(() => {
         // Initialize Pusher
@@ -16,7 +16,7 @@ const PusherProvider = ({ children }) => {
         // Subscribe to channel
         const channel = pusher.subscribe('coin-created-channel'); // Replace with your channel name
         channel.bind('coin-created', (newData) => {
-            console.log('Received data:', newData);
+             
             setData((prevData) => [...prevData, newData]); // Update state
         });
 

@@ -2,6 +2,7 @@ import React from 'react';
 import userprofileImg from '../assets/images/userprofile.png';
 import { Link } from 'react-router-dom';
 import img from '../assets/images/Group 159.png'
+import { formatNumber } from '../utils/helper';
 
 
 const timeAgo = (timestamp) => {
@@ -20,8 +21,8 @@ const timeAgo = (timestamp) => {
 };
 
 const CoinsCreatedCard = ({ coinsCreated, userData }) => {
-    console.log("userData", userData);
-    console.log("coinsCreated", coinsCreated);
+     
+     
 
     return (
         <Link to={`/trade/${coinsCreated?._id}/${coinsCreated?.token_address}`} className='flex flex-col items-center justify-center'>
@@ -33,7 +34,7 @@ const CoinsCreatedCard = ({ coinsCreated, userData }) => {
                     {/* Created by <img src={userData?.profile_photo} className='w-4 h-4' alt="" /> {userData?.user_name} */}
                     Created by <img src={img} className='w-4 h-4' alt="" /> {userData?.user_name}
                 </h5>
-                <p className='text-base'>Market cap: ${coinsCreated?.market_cap}</p>
+                <p className='text-base'>Market cap: ${formatNumber(coinsCreated?.market_cap)}</p>
                 {/* <div className='flex justify-between items-center w-full mt-2'>
                     <p className='text-sm'>Replies: 669</p>
                     <p className='text-sm'>{timeAgo(coinsCreated?.time)}</p>

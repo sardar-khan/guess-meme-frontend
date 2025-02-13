@@ -4,14 +4,17 @@ import { viewProfile, editProfile } from '../utils/api';
 
 export const fetchProfile = createAsyncThunk('profile/fetchProfile', async () => {
     const response = await viewProfile();
-    console.log("fetchProfile", response)
+
     return response.data;
 });
 
 export const updateProfile = createAsyncThunk('profile/updateProfile', async (profile) => {
-    const response = await editProfile(profile);
-    console.log("updateProfile", response)
-    return response;
+   
+        const response = await editProfile(profile);
+
+        return response;
+    
+
 });
 
 const profileSlice = createSlice({
@@ -27,7 +30,7 @@ const profileSlice = createSlice({
     },
     reducers: {
         setProfile: (state, action) => {
-            const { username, bio, profilePhoto, trustScore,createdAt } = action.payload;
+            const { username, bio, profilePhoto, trustScore, createdAt } = action.payload;
             state.username = username;
             state.bio = bio;
             state.profilePhoto = profilePhoto;

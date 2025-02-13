@@ -8,7 +8,7 @@ export const testPumpFunTokenBondingCurve = async () => {
     try {
         window.Buffer = buffer.Buffer
 
-        const mintaddy = new PublicKey("B68UAKUvVQwtqj93F8WSwraEQQuRtSTx51BdTBGuump")
+        const mintaddy = new PublicKey("9DNFjMdeuDGKiBEbkZ7tcQ85rAWhsv8kYMmyKNCPpump")
         const programId = new PublicKey("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P");
         const conn = new Connection("https://go.getblock.io/23d2dbf8dbe44a109200929f7abb4534", { commitment: "finalized" });
         const provider = new AnchorProvider(conn, wallet, { commitment: "processed", });

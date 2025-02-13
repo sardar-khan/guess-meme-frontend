@@ -8,8 +8,8 @@ const Reveal = () => {
     const { coins, status, error } = useSelector((state) => state.coins);
     const deployedCoins = useSelector(selectDeployedCoins);
 
-    console.log("RevelPagecoins", coins)
-    console.log("RevelPagedeployedCoins", deployedCoins)
+     
+     
 
     
     useEffect(() => {

@@ -16,7 +16,7 @@ const CandlestickComboChart = () => {
                 const response = await axios.get(`${apiUrl}trade/graph-data?token_id=${id}`);
                 setCoinData(response.data);
                 setError(null);  // Clear any previous errors
-                console.log("Coin Data:", response.data);
+                 
             } catch (error) {
                 if (error.response && error.response.status === 404) {
                     setError("No trades found for the specified token.");

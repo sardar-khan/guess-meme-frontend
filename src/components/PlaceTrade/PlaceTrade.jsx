@@ -214,7 +214,7 @@ const PlaceTrade = ({ coinData }) => {
           tokenAddress,
           formattedAmount,
         ],
-        value: payAmount
+        value: payAmount?.toString()
 
       })
 

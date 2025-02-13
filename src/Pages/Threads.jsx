@@ -41,7 +41,6 @@ const Threads = () => {
     const { pusherAfterTrade } = useNotificationContext();
     const [refresh, setRefresh] = useState(false)
     const { block_chain } = useWalletContext()
-
     useEffect(() => {
 
         const fetchCoinData = async () => {
@@ -51,7 +50,7 @@ const Threads = () => {
                 // fetchProgress_curve_bond(response?.data?.token_address);
                 // fetchKingoftheHill_progress(response?.data?.token_address);
                 block_chain === "SOL" ? fetchProgress_curve_bond(tokenid) : bondingProgressEth(tokenid)
-                fetchKingoftheHill_progress(tokenid);
+                block_chain === "SOL" && fetchKingoftheHill_progress(tokenid);
             } catch (error) {
                 console.error('Error fetching coin data:', error);
                 toast.error('Failed to fetch coin data.');
@@ -88,6 +87,7 @@ const Threads = () => {
              
         
             setProgressCurveBond(response?.bondingCurveProgress);
+            setKingoftheHill(response?.kingOfTheHillProgress);
         } catch (error) {
             console.error('Error Progress_curve_bond:', error);
             //  toast.error('Failed to Progress_curve_bond.');

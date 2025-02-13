@@ -3,11 +3,7 @@ import abi from "../../web3/EthContractAbi.json";
 import TokenAbi from "../../web3/TokenAbi.json";
 import { toast } from "react-toastify";
 import { ethereumTokenInfo, getBuySellInEthBuy, getBuySellInTokensBuy } from "./TokenPriceCalculations";
-import { data } from "autoprefixer";
 import evmTokenAbi from "../../web3/evmtokenabi.json";
-import { error } from "highcharts";
-import { b } from "./utils";
-import { calculateBondingCurveProgress } from "./solanaBuySellFunction";
 
 // Contract Address
 const CONTRACT_ADDRESS = "0xE2D4cEA37961EA559815830642152AbFE7a87EC5";
@@ -17,7 +13,8 @@ export const getFactoryContract = async () => {
 
 
   // Initialize provider from MetaMask
-  const provider = new ethers.providers.JsonRpcProvider("https://sepolia.infura.io/v3/014624cb65e2436b867f49ef0a3c84e3");
+  const provider = new ethers.providers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com")
+  //("https://sepolia.infura.io/v3/014624cb65e2436b867f49ef0a3c84e3");
 
   const factoryContract = new ethers.Contract(CONTRACT_ADDRESS, abi, provider);
   return factoryContract;
@@ -218,7 +215,7 @@ export const getReturnedEthAmountonSell = async (tokenAddress, amount) => {
 }
 
 export const getPayAbleEtherAmount = async (tokenAddress, amount, walletBalance) => {
-   
+   console.log("amount",amount)
   try {
     if (!tokenAddress || !ethers.utils.isAddress(tokenAddress) || amount == '') {
       throw new Error(`Invalid token address: ${tokenAddress}`);
@@ -228,36 +225,19 @@ export const getPayAbleEtherAmount = async (tokenAddress, amount, walletBalance)
     const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
 
     const factoryContract = await getFactoryContract();
-
-     
-     
     const payableAmount = await factoryContract.buyQuote(tokenAddress, formattedAmount?.toString());
-     
     const fee = await factoryContract.calculateBuyFee(tokenAddress, formattedAmount?.toString());
-     
-    const feeInEther = ethers.utils.formatEther(fee?.toString());
-    const payableAmountInEther = ethers.utils.formatEther(payableAmount);
-     
-
-
     const ethToPayFloat = parseFloat(payableAmount) + parseFloat(fee);
-     
-    const ethToPay = ethers.utils.formatEther(ethToPayFloat);
-     
-
-
     return {
       success: true,
       data: ethToPayFloat,
       error: false
     }
-
-
-
-
   } catch (error) {
     console.error("Error buying tokens on blockchain:", error);
+    
     return { success: false, data: null, error: error.message };
+
   }
 
 }
@@ -442,14 +422,38 @@ const calculateBondingCurveProgressPer = (remainingTokens, initialRealTokenReser
   // Calculate the Bonding Curve Progress
   return ((initialRealTokenReserves - remainingTokens) * 100) / initialRealTokenReserves;
 };
+const calculateKingOfTheHillProgress = (remainingTokens, initialRealTokenReserves) => {
+  // Calculate the Bonding Curve Progress
+  return ((initialRealTokenReserves - remainingTokens) * 100) / initialRealTokenReserves;
+};
+const calculateProgress = (currentTokenValue, minValue, maxValue) => {
+
+  const progress = ((currentTokenValue - minValue) / (maxValue - minValue)) * 100;
+  return progress.toFixed(2); // Return the progress percentage as a string with 2 decimal places
+}
 export const calculateEthBondingCurveProgress = async (tokenAddress) => {
   try {
+    
     const bondingCurveInfo = await tokenBondingCurveInfo(tokenAddress);
      
     const initialRealTokenReserves = 800_000_000; // Fixed initial reserve from your requirements
     const bondingCurveProgress =  calculateBondingCurveProgressPer(bondingCurveInfo.realTokenReserves, initialRealTokenReserves);
+
+     const remainingTokens = parseFloat(bondingCurveInfo?.realTokenReserves);
+    let calaculateToken;
+    if(remainingTokens <400000000){
+        calaculateToken =400000000
+    }else{
+        calaculateToken =remainingTokens
+    }
+    const totalTokens = parseFloat(tokenTotalSupplyStr / 1000000);
+    const minValue = 800000000; // 0% progress
+    const maxValue = 400000000; // 100% progress
+    const kingOfTheHillProgress = calculateProgress(calaculateToken, minValue, maxValue)
      
-    return { bondingCurveProgress: bondingCurveProgress.toFixed(2) }
+    return { 
+      bondingCurveProgress: bondingCurveProgress.toFixed(2),
+      kingOfTheHillProgress:kingOfTheHillProgress }
 
   } catch (error) {
      

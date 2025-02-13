@@ -16,8 +16,6 @@ import { useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wa
 import SetSlipPage from "../Modals/SetSlipPage";
 import { GetContractConfiguration } from "../../web3/EvmConfig";
 import { ethers } from "ethers";
-import { set } from "@coral-xyz/anchor/dist/cjs/utils/features";
-import { error } from "highcharts";
 
 
 const blockchainType = localStorage.getItem("blockchain") || "SOL";
@@ -25,7 +23,7 @@ const blockchainType = localStorage.getItem("blockchain") || "SOL";
 // eslint-disable-next-line react/prop-types
 const PlaceTrade = ({ coinData }) => {
 
-   
+
   let tokenAddress_mint = coinData?.token_address
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -56,22 +54,22 @@ const PlaceTrade = ({ coinData }) => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const currentChain = block_chain === "BNB" ? "bsc" : "sepolia"
 
-   
+
   //buy-tokens-blockchain-calls
-  const { data: buyTxHash, writeContract: useBuyTokens } = useWriteContract()
+  const { data: buyTxHash, writeContract: useBuyTokens, error: errorInBuy, reset: resetBuyEvent } = useWriteContract()
   const { isLoading: isBuying, isSuccess: isBuyed, data: txData } = useWaitForTransactionReceipt({
     hash: buyTxHash,
   });
 
   //allowance-blockchain-calls
-  const { data: allowanceHash, writeContract: giveAllowance } = useWriteContract()
+  const { data: allowanceHash, writeContract: giveAllowance, error: errorInAllowance, reset: resetAllowanceEvent } = useWriteContract()
   const { isLoading: allowanceInProcess, isSuccess: isAllowanced, data: txAllowanceData } = useWaitForTransactionReceipt({
     hash: allowanceHash,
   });
 
 
   //selltoksn-blockchain-calls
-  const { data: sellHash, writeContract: sellTokens } = useWriteContract()
+  const { data: sellHash, writeContract: sellTokens, error: errorInSell, reset: resetSellEvent } = useWriteContract()
   const { isLoading: isSelling, isSuccess: isSold, data: txSellData } = useWaitForTransactionReceipt({
     hash: sellHash,
   });
@@ -81,7 +79,7 @@ const PlaceTrade = ({ coinData }) => {
   const userNativeBalance = useBalance({
     address: address,
   })
-   
+
   const handleSwitchClick = async () => {
     setAmount('')
     setAmountError((prevState) => ({
@@ -110,9 +108,9 @@ const PlaceTrade = ({ coinData }) => {
         }))
       })
     }
-     
+
     GetContractConfiguration(block_chain).then(async (res) => {
-       
+
       setContractInfo(res);
     })
   }, [coinData?.token_address, address, isButtonDisabled])
@@ -130,15 +128,43 @@ const PlaceTrade = ({ coinData }) => {
     }
   }, [allowanceInProcess, isAllowanced, txAllowanceData])
 
-  //sell token on blockchain
+  //sell token on blockchain--------------
   useEffect(() => {
     if (isSold && txSellData) {
       saveSellTransaction({ sellHash, txSellData })
     }
   }, [isSelling, isSold, txSellData])
 
-
-
+  //handle errors-------------------------
+  useEffect(() => {
+    if (errorInBuy) {
+      console.log("error in buy bc ",errorInBuy)
+      const errorMessage = errorInBuy?.message?.split("\n")[0] || "Transaction failed";
+      toast.error(errorMessage);
+      resetBuyEvent();
+      setIsButtonDisabled(false);
+    }
+  }, [errorInBuy]);
+  
+  useEffect(() => {
+    if (errorInAllowance) {
+      console.log("error in  allwance ",errorInAllowance)
+      const errorMessage = errorInAllowance?.message?.split("\n")[0] || "Transaction failed";
+      toast.error(errorMessage);
+      resetAllowanceEvent();
+      setIsButtonDisabled(false);
+    }
+  }, [errorInAllowance]);
+  
+  useEffect(() => {
+    if (errorInSell) {
+      console.log("error in sell  ",errorInSell)
+      const errorMessage = errorInSell?.message?.split("\n")[0] || "Transaction failed";
+      toast.error(errorMessage);
+      resetSellEvent();  // Fixed the reset function to match the error type
+      setIsButtonDisabled(false);
+    }
+  }, [errorInSell]);
 
   const handleTrade = async () => {
 
@@ -151,7 +177,8 @@ const PlaceTrade = ({ coinData }) => {
     try {
       setIsButtonDisabled(true)
       if (tradeType === "buy") {
-        handleBuyTokens(amount, coinData?.token_address)
+
+        handleBuyTokens(showSOGs ? amount : ethAmount, coinData?.token_address)
       } else {
         handleSellTokens(amount, coinData?.token_address)
 
@@ -168,16 +195,17 @@ const PlaceTrade = ({ coinData }) => {
 
   const handleBuyTokens = async (amount, tokenAddress) => {
     try {
-       
+
       const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
       const payAbleAmountEther = await getPayAbleEtherAmount(tokenAddress, amount, balanceData?.formatted)
-       
+      if (!payAbleAmountEther?.success) { return setIsButtonDisabled(false) }
+
       const SelectedAbi = contractInfo.Abi
       const contractAddress = contractInfo.ContractAddress
 
       const payAmount = payAbleAmountEther?.data
 
-       
+
       useBuyTokens({
         address: contractAddress,
         abi: SelectedAbi,
@@ -192,7 +220,7 @@ const PlaceTrade = ({ coinData }) => {
 
     } catch (error) {
       setIsButtonDisabled(false)
-       
+
       // setIsCreatingCoin(false);
       // if (toastId) { toast.update(toastId, { render: "Failed to buy Tokens", type: "error", isLoading: false, autoClose: 3000 }); }
 
@@ -211,12 +239,13 @@ const PlaceTrade = ({ coinData }) => {
           type: "buy",
           transaction_hash: buyTxHash,
         });
-         
+
 
         if (apiResponse?.status === 201) {
           setAmount('')
           setEthAmount('')
           setIsButtonDisabled(false)
+          resetBuyEvent()
 
           toast.success(`${tradeType === "buy" ? "Buy" : "Sell"} successful`);
           dispatch(fetchTrades(id));
@@ -227,12 +256,14 @@ const PlaceTrade = ({ coinData }) => {
       } else {
         setIsButtonDisabled(false)
         toast.error('Transaction failed. Please try again.');
+        resetBuyEvent()
 
       }
 
     } catch (error) {
       setIsButtonDisabled(false)
-       
+      resetBuyEvent()
+
     }
   }
 
@@ -265,28 +296,10 @@ const PlaceTrade = ({ coinData }) => {
       setAmount(amount);
       try {
         const calculateEthValue = showSOGs ? await calculateTokenEthValues(coinData?.token_address, amount, true) : await calculateEthTokenValue(coinData?.token_address, amount, true);
-         
+
         setEthAmount(calculateEthValue)
-         
-        if (parseFloat(amount) > parseFloat(tokenInfo?.data?.realTokenReserves)) {
-          setIsButtonDisabled(false)
-          setAmountError((prevState) => ({
-            ...prevState,
-            error: true,
-            reason: 'Max token reserves reached',
-          }))
 
-        }
-        if (parseFloat(calculateEthValue) > parseFloat(userNativeBalance?.data?.formatted)) {
-          setIsButtonDisabled(false)
-          setAmountError((prevState) => ({
-            ...prevState,
-            error: true,
-            reason: 'You dont have enough balance',
-          }))
-
-        }
-
+        showSOGs ? handleTokenstoEthCheck(amount, tokenInfo?.data?.realTokenReserves, userNativeBalance?.data?.formatted, calculateEthValue) : handleEthtoTokensCheck(amount, tokenInfo?.data?.realTokenReserves, userNativeBalance?.data?.formatted, calculateEthValue)
 
       } catch (error) {
         console.error("Error calculating ETH value:", error);
@@ -301,10 +314,54 @@ const PlaceTrade = ({ coinData }) => {
 
     }
   };
+
+  const handleEthtoTokensCheck = async (amount, realTokenReserves, userNativeBalance, tokentoGet) => {
+
+    if (parseFloat(tokentoGet) > parseFloat(realTokenReserves)) {
+      setIsButtonDisabled(false)
+      setAmountError((prevState) => ({
+        ...prevState,
+        error: true,
+        reason: 'Max token reserves reached',
+      }))
+
+    }
+    if (parseFloat(amount) > parseFloat(userNativeBalance)) {
+      setIsButtonDisabled(false)
+      setAmountError((prevState) => ({
+        ...prevState,
+        error: true,
+        reason: 'You dont have enough balance',
+      }))
+
+    }
+  }
+  const handleTokenstoEthCheck = async (amount, realTokenReserves, userNativeBalance, eth) => {
+
+    if (parseFloat(amount) > parseFloat(realTokenReserves)) {
+      setIsButtonDisabled(false)
+      setAmountError((prevState) => ({
+        ...prevState,
+        error: true,
+        reason: 'Max token reserves reached',
+      }))
+
+    }
+    if (parseFloat(eth) > parseFloat(userNativeBalance)) {
+      setIsButtonDisabled(false)
+      setAmountError((prevState) => ({
+        ...prevState,
+        error: true,
+        reason: 'You dont have enough balance',
+      }))
+
+    }
+
+  }
   //calculate eth values for sell
   const handleAmountSell = async (val) => {
 
-     
+
     if (parseFloat(val) > parseFloat(tokenInfo?.data?.userTokenHoldings)) {
       setIsButtonDisabled(false)
       return setAmountError((prevState) => ({
@@ -322,7 +379,7 @@ const PlaceTrade = ({ coinData }) => {
     setAmount(val)
     const result = await getReturnedEthAmountonSell(coinData?.token_address, val)
     setEthAmount(result)
-     
+
 
   }
 
@@ -340,7 +397,7 @@ const PlaceTrade = ({ coinData }) => {
 
     try {
       const res = await sellTokensInfo(tokenAddress, address, amount, contractInfo)
-       
+
       if (res?.success) {
         if (!res?.doesContractHasAllowance) {
           const SelectedAbi = contractInfo.tokenAbi
@@ -393,7 +450,7 @@ const PlaceTrade = ({ coinData }) => {
       })
     } catch (error) {
       setIsButtonDisabled(false)
-       
+
     }
 
   }
@@ -409,7 +466,7 @@ const PlaceTrade = ({ coinData }) => {
           type: "sell",
           transaction_hash: sellHash,
         });
-         
+
 
         if (apiResponse?.status === 201) {
           setAmount('')
@@ -417,17 +474,19 @@ const PlaceTrade = ({ coinData }) => {
           setIsButtonDisabled(false)
           toast.success(`${tradeType === "buy" ? "Buy" : "Sell"} successful`);
           dispatch(fetchTrades(id));
+          resetSellEvent()
         } else {
           throw new Error(`Failed to Buy tokens`);
 
         }
       } else {
         setIsButtonDisabled(false)
+        resetSellEvent()
         toast.error('Transaction failed. Please try again.');
 
       }
     } catch (error) {
-       
+      resetSellEvent()
       setIsButtonDisabled(false)
     }
   }
@@ -447,8 +506,21 @@ const PlaceTrade = ({ coinData }) => {
 
   }
 
+  const resetStates = () => {
+    setAmount('');
+    handleAmount('');
+    setEthAmount('');
+    setAmountError((prevState) => ({
+      ...prevState,
+      error: false,
+      reason: ``,
+    }))
+  }
 
-   
+  const handleSetAmount = (amount) => {
+    setAmount(amount); handleAmount(amount); calculateTokenEthOnchange(amount)
+  }
+
 
   //false  = amount in eth & true = amount in tokens
   return (
@@ -543,7 +615,7 @@ const PlaceTrade = ({ coinData }) => {
                               </span> : <></>}
                               {coinData?.status !== "created" ? <img
                                 src={
-                                  showSOGs ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.metadata?.image}`:`${ethImg}`
+                                  showSOGs ? `${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.metadata?.image}` : `${ethImg}`
                                 }
                                 className="w-[30px] mr-7 rounded-full"
                               /> : <></>}
@@ -594,22 +666,17 @@ const PlaceTrade = ({ coinData }) => {
 
                 {!showSOGs && tradeType === 'buy' &&
                   <div className='flex justify-start items-center gap-[3px] mt-3 ml-3'>
-                    <span onClick={() => {
-                      setAmount(''); handleAmount(''); setEthAmount(''); setAmountError((prevState) => ({
-                        ...prevState,
-                        error: false,
-                        reason: ``,
-                      }))
-                    }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                    <span onClick={resetStates}
+                      className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                       reset
                     </span>
-                    <span onClick={() => { setAmount(0.1); handleAmount(0.1); calculateTokenEthOnchange(0.1) }} className='Inter whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                    <span onClick={() => { handleSetAmount(0.1) }} className='Inter whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                       0.1 {blockchainType}
                     </span>
-                    <span onClick={() => { setAmount(0.5); handleAmount(0.5); calculateTokenEthOnchange(0.5) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                    <span onClick={() => { handleSetAmount(0.5) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                       0.5 {blockchainType}
                     </span>
-                    <span onClick={() => { setAmount(1); handleAmount(1); calculateTokenEthOnchange(0.1) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                    <span onClick={() => { handleSetAmount(1) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                       1 {blockchainType}
                     </span>
                   </div>

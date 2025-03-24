@@ -20,23 +20,21 @@ import { useAppKitAccount } from '@reown/appkit/react'
 import Notifications from '../components/Notifications'
 import { useNotificationContext } from '../context/NotificationContext'
 import { useWalletContext } from '../context/WalletContext'
+import { useAuthContext } from '../context/useAuth'
+import { FaXTwitter } from 'react-icons/fa6'
 
 
 const ViewUserProfile = () => {
     const { id } = useParams();
-
+    const { isAuthenticated, user, logoutUser, setLogoutUser } = useAuthContext()
     const [activeTab, setActiveTab] = useState('coins created');
     const [showUserData, setShowUserData] = useState(false);
-    const [checkFollow, setCheckFollow] = useState();
     const [notifications, setNotifications] = useState();
     const [notificationsTab, setNotificationsTab] = useState('notification');
-    const [userID, setUserID] = useState();
-    const [userProfileData, setUserProfileData] = useState();
     const { isConnected } = useAppKitAccount()
     const { block_chain } = useWalletContext()
 
     const { pusherLike, pusherFollow, pusherNotificationThread } = useNotificationContext();
-
 
     const tabs = [
         { id: 'coins created', label: 'Coins Created' },
@@ -51,34 +49,18 @@ const ViewUserProfile = () => {
         loading: true,
         error: null,
     });
-
-    useEffect(() => {
-        if (!isConnected) return
-        fetchMainUserProfile();
-    }, [showUserData, id, isConnected]);
-    const fetchMainUserProfile = async () => {
-        try {
-            const viewUserprofileData = await viewUserprofile();
-
-            console.log("progile dat", viewUserprofileData?.data?._id, id)
+    console.log('profileState', profileState)
 
 
-            viewUserprofileData?.data?._id === id ? setShowUserData(true) : setShowUserData(false)
-            setUserID(viewUserprofileData?.data?._id)
-            setUserProfileData(viewUserprofileData?.data)
-        } catch (error) {
-
-        }
-    }
 
     const fetchUserProfile = async () => {
         try {
             // First, fetch user profile data
-            const data = await ViewUser(id);
+            const data = await ViewUser(user?._id);
 
             // Call viewUserprofile function as well
 
-            setProfileState({ data: showUserData ? userProfileData : data, loading: false, error: null });
+            setProfileState({ data: data, loading: false, error: null });
         } catch (err) {
             // Handle errors in case of failure
             setProfileState({
@@ -89,54 +71,31 @@ const ViewUserProfile = () => {
         }
     };
     useEffect(() => {
-        fetchUserProfile();
-    }, [id, isConnected]);
+        user && fetchUserProfile();
+    }, [user?._id, isConnected]);
+
+
 
 
     useEffect(() => {
-        const FetchCheckFollowData = async () => {
-            try {
-                const CheckFollowData = await CheckFollow(id);
-                setCheckFollow(CheckFollowData.follow_status);
 
-
-            } catch (error) {
-
-            }
-        }
-
-        FetchCheckFollowData();
-    }, [checkFollow, notifications, id, isConnected]);
-
-    useEffect(() => {
         const FetchNotifications = async () => {
             try {
                 const reponse = await getNotifications();
+                console.log("respinse", reponse)
                 setNotifications(reponse.data);
 
             } catch (error) {
 
             }
         }
-
         FetchNotifications();
-    }, [id, isConnected]);
+    }, [id, user]);
 
-    const handleToggleFollow = async () => {
-        try {
-            const response = await toggleFollow(id);
-            if (response) {
 
-                const refetchFollowData = await CheckFollow(id);
-                setCheckFollow(refetchFollowData.follow_status);
+    useEffect(() => {
 
-            } else {
-
-            }
-        } catch (error) {
-            console.error("Error while toggling follow:", error);
-        }
-    };
+    }, [notifications]);
 
 
     if (profileState.loading) return <div className='mt-4'><Loader /></div>;
@@ -164,7 +123,8 @@ const ViewUserProfile = () => {
         }
     }
 
-    console.log("hello", showUserData, isConnected)
+    console.log("hello", profileState?.data?.data?.user?.profile_photo)
+    console.log("hey", `${import.meta.env.VITE_API_URL.slice(0, -1)}${profileState?.data?.data?.profileState}`)
     return (
         <div className=' '>
 
@@ -174,21 +134,33 @@ const ViewUserProfile = () => {
 
                     <CardWrapper>
                         <div className='flex flex-col items-center justify-center relative'>
-                            {showUserData && isConnected && <Link to='/editprofile'><img src={editIcon} className='w-[20px] absolute top-0 right-1 cursor-pointer' alt="" /></Link>}
-                            <img src={img} className='w-[80px] h-[80px]' alt="" />
+                            {isConnected && <Link to='/editprofile'>
+                                <img src={editIcon} className='w-[20px] absolute top-0 right-1 cursor-pointer' alt="" />
+                            </Link>}
+                            <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${profileState?.data?.data?.user?.profile_photo}`} className='w-[80px] h-[80px] rounded-md' alt="" />
                             <div className='text-center'>
                                 <h5 className='PixelOperatorbold text-xl'>{profileState?.data?.data?.user?.user_name}</h5>
                                 {/* <p className='text-base'>5 followers</p> */}
-                                <p className='text-base'>{profileState?.data?.data?.user?.bio}</p>
+                                <p className='text-base'>{profileState?.data?.data?.user?.bio === 'some bio' ? 'No Bio' : profileState?.data?.data?.user?.bio}</p>
+
+                                {profileState?.data?.data?.user?.x_link &&
+                                    <a href={profileState?.data?.data?.user?.x_link} className='bg-[#1DA1F2] p-2 rounded-md mt-1 text-white flex hover:scale-110 transition-all ease-in-out ' target="_blank" rel="noopener noreferrer" > <FaXTwitter />
+                                        <span className="Inter text-xs ml-2">
+                                            {profileState?.data?.data?.user?.x_link
+                                                ?.replace("https://twitter.com/", "")
+                                                .toUpperCase()}
+                                        </span>
+                                    </a>
+                                }
                             </div>
                         </div>
-                        {!showUserData &&
+                        {/* {!showUserData &&
                             <button className="themeBtn w-fit mx-auto mt-4" onClick={handleToggleFollow}>
                                 <span className="!text-xs">
                                     {checkFollow ? "Following" : "Follow"}
                                 </span>
                             </button>
-                        }
+                        } */}
                     </CardWrapper>
 
 
@@ -199,7 +171,7 @@ const ViewUserProfile = () => {
                 <div className='w-full max-w-[100%] lg:max-w-[65%]'>
                     <CardWrapper>
                         <div className='flex flex-col items-center justify-center'>
-                            <div className='bg-[#E9E9E9] p-[5px] text-2xl text-center PixelOperator rounded-lg w-full overflow-hidden'>{profileState?.data?.data?.user?.wallet_address[0]?.address}</div>
+                            <div className='bg-[#E9E9E9] p-[5px] text-2xl text-center PixelOperator rounded-lg w-full overflow-hidden'>{user?.wallet_address[0]?.address}</div>
                             {block_chain !== "SOL" ?
                                 <div className='w-full'>
                                     <Link to={`https://sepolia.etherscan.io/address/${profileState?.data?.data?.user?.wallet_address[0]?.address}`} target='_blank' className='flex justify-end gap-1 mt-1 PixelOperator'>View on Etherscan <img src={Arrow} alt="" /></Link>
@@ -224,9 +196,7 @@ const ViewUserProfile = () => {
                         <div className='flex flex-row justify-center flex-wrap gap-1'>
                             {tabs.map((tab) => {
                                 // Show all tabs if showUserData is true, else skip "Notification" tab
-                                if (!showUserData && tab.id === 'notification') {
-                                    return null; // Skip rendering the "Notification" tab
-                                }
+
                                 return (
                                     <button
                                         key={tab.id}
@@ -286,7 +256,7 @@ const ViewUserProfile = () => {
                                 <>
                                     {profileState?.data?.data?.user?.coins_created?.map((coinsCreated, index) => (
                                         <CardWrapper>
-                                            <CoinsCreatedCard coinsCreated={coinsCreated} userData={profileState?.data?.data?.user} />
+                                            <CoinsCreatedCard coinsCreated={coinsCreated} userData={user} />
                                         </CardWrapper>
                                     ))}
                                 </>
@@ -294,7 +264,7 @@ const ViewUserProfile = () => {
 
                         </>
                     }
-                    {activeTab === 'notification' && showUserData &&
+                    {activeTab === 'notification' &&
                         <div className='md:pl-20 w-full'>
                             {notifications?.length === 0 ?
                                 <div className='PixelOperator text-2xl text-center'>
@@ -322,11 +292,12 @@ const ViewUserProfile = () => {
                                             </SmallCardWrapper>
                                         ))}
 
-                                    {notifications.map((notification, index) => (
-                                        <SmallCardWrapper>
-                                            <Notifications key={index} notification={notification} />
-                                        </SmallCardWrapper>
-                                    ))}
+                                    {pusherLike.length <= 0 && pusherFollow.length <= 0 && pusherNotificationThread.length <= 0 && (
+                                        notifications.map((notification, index) => (
+                                            <SmallCardWrapper>
+                                                <Notifications key={index} notification={notification} />
+                                            </SmallCardWrapper>
+                                        )))}
                                 </div>
                             }
 
@@ -336,15 +307,15 @@ const ViewUserProfile = () => {
                     {activeTab === 'followers' &&
                         <div className='grid grid-cols-1 sm:grid-cols-1 gap-3'>
 
-                            {profileState?.data?.data?.followers.length === 0 ?
+                            {profileState?.data?.data?.user?.followers?.length === 0 ?
                                 <div className='PixelOperator text-2xl text-center'>
                                     No Followers
                                 </div>
                                 :
                                 <div className='mx-auto w-full'>
-                                    {profileState?.data?.data?.followers?.map((followers, index) => (
+                                    {profileState?.data?.data?.user?.followers?.map((followers, index) => (
                                         <SmallCardWrapper>
-                                            <Followers followers={followers} followerLength={profileState?.data?.data?.followers.length} />
+                                            <Followers followers={followers} followerLength={profileState?.data?.data?.user?.followers.length} />
                                         </SmallCardWrapper>
                                     ))}
                                 </div>
@@ -353,15 +324,15 @@ const ViewUserProfile = () => {
                     }
                     {activeTab === 'following' &&
                         <div className='grid grid-cols-1 sm:grid-cols-1 gap-3'>
-                            {profileState?.data?.data?.following.length === 0 ?
+                            {profileState?.data?.data?.user?.following.length === 0 ?
                                 <div className='PixelOperator text-2xl text-center'>
                                     No Following
                                 </div>
                                 :
                                 <div className='mx-auto w-full'>
-                                    {profileState?.data?.data?.followers?.map((followers, index) => (
+                                    {profileState?.data?.data?.user?.following?.map((followers, index) => (
                                         <SmallCardWrapper>
-                                            <Follwoing Follwoing={followers} FollwoingLength={profileState?.data?.data?.following.length} />
+                                            <Follwoing Follwoing={followers} />
                                         </SmallCardWrapper>
                                     ))}
                                 </div>

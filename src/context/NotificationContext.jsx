@@ -8,7 +8,7 @@ export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState({});
     const [createNotifications, setCreateNotifications] = useState({});
     /***************** Solana Pusher *****************/
-
+    
     /***************** Ethereum Pusher *****************/
     const [notificationsEth, setNotificationsEth] = useState({});
     const [createNotificationsEth, setCreateNotificationsEth] = useState({});
@@ -54,11 +54,11 @@ export const NotificationProvider = ({ children }) => {
         const likeChannel = pusher.subscribe('like-pusher');
         const followChannel = pusher.subscribe('follow-user');
         const threadNotificationChannel = pusher.subscribe('threads-channel');
-        
+
 
         // Handle coin-created event
         coinChannel.bind('coin-created-solana', (data) => {
-             
+
             setCreateNotifications({
                 user_name: data.user_name,
                 action: data.action,
@@ -77,7 +77,7 @@ export const NotificationProvider = ({ children }) => {
 
         // Handle trade-initiated event
         channel.bind('solana-trade-initiated', (data) => {
-             
+
             setNotifications({
                 user_name: data.user_name,
                 action: data.action,
@@ -92,7 +92,7 @@ export const NotificationProvider = ({ children }) => {
         /***************** Ethereum Pusher *****************/
         // Handle coin-created event
         coinChannelEth.bind('coin-created-eth', (data) => {
-             
+
             setCreateNotificationsEth({
                 user_name: data.user_name,
                 action: data.action,
@@ -111,7 +111,7 @@ export const NotificationProvider = ({ children }) => {
 
         // Handle trade-initiated event
         channelEth.bind('eth-trade-initiated', (data) => {
-             
+
             setNotificationsEth({
                 user_name: data.user_name,
                 action: data.action,
@@ -126,13 +126,13 @@ export const NotificationProvider = ({ children }) => {
 
         // Handle coin-created event
         threadsChannel.bind('new-reply', (data) => {
-             
+
             setPusherThread((prevThreads) => [...prevThreads, data]);
         });
 
         // Handle coin-created event
         tradeChannel.bind('new-percentage', (data) => {
-             
+
             setPusherAfterTrade(data);
             // setPusherAfterTrade((prevTrades) => [...prevTrades, data]);
         });
@@ -142,16 +142,16 @@ export const NotificationProvider = ({ children }) => {
         // Handle like event
         likeChannel.bind('like', (data) => {
             setPusherLike((prevLike) => [...prevLike, data]);
-             
+
         });
         // Handle follow event
         followChannel.bind('follow', (data) => {
             setPusherFollow((prevFollow) => [...prevFollow, data]);
-             
+            console.log("pusherFollow", data)
         });
         // Handle coin-created event
         threadNotificationChannel.bind('reply', (data) => {
-             
+
             setPusherNotificationThread((prevThreads) => [...prevThreads, data]);
         });
 
@@ -180,12 +180,12 @@ export const NotificationProvider = ({ children }) => {
 
 
             /***************** Like Follow Comment Pusher *****************/
-            likeChannel.unsubscribe();
             likeChannel.unbind_all();
-            followChannel.unsubscribe();
+            likeChannel.unsubscribe();
             followChannel.unbind_all();
-            threadNotificationChannel.unsubscribe();
+            followChannel.unsubscribe();
             threadNotificationChannel.unbind_all();
+            threadNotificationChannel.unsubscribe();
             /***************** Like Follow Comment Pusher *****************/
 
         };

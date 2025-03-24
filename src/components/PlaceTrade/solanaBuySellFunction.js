@@ -1,5 +1,5 @@
 import { Connection, Keypair, PublicKey, clusterApiUrl } from "@solana/web3.js";
-import { connection, provider, feeRecipient, IDL1} from "./config";
+import { connection, provider, programId, feeRecipient, IDL1 } from "./config";
 import { getAccount, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Buy_createTransactionInstruction, b, fetchLiquidityPool, lx_global } from "./utils";
 import BN from "bn.js";
@@ -7,21 +7,33 @@ import { AnchorProvider, Program, web3 } from "@coral-xyz/anchor";
 import * as buffer from 'buffer'
 import { toast } from "react-toastify";
 import { getBuySellInSolBuy, getBuySellInTokensBuy, retrieveTokenInfo } from "./TokenPriceCalculations";
+import { fetchUsdPrice } from "../../utils/helper";
+import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
+function calculateFinalAmount(amount, percentage) {
+    amount = Number(amount);
+    percentage = Number(percentage);
 
+    if (!isNaN(amount) && !isNaN(percentage) && amount % 1 !== 0) {  
+        return amount + (amount * (percentage / 100));
+    }
+    return amount;
+}
 
+//buy tokens on blockchain
+async function buy(walletProvider, amount, mintaddy, maxSlippage,solAmount) {
+    try {
 
-async function buy(walletProvider, amount, mintaddy, maxSlippage, priorityFee) {
-    try{
-         
-        const buy_value = maxSlippage ? maxSlippage?.toString() : '10'
-         
-        const programId = new PublicKey("7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh");
-    
-         
+        const buy_value = maxSlippage ? maxSlippage?.toString() : '1'
+console.log("buy-killswitch",solAmount,buy_value)
+
+const slippageAmount = calculateFinalAmount(solAmount,buy_value)
+console.log("buyyyyyyyy",slippageAmount*1e9)
+const slippagePercentage = slippageAmount*1e9;
+
         // const buy_value = "0.1"; // Just for setting high slippage basically
         const tokenamt = Number(amount) * 10 ** 6; // Remaining token amount based on calling ts-node retrieve.ts
-    
+
         const [S] = PublicKey.findProgramAddressSync(
             [Buffer.from("mint-authority")],
             programId
@@ -30,18 +42,18 @@ async function buy(walletProvider, amount, mintaddy, maxSlippage, priorityFee) {
             [Buffer.from("bonding-curve"), mintaddy.toBuffer()],
             programId
         );
-    
+
         const program = new Program(IDL1, programId, walletProvider);
-    
-         
-         
-    
+
+
+
+
         const [O] = PublicKey.findProgramAddressSync(
             [Buffer.from("global")],
             programId
         );
-         
-    
+
+
         let atains;
         const r = b(mintaddy, walletProvider.publicKey, false);
         let hasAta = false;
@@ -56,19 +68,24 @@ async function buy(walletProvider, amount, mintaddy, maxSlippage, priorityFee) {
                 mintaddy
             );
         }
-    
+
         const a = new BN(Math.floor(1e9 * parseFloat(buy_value)));
-    
+
         let o = {
             solAmount: a,
         };
         let buyTx
-        if (hasAta) {
+
+       
     
+        if (hasAta) {
+
+
             buyTx = await program.methods
                 .buy(
                     new BN(tokenamt),
-                    o.solAmount.add(a.mul(new BN(Math.floor(10 * 999))).div(new BN(1e3)))
+                   new BN(slippagePercentage)
+                   // o.solAmount.add(a.mul(new BN(Math.floor(10 * 999))).div(new BN(1e3)))
                 )
                 .accounts({
                     global: O,
@@ -87,7 +104,7 @@ async function buy(walletProvider, amount, mintaddy, maxSlippage, priorityFee) {
                 .preInstructions([atains])
                 .transaction();
         } else {
-    
+
             buyTx = await program.methods
                 .buy(
                     new BN(tokenamt),
@@ -110,19 +127,19 @@ async function buy(walletProvider, amount, mintaddy, maxSlippage, priorityFee) {
                 // .preInstructions([atains])
                 .transaction();
         }
-    
+
         // Fetch recentBlockhash
-    
+
         buyTx.feePayer = walletProvider.publicKey;
         buyTx.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
-    
+
         const signature = await walletProvider.signAndSendTransaction(buyTx);
         return {
             error: false,
             data: signature,
             success: true,
         }
-    }catch(error){
+    } catch (error) {
         return {
             error: true,
             data: error,
@@ -130,9 +147,63 @@ async function buy(walletProvider, amount, mintaddy, maxSlippage, priorityFee) {
         }
 
     }
-   
+
 }
 
+//confirm trasaction on blockchain
+async function getTransactionDetails(transactionHash) {
+
+    try {
+        const transactionDetails = await connection.getTransaction(transactionHash, {
+            commitment: "confirmed",
+            maxSupportedTransactionVersion: 0
+        });
+
+        if (!transactionDetails) {
+            console.log("Transaction not found or still processing.");
+            return;
+        }
+
+        if (transactionDetails.meta.err === null) {
+            return { transaction_status: true }
+        }
+        else if (transactionDetails.meta.err !== null) {
+            return { transaction_status: false }
+        }
+    } catch (error) {
+        console.error("Error fetching transaction details:", error.message);
+    }
+}
+
+//wait for transacton to be finalized
+async function waitForTransactionFinalization(transactionHash, maxRetries = 10, delay = 4000) {
+    try {
+        for (let i = 0; i < maxRetries; i++) {
+            const transactionDetails = await connection.getTransaction(transactionHash, {
+                commitment: "confirmed", // Ensures confirmation but not finalit
+                maxSupportedTransactionVersion: 0
+            });
+
+            if (transactionDetails) {
+                const confirmedStatus = await connection.getSignatureStatus(transactionHash, { searchTransactionHistory: true });
+
+                if (confirmedStatus?.value?.confirmationStatus === "finalized") {
+                    console.log("Transaction finalized:", transactionHash);
+                    return true; // Now safe to call the backend
+                }
+            }
+
+            console.log(`Waiting for finalization... Attempt ${i + 1}/${maxRetries}`);
+            await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
+        }
+
+        console.log("Transaction not finalized within the given retries.");
+        return false; // Return false if transaction is not finalized
+    } catch (error) {
+        console.error("Error checking transaction status:", error.message);
+        return false;
+    }
+}
 const sell = async (
     walletProvider,
     tokenAmount,
@@ -167,12 +238,8 @@ const sell = async (
         )
         const mintaddy = new PublicKey(taddress)
 
-        const programId = new PublicKey(
-            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
-        )
-        const feeRecipient = new PublicKey(
-            'GTwY38pfmivyecwZtevaT14N3WDHMQebrrWjt2i48E29',
-        )
+
+
         const provider = new AnchorProvider(connection, walletProvider, {
             commitment: 'confirmed',
         })
@@ -231,7 +298,7 @@ const sell = async (
 
         let total = a.sub(a.mul(new BN(Math.floor(10 * j))).div(new BN(1e3)))
 
-         
+
 
         let sellTx = await program.methods
             .sell(el, total)
@@ -265,7 +332,7 @@ const sell = async (
             success: true,
         }
     } catch (error) {
-         
+
         return {
             error: error.message,
             data: null,
@@ -283,28 +350,28 @@ async function fetchLiquidityPool1(pda, program) {
         throw new Error('Liquidity pool account not found or is not initialized.');
     }
 }
-const retrieveTokenMetaData= async (tokenAddress) => {
+const retrieveTokenMetaData = async (tokenAddress) => {
     window.Buffer = buffer.Buffer
     try {
         const MPL_TOKEN_METADATA_PROGRAM_ID = new PublicKey(
-          "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+            "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
         );
         const mintAddress = new PublicKey(tokenAddress);
-    
+
         // Derive the metadata PDA
         const [metadataPDA] = PublicKey.findProgramAddressSync(
-          [
-            Buffer.from("metadata"),
-            MPL_TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-            mintAddress.toBuffer(),
-          ],
-          MPL_TOKEN_METADATA_PROGRAM_ID
+            [
+                Buffer.from("metadata"),
+                MPL_TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+                mintAddress.toBuffer(),
+            ],
+            MPL_TOKEN_METADATA_PROGRAM_ID
         );
-    
-         
-      } catch (error) {
+
+
+    } catch (error) {
         console.error("Error while fetching token metadata", error);
-      }
+    }
 }
 
 const TokenPriceCalculations = async (taddress, amount, isSolToToken, isDeployed) => {
@@ -313,17 +380,17 @@ const TokenPriceCalculations = async (taddress, amount, isSolToToken, isDeployed
     if (isDeployed) {
 
         const tokenAddress = new PublicKey(taddress)
-        const programId = new PublicKey(
-            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
-        )
+
 
         const program = new Program(IDL1, programId, provider)
         const data = await retrieveTokenInfo(program, programId, tokenAddress, isDeployed);
+        console.log("data-fetched", data)
 
         const virtualSolReserves = BigInt(data?.virtualSolReserves);
         const virtualTokenReserves = BigInt(data?.virtualTokenReserves);
 
         const k = virtualSolReserves * virtualTokenReserves;
+
 
         if (isSolToToken) {
             const pricesInToken = getBuySellInTokensBuy(amount, k, virtualSolReserves, virtualTokenReserves)
@@ -496,25 +563,23 @@ const PUMPFUNTOKENINFO = async (program, programId, mintaddy, isDeployed) => {
 
 
 
-const reteriveTokenDetails = async ( taddress) => {
+const reteriveTokenDetails = async (taddress) => {
     try {
         window.Buffer = buffer.Buffer
-        const programId = new PublicKey(
-            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
-        )
+
         const program = new Program(IDL1, programId, provider)
-       
+
         const tokenAddress = new PublicKey(taddress)
-       
+
         const [C] = PublicKey.findProgramAddressSync(
             [Buffer.from('bonding-curve'), tokenAddress.toBuffer()],
             programId,
         )
-      
+
 
 
         const r = await program.account.bondingCurve.fetch(C)
- 
+
         const {
             realSolReserves,
             virtualTokenReserves,
@@ -539,13 +604,13 @@ const reteriveTokenDetails = async ( taddress) => {
             tokenTotalSupply: tokenTotalSupplyStr,
             remainingTokens: parseFloat(realTokenReservesStr / 1000000),
             totalTokens: parseFloat(tokenTotalSupplyStr / 1000000),
-            realSolReserves:realSolReserves?.toString(),
+            realSolReserves: realSolReserves?.toString(),
             complete: complete,
         }
- 
+
         return formattedOutput
     } catch (error) {
-         
+
     }
 
 }
@@ -559,16 +624,14 @@ const calculateBondingCurveProgress = async (taddress, isDeployed) => {
     window.Buffer = buffer.Buffer
 
     const mintaddy = new PublicKey(taddress)
-    const programId = new PublicKey(
-        '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
-    )
+
 
     const program = new Program(IDL1, programId, provider)
-    const calculateBondingCurveProgressPer = (tokenTotalSupply,realTokenReserves) => {
-        const reservedTokens=new BN(206900000).mul(new BN(1000_000));
-        const initialRealTokenReserves=tokenTotalSupply.sub(reservedTokens);
-          const bondingCurveProgress= new BN(100).sub(realTokenReserves.mul(new BN(100)).div(initialRealTokenReserves))
-         
+    const calculateBondingCurveProgressPer = (tokenTotalSupply, realTokenReserves) => {
+        const reservedTokens = new BN(206900000).mul(new BN(1000_000));
+        const initialRealTokenReserves = tokenTotalSupply.sub(reservedTokens);
+        const bondingCurveProgress = new BN(100).sub(realTokenReserves.mul(new BN(100)).div(initialRealTokenReserves))
+
         return bondingCurveProgress.toString(10)
     };
 
@@ -589,15 +652,25 @@ const calculateBondingCurveProgress = async (taddress, isDeployed) => {
             complete = false, // Default value if not present
         } = r;
 
+
+
+
         // Convert BN objects to strings
         const virtualTokenReservesStr = virtualTokenReserves.toString();
         const virtualSolReservesStr = virtualSolReserves.toString();
         const realTokenReservesStr = realTokenReserves.toString();
         const tokenTotalSupplyStr = tokenTotalSupply.toString();
 
-        // Remaining tokens in normal units
+        // const virtual_sol_reserves = BigInt(virtualSolReservesStr);
+        // const virtual_token_reserves = BigInt(virtualTokenReservesStr);
+
+        // const k = virtual_sol_reserves * virtual_token_reserves;
+        // const PriceInSol = getBuySellInSolBuy(1, k, virtualSolReserves, virtualTokenReserves);
+        // // Remaining tokens in normal units
         const remainingTokens = parseFloat(realTokenReservesStr / 1000000);
         const totalTokens = parseFloat(tokenTotalSupplyStr / 1000000);
+        // console.log("price_in_SOl",PriceInSol)
+        // 
 
         const bondingCurveProgress = calculateBondingCurveProgressPer(tokenTotalSupply, realTokenReserves);
 
@@ -649,9 +722,7 @@ const calculateKingOfTheHillProgress = async (taddress, isDeployed) => {
     window.Buffer = buffer.Buffer
 
     const mintaddy = new PublicKey(taddress)
-    const programId = new PublicKey(
-        '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
-    )
+
 
     const program = new Program(IDL1, programId, provider)
     const calculateBondingCurveProgress = (remainingTokens, initialRealTokenReserves) => {
@@ -689,17 +760,17 @@ const calculateKingOfTheHillProgress = async (taddress, isDeployed) => {
         // Remaining tokens in normal units
         const remainingTokens = parseFloat(realTokenReservesStr / 1000000);
         let calaculateToken;
-        if(remainingTokens <400000000){
-            calaculateToken =400000000
-        }else{
-            calaculateToken =remainingTokens
+        if (remainingTokens < 396550000) {
+            calaculateToken = 396550000
+        } else {
+            calaculateToken = remainingTokens
         }
         const totalTokens = parseFloat(tokenTotalSupplyStr / 1000000);
 
         // Initial real token reserves based on your logic
-        const initialRealTokenReserves = 800_000_000; // Fixed initial reserve from your requirements
-        const minValue = 800000000; // 0% progress
-        const maxValue = 400000000; // 100% progress
+        const initialRealTokenReserves = 793100000; // Fixed initial reserve from your requirements
+        const minValue = 793100000; // 0% progress
+        const maxValue = 396550000; // 100% progress
         const kingOfTheHillProgress = calculateProgress(calaculateToken, minValue, maxValue)
 
         // Logging the specific properties in a formatted string
@@ -725,7 +796,7 @@ const calculateKingOfTheHillProgress = async (taddress, isDeployed) => {
         const totalTokens = 1_000_000_000;
         const minValue = 800000000; // 0% progress
         const maxValue = 400000000; // 100% progress
-        const kingOfTheHillProgress= calculateProgress(remainingTokens, minValue, maxValue)
+        const kingOfTheHillProgress = calculateProgress(remainingTokens, minValue, maxValue)
 
         // Logging the specific properties in a formatted string
         const formattedOutput = {
@@ -739,7 +810,7 @@ const calculateKingOfTheHillProgress = async (taddress, isDeployed) => {
             complete: false,
         };
 
-       
+
         return formattedOutput;
     }
 };
@@ -789,7 +860,7 @@ const reterieveUserSolanaBalance = async (walletProvider) => {
         const balance = await connection.getBalance(walletProvider.publicKey)
         return balance
     } catch (error) {
-         
+
     }
 }
 
@@ -802,19 +873,18 @@ const launchSolToken = async (
     amount,
     walletProvider,
     appconnection,
-    setIsCreatingCoin
+    setIsCreatingCoin,
+
 
 ) => {
-   
+
     window.Buffer = buffer.Buffer
 
     //setLoading(true)
 
     try {
         const tokenamt = Number(amount) * 10 ** 6;
-        const programId = new PublicKey(
-            '7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh',
-        )
+
         const program = new Program(IDL1, programId, walletProvider)
 
         // Constants for SOL and Token decimals
@@ -829,51 +899,50 @@ const launchSolToken = async (
         const tokenFactor = new BN(10).pow(new BN(TOKEN_DECIMALS)); // 10^6 for Token
 
         // Adjusted token parameters
-         const tokenTotalSupply = new BN(1000000000).mul(tokenFactor); // 1 billion tokens, adjusted for 6 decimals
-       // const tokenMargin = new BN(200000000).mul(tokenFactor); // Margin adjusted for token decimals
+        const tokenTotalSupply = new BN(1000000000).mul(tokenFactor); // 1 billion tokens, adjusted for 6 decimals
+        // const tokenMargin = new BN(200000000).mul(tokenFactor); // Margin adjusted for token decimals
         const initialVirtualTokenReserves = new BN(1073000191).mul(tokenFactor);
-       // const initialRealTokenReserves = tokenTotalSupply.mul(new BN(80)).div(new BN(100)); // 80% of total supply
-        const initialRealTokenReserves =new BN(793100000).mul(tokenFactor);
+        // const initialRealTokenReserves = tokenTotalSupply.mul(new BN(80)).div(new BN(100)); // 80% of total supply
+        const initialRealTokenReserves = new BN(793100000).mul(tokenFactor);
         const token_key = Keypair.generate();
-       
+
 
         // Derive addresses
         const [S] = PublicKey.findProgramAddressSync(
             [Buffer.from("mint-authority")],
             programId
         );
-
         const [C] = PublicKey.findProgramAddressSync(
             [Buffer.from("bonding-curve"), token_key.publicKey.toBuffer()],
             programId
         );
 
-        const B = b(token_key.publicKey, C, true);
+        console.log("bonding-curve", C?.toBase58())
 
+        const B = b(token_key.publicKey, C, true);
+        console.log("B", B?.toBase58())
         const MPL_TOKEN_METADATA_PROGRAM_ID = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s";
         const E = new PublicKey(MPL_TOKEN_METADATA_PROGRAM_ID);
-
+        console.log("Mpl_token_Metadata", E?.toBase58())
         const [O] = PublicKey.findProgramAddressSync(
             [Buffer.from("global")],
             programId
         );
+        console.log("OOOOOOOOOOOO", O)
 
         const [D] = PublicKey.findProgramAddressSync(
             [Buffer.from("metadata"), E.toBuffer(), token_key.publicKey.toBuffer()],
             E
         );
-
-        
-        // Create transaction
+        const update = new PublicKey(
+            "7QMH9DWpavmAP4q3D4maqHwVGh6NA4dZ3kstmVBwmjCX"
+        );
         const tx = await program.methods
             .create(
-                name,
-                symbol,
+                "Guess",
+                "G",
                 image,
-                100, // Adjust max_supply for token decimals
-                initialRealTokenReserves,
-                initialVirtualTokenReserves,
-                tokenTotalSupply
+                100
             )
             .accounts({
                 mint: token_key.publicKey,
@@ -893,6 +962,32 @@ const launchSolToken = async (
             .signers([token_key])
             .transaction();
 
+        // const txx = await program.methods
+        // .meta(
+        //     "test",
+        //     symbol,
+        //     image,
+
+
+        // )
+        // .accounts({
+        //     mint: token_key.publicKey,
+        //     mintAuthority: S,
+        //     bondingCurve: C,
+        //     associatedBondingCurve: B,
+        //     global: O,
+        //     mplTokenMetadata: E,
+        //     metadata: D,
+        //     user: walletProvider.publicKey,
+        //     systemProgram: new PublicKey("11111111111111111111111111111111"),
+        //     tokenProgram: new PublicKey(
+        //         "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        //     ),
+        //     rent: new PublicKey("SysvarRent111111111111111111111111111111111"),
+        // })
+        // .signers([token_key])
+        // .transaction();
+
 
         let atains;
         const r = b(token_key.publicKey, walletProvider.publicKey, false);
@@ -909,12 +1004,30 @@ const launchSolToken = async (
             );
         }
 
+
+        // Create transaction
+
         const a = new BN(Math.floor(1e9 * parseFloat(buy_value)));
 
         let o = {
             solAmount: a,
         };
         let buyTx
+        const abc = b(token_key.publicKey, C, true);
+        console.log("info", {
+            "global": O?.toBase58(),
+            "feeRecipient": feeRecipient?.toBase58(),
+            "Mpl_token_Metadata": E?.toBase58(),
+            "mint": token_key.publicKey?.toBase58(),
+            "bondingCurve": C?.toBase58(),
+            "mint-authority": S?.toBase58(),
+            "associatedBondingCurve": abc?.toBase58(),
+            "associatedUser": r?.toBase58(),
+            "user_publickey": walletProvider.publicKey?.toBase58(),
+            "systemProgram": "11111111111111111111111111111111",
+            "tokenProgram": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+
+        })
         if (hasAta) {
 
             buyTx = await program.methods
@@ -968,7 +1081,9 @@ const launchSolToken = async (
 
 
         const transaction = new web3.Transaction().add(tx);
+        // transaction.add(txx);
         transaction.add(buyTx);
+
         transaction.feePayer = walletProvider.publicKey;
         transaction.recentBlockhash = (await appconnection.getLatestBlockhash('confirmed')).blockhash;
         transaction.partialSign(token_key);
@@ -985,29 +1100,95 @@ const launchSolToken = async (
             bonding_curve: B.toBase58(),
         };
     } catch (err) {
+        console.log("error while creating coin solana", err)
         //setLoading(false)
         setIsCreatingCoin(false)
-         
-        if (err.message.includes('User rejected the request')) { return {
-            success: false,
-            error:'User rejected the request',
-            token_address: null,
-            tx_hash: null,
-            bonding_curve: null,
-        }
+
+        if (err.message.includes('User rejected the request')) {
+            return {
+                success: false,
+                error: 'User rejected the request',
+                token_address: null,
+                tx_hash: null,
+                bonding_curve: null,
+            }
         } else {
             toast.error('Something went wrong. Please try again.')
             return {
                 success: false,
-                error:'Something went wrong. Please try again',
+                error: 'Something went wrong. Please try again',
                 token_address: null,
                 tx_hash: null,
                 bonding_curve: null,
             }
         }
 
-       
+
     }
 }
 
-export { buy, retrieveTokenMetaData,launchSolToken,calculateKingOfTheHillProgress, getBondingCurveAddress, getBondingCurveInfo, calculateBondingCurveProgress, sell, reteriveTokenDetails, TokenPriceCalculations, reterieveUserSolanaBalance }
+const check = async () => {
+
+    window.Buffer = buffer.Buffer
+
+    const C = new PublicKey("5Z29YVEify9xdgnoYgY76Uo5dqN5DqdHs9kEgQLTT368")
+    const pkey = new PublicKey("DmToPCR3MAyAVVwnw4PUH6wBnobTphyE6iEZWLgVQPVj")
+
+    const B = b(pkey, C, true);
+
+
+    console.log("B", B?.toBase58())
+}
+const marketCapCalSOl = async (tokenAddress,priceInUsd, setMarketCap) => {
+    try {
+        setMarketCap(prevState => ({
+            ...prevState,
+            loading: true
+        }));
+
+
+        //fetch 1 token price
+        const oneTokenPrice = await TokenPriceCalculations(
+            tokenAddress,
+            1,
+            false,
+            true
+        )
+
+        // //fetch sol price in usd
+        // const priceInUsd = await fetchUsdPrice();
+
+        //calculate 1 token price in usd
+        const tokenPriceInUsdt = priceInUsd?.solPrice * oneTokenPrice?.tokensbuy
+
+        // mul by billion to get the current market cap of token
+        const marketCap = tokenPriceInUsdt * 1000000000
+        setMarketCap(prevState => ({
+            ...prevState,
+            loading: false,
+            data: marketCap
+        }));
+
+    } catch (error) {
+        console.log("error while market-cap", error)
+        setMarketCap(prevState => ({
+            ...prevState,
+            loading: false,
+            data: ""
+        }));
+    }
+}
+
+const returnBondingCurveAddress = async (taddress,ownerAddress) => {
+    try {
+        window.Buffer = buffer.Buffer
+        const mint = new PublicKey(taddress);
+        const owner = new PublicKey(ownerAddress);
+        const tokenAccountAddress = getAssociatedTokenAddressSync(mint, owner);
+        return tokenAccountAddress.toBase58();
+
+    } catch (error) {
+        console.log("error while fetching so")
+    }
+}
+export { check,returnBondingCurveAddress, buy, retrieveTokenMetaData, marketCapCalSOl, launchSolToken, calculateKingOfTheHillProgress, getBondingCurveAddress, getBondingCurveInfo, calculateBondingCurveProgress, sell, reteriveTokenDetails, TokenPriceCalculations, reterieveUserSolanaBalance, getTransactionDetails, waitForTransactionFinalization }

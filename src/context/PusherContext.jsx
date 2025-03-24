@@ -5,10 +5,14 @@ export const PusherContext = createContext();
 
 const PusherProvider = ({ children }) => {
     const [data, setData] = useState([]);
-     
+
 
     useEffect(() => {
         // Initialize Pusher
+        // const pusher = new Pusher('1859723', {
+        //     cluster: 'ap2',
+        // });
+
         const pusher = new Pusher('1859723', {
             cluster: 'ap2',
         });
@@ -16,7 +20,7 @@ const PusherProvider = ({ children }) => {
         // Subscribe to channel
         const channel = pusher.subscribe('coin-created-channel'); // Replace with your channel name
         channel.bind('coin-created', (newData) => {
-             
+
             setData((prevData) => [...prevData, newData]); // Update state
         });
 

@@ -6,7 +6,7 @@ import { calculateEthBondingCurveProgress } from './PlaceTrade/ether-trade-utils
 import { useWalletContext } from '../context/WalletContext'
 
 const TopTokens = ({ key, topCoins }) => {
-     
+
     const blockchainType = localStorage.getItem('blockchain')
 
     const [ProgressCurveBond, setProgressCurveBond] = useState()
@@ -24,7 +24,7 @@ const TopTokens = ({ key, topCoins }) => {
     const bondingProgressSol = async (token_address) => {
         try {
             const response = await calculateBondingCurveProgress(token_address, true);
-            
+
             setProgressCurveBond(response?.bondingCurveProgress);
         } catch (error) {
             console.error('Error Progress_curve_bond:', error);
@@ -34,8 +34,8 @@ const TopTokens = ({ key, topCoins }) => {
     const bondingProgressEth = async (token_address) => {
         try {
             const response = await calculateEthBondingCurveProgress(token_address, true);
-             
-           
+
+
             setProgressCurveBond(response?.bondingCurveProgress);
         } catch (error) {
             console.error('Error Progress_curve_bond:', error);
@@ -58,31 +58,33 @@ const TopTokens = ({ key, topCoins }) => {
                 <div className='h-[200px] w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-b-[#FFFFFF] border-r-[#FFFFFF]'>
                     <div className={`flex p-[5px] h-[200px] w-full justify-between gap-1 border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff0] border-r-[#fff0]`}>
 
-                        <div className={`${'w-[150px] h-[full]'}`}>
+                        <div className={`${'w-full max-w-[150px] h-[180px]  flex justify-start items-start'}`}>
                             {topCoins?.tokenDetails?.image ?
-                                <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${topCoins?.tokenDetails?.image}`} className='w-full' alt="" />
+                                <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${topCoins?.tokenDetails?.image}`} className='w-full max-h-[180px] object-cover' alt="" />
                                 :
-                                <img src={CardImg} className='w-full h-full' alt="" />
+                                <img src={CardImg} className='w-full h-full object-cover' alt="" />
                                 // <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.coin?.image}`} className='w-full' alt="" />
                             }
                         </div>
+
+
 
                         <div className={`relative bg-white w-[calc(100%-100px)] sm:w-[calc(100%-150px)] min-h-full border-[3px] border-b-[4px] border-r-[4px] border-[#353535] border-b-[#CBC7E5] border-r-[#CBC7E5] after:absolute after:h-[1px] after:w-full after:top-0 after:left-0 after:bg-[white]`}>
                             <div className={`flex flex-col justify-between p-[5px] md:p-[8px] min-h-full border-[5px] border-t-[#7D73BF] border-l-[#7D73BF] border-b-[#fff] border-r-[#fff]`}>
                                 <div>
                                     <h5 className='PixelOperatorbold text-[10px] md:text-[14px]'>Created by 💩 <Link to={`/userprofile/${topCoins?.tokenDetails?.creator?._id}`} className='hover:underline'>{topCoins?.tokenDetails?.creator.user_name}</Link></h5>
-                                    <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: { formatNumber(topCoins?.tokenDetails?.market_cap?.toFixed(2))}</h5>
+                                    <h5 className='PixelOperatorbold text-[#D9223E] text-[12px] md:text-[14px]'>Marketcap: {formatNumber(topCoins?.tokenDetails?.market_cap?.toFixed(2))}</h5>
                                     <div className=''>
                                         <div className='flex justify-between items-end w-full mt-[7px] md:mt-[15px]'>
                                             <h5 className='PixelOperatorbold text-[12px] md:text-[15px]'>Progress:</h5>
-                                            <h5 className='PixelOperatorbold text-[10px] md:text-[13px]'>{ProgressCurveBond|| 0}% to {blockchainType === 'SOL' ? 'Radium' : 'Uniswap'}</h5>
+                                            <h5 className='PixelOperatorbold text-[10px] md:text-[13px]'>{ProgressCurveBond || 0}% to {blockchainType === 'SOL' ? 'Raydium' : 'Uniswap'}</h5>
                                         </div>
 
                                         {/* <div className='relative overflow-hidden bg-[#E9E9E9] h-[10px] mt-1 after:absolute after:bg-[#15C570] after:w-[100px] after:h-[full] after:bottom-[-5px] after:left-[0px] after:top-[0px]'></div> */}
                                         <div className='relative overflow-hidden bg-[#E9E9E9] h-[10px] mt-1'>
                                             <div
                                                 className='absolute bg-[#15C570] h-full'
-                                                style={{ width: `${ProgressCurveBond|| 0}%` }}
+                                                style={{ width: `${ProgressCurveBond || 0}%` }}
                                             ></div>
                                         </div>
                                     </div>

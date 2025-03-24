@@ -45,19 +45,23 @@
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import { Keypair, Connection, PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
-import IDL1 from "./solIdl.json"; // Ensure the JSON file is accessible in your build
+import IDL1 from "./memeldl.json"; // Ensure the JSON file is accessible in your build
 import IDL2 from "./idl2.json"; 
 import { WalletProvider } from "@solana/wallet-adapter-react";
 
+// const programId = new PublicKey(
+//     "DfiDcFSUx576wxwcFGoZckL6ibzFf322zMLi9shKq5Dx"
+// );
+
 const programId = new PublicKey(
-    "7jFsWYwonXMUWicDFkR7vfCudb8pm8feyzAi535DmsVh"
+  "9HtryVvUYVdJpuX9GA6rD11m4RbrThdZQp2CSfjCLTV6"
 );
 
 const RPC_URL = "https://api.devnet.solana.com";
 const connection = new Connection(RPC_URL, "confirmed");
 
 const feeRecipient = new PublicKey(
-    "GTwY38pfmivyecwZtevaT14N3WDHMQebrrWjt2i48E29"
+    "7QMH9DWpavmAP4q3D4maqHwVGh6NA4dZ3kstmVBwmjCX"
 );
 
 const SELLSLIPPAGE = 50;

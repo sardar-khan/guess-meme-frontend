@@ -15,39 +15,68 @@ const TaskBar = () => {
     const [userProfileData, setUserProfileData] = useState();
     const { isConnected } = useAppKitAccount()
 
-    const updateTime = () => {
-        const now = new Date();
-        setCurrentTime(now.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true }));
-    };
+    const SocialData = [
+        {
+            Link: "https://x.com/guessdotmeme",
+            Icons: <FaXTwitter />
+        },
+        {
+            Link: "http://instagram.com/guessdotmeme",
+            Icons: <FaInstagram />
+        },
+        {
+            Link: "http://tiktok.com/guessdotmeme",
+            Icons: <FaTiktok />
+        },
+        {
+            Link: "http://t.me/guessdotmeme",
+            Icons: <FaTelegramPlane />
+        }
+    ]
+    // const updateTime = () => {
+    //     const now = new Date();
+    //     setCurrentTime(now.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true }));
+    // };
+    useEffect(() => {
+        // Function to update time
+        const updateTime = () => {
+            const now = new Date();
+            setCurrentTime(now.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric', hour12: true }));
+        };
 
+        updateTime(); // Set initial time
+        const interval = setInterval(updateTime, 60000); // Update every minute
+
+        return () => clearInterval(interval); // Cleanup on unmount
+    }, []);
 
     const fetchMainUserProfile = async () => {
         try {
             const viewUserprofileData = await viewUserprofile();
 
-             
+
             setUserProfileData(viewUserprofileData?.data);
         } catch (error) {
-             
+
         }
     };
     useEffect(() => {
-       if(!isConnected) return
-         fetchMainUserProfile();
+        if (!isConnected) return
+        fetchMainUserProfile();
     }, [isConnected]);
 
 
     useEffect(() => {
-         
+
     }, [userProfileData]);
 
 
 
-    useEffect(() => {
-        updateTime();
-        const intervalId = setInterval(updateTime, 60000);
-        return () => clearInterval(intervalId);
-    }, []);
+    // useEffect(() => {
+    //     updateTime();
+    //     const intervalId = setInterval(updateTime, 60000);
+    //     return () => clearInterval(intervalId);
+    // }, []);
 
     const navLinkClass = (isActive) =>
         `SegoeUi text-xs overflow-hidden whitespace-nowrap text-ellipsis text-white flex items-center gap-2 w-full min-w-[120px] ${isActive ? 'taskActive' : 'taskActiveNot'}`;
@@ -98,7 +127,7 @@ const TaskBar = () => {
 
                             {isConnected &&
                                 <NavLink
-                                    to={`/profile/${userProfileData?._id}`}
+                                    to={`/userProfile/${userProfileData?._id}`}
                                     className={({ isActive }) => navLinkClass(isActive)}
                                     onClick={() => setIsDropdownOpen(false)}
                                 >
@@ -110,22 +139,36 @@ const TaskBar = () => {
                 )}
             </div>
             <div className='flex items-center justify-center gap-3 md:gap-6'>
-            <div className='flex items-center  text-white gap-3 text-sm md:text-base'>
-                <FaXTwitter />
-                <FaInstagram />
-                <FaTiktok />
-                <FaTelegramPlane />
-            </div>
-            <div className='h-full flex items-center gap-1 sm:gap-[10px] w-[90px] sm:w-[130px]'>
-                <span className='SegoeUi font-normal text-white text-[12px] sm:text-[14px]'>EN</span>
-                <div className='timeCls h-full w-full flex justify-center items-center gap-0 sm:gap-1'>
-                    <img src={timeImg} className='w-[20px] sm:w-[20px]' alt="Clock Icon" />
-                    <span className='SegoeUi font-normal text-white text-[12px] sm:text-[14px]'>{currentTime}</span>
+                <div className='flex items-center  text-white gap-3 text-sm md:text-base'>
+
+                    {SocialData?.map((social, index) => {
+                        return (<GuessMemeSocials index={index} social={social} />)
+                    })}
+
                 </div>
-            </div>
+                <div className='h-full flex items-center gap-1 sm:gap-[10px] w-[90px] sm:w-[130px]'>
+                    <span className='SegoeUi font-normal text-white text-[12px] sm:text-[14px]'>EN</span>
+                    <div className='timeCls h-full w-full flex justify-center items-center gap-0 sm:gap-1'>
+                        <img src={timeImg} className='w-[20px] sm:w-[20px]' alt="Clock Icon" />
+                        <span className='SegoeUi font-normal text-white text-[12px] sm:text-[14px]'>{currentTime}</span>
+                    </div>
+                </div>
             </div>
         </div>
     );
 };
 
 export default TaskBar;
+
+
+const GuessMemeSocials = ({ index, social }) => {
+
+    return (
+
+        <div index={index}>
+            <a className='cursor-pointer hover:scale-110 transition-transform ' href={social.Link} target="_blank" rel="noopener noreferrer" >
+                {social.Icons}
+            </a>
+        </div>
+    )
+}

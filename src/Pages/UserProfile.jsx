@@ -20,6 +20,8 @@ import { useAppKitAccount } from '@reown/appkit/react'
 import Notifications from '../components/Notifications'
 import { useNotificationContext } from '../context/NotificationContext'
 import { useWalletContext } from '../context/WalletContext'
+import { FaXTwitter } from 'react-icons/fa6'
+import { toast } from 'react-toastify'
 
 
 const UserProfile = () => {
@@ -30,8 +32,6 @@ const UserProfile = () => {
     const [checkFollow, setCheckFollow] = useState();
     const [notifications, setNotifications] = useState();
     const [notificationsTab, setNotificationsTab] = useState('notification');
-    const [userID, setUserID] = useState();
-    const [userProfileData, setUserProfileData] = useState();
     const { isConnected } = useAppKitAccount()
     const { block_chain } = useWalletContext()
 
@@ -52,24 +52,7 @@ const UserProfile = () => {
         error: null,
     });
 
-    useEffect(() => {
-        const fetchMainUserProfile = async () => {
-            try {
-                const viewUserprofileData = await viewUserprofile();
-
-                 
-                 
-
-                viewUserprofileData?.data?._id === id ? setShowUserData(true) : setShowUserData(false)
-                setUserID(viewUserprofileData?.data?._id)
-                setUserProfileData(viewUserprofileData?.data)
-            } catch (error) {
-                 
-            }
-        }
-
-     if(isConnected) fetchMainUserProfile();
-    }, [showUserData, userID,id, isConnected]);
+    console.log("profileState profile", profileState)
 
 
     const fetchUserProfile = async () => {
@@ -79,7 +62,7 @@ const UserProfile = () => {
 
             // Call viewUserprofile function as well
 
-            setProfileState({ data: showUserData ? userProfileData : data, loading: false, error: null });
+            setProfileState({ data: data, loading: false, error: null });
         } catch (err) {
             // Handle errors in case of failure
             setProfileState({
@@ -99,24 +82,24 @@ const UserProfile = () => {
             try {
                 const CheckFollowData = await CheckFollow(id);
                 setCheckFollow(CheckFollowData.follow_status);
-                 
+
 
             } catch (error) {
-                 
+
             }
         }
 
         FetchCheckFollowData();
-    }, [checkFollow, notifications,id]);
+    }, [checkFollow, notifications, id]);
 
     useEffect(() => {
         const FetchNotifications = async () => {
             try {
                 const reponse = await getNotifications();
                 setNotifications(reponse.data);
-                 
+
             } catch (error) {
-                 
+
             }
         }
 
@@ -124,15 +107,19 @@ const UserProfile = () => {
     }, [id]);
 
     const handleToggleFollow = async () => {
+        if (!isConnected) {
+            toast.error('Connect Wallet First.')
+            return;
+        }
         try {
             const response = await toggleFollow(id);
             if (response) {
-                 
+
                 const refetchFollowData = await CheckFollow(id);
                 setCheckFollow(refetchFollowData.follow_status);
-                 
+
             } else {
-                 
+
             }
         } catch (error) {
             console.error("Error while toggling follow:", error);
@@ -147,7 +134,7 @@ const UserProfile = () => {
 
 
     const handleNotificationCount = async (tabId) => {
-        tabId === 'notification' ? handleNotificationReCount():null
+        tabId === 'notification' ? handleNotificationReCount() : null
     }
 
 
@@ -157,7 +144,7 @@ const UserProfile = () => {
             if (response.status === 200) {
                 // fetchUserProfile()
                 setNotificationsTab("")
-                 
+
 
             }
         } catch (error) {
@@ -165,6 +152,8 @@ const UserProfile = () => {
         }
     }
 
+
+    console.log("profile-data", profileState)
 
     return (
         <div className=' '>
@@ -175,12 +164,21 @@ const UserProfile = () => {
 
                     <CardWrapper>
                         <div className='flex flex-col items-center justify-center relative'>
-                            {showUserData && isConnected && <Link to='/editprofile'><img src={editIcon} className='w-[20px] absolute top-0 right-1 cursor-pointer' alt="" /></Link>}
-                            <img src={img} className='w-[80px] h-[80px]' alt="" />
-                            <div className='text-center'>
+
+                            <img src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${profileState?.data?.data?.user?.profile_photo}`} className='w-[80px] h-[80px] rounded-md' alt="" />
+                            <div className='text-center flex flex-col items-center justify-center'>
                                 <h5 className='PixelOperatorbold text-xl'>{profileState?.data?.data?.user?.user_name}</h5>
                                 {/* <p className='text-base'>5 followers</p> */}
                                 <p className='text-base'>{profileState?.data?.data?.user?.bio}</p>
+                                {profileState?.data?.data?.user?.x_link &&
+                                    <a href={profileState?.data?.data?.user?.x_link} className='bg-[#1DA1F2] p-2 rounded-md mt-1 text-white flex hover:scale-110 transition-all ease-in-out ' target="_blank" rel="noopener noreferrer" > <FaXTwitter />
+                                        <span className="Inter text-xs ml-2">
+                                            {profileState?.data?.data?.user?.x_link
+                                                ?.replace("https://twitter.com/", "")
+                                                .toUpperCase()}
+                                        </span>
+                                    </a>
+                                }
                             </div>
                         </div>
                         {!showUserData &&
@@ -227,6 +225,15 @@ const UserProfile = () => {
                                 // Show all tabs if showUserData is true, else skip "Notification" tab
                                 if (!showUserData && tab.id === 'notification') {
                                     return null; // Skip rendering the "Notification" tab
+                                }
+                                if (profileState?.data?.data?.user?.hide_purchase && tab.id === 'coins held') {
+                                    return null;
+                                }
+                                if (profileState?.data?.data?.user?.hide_following && tab.id === 'following') {
+                                    return null;
+                                }
+                                if (profileState?.data?.data?.user?.hide_followers && tab.id === 'followers') {
+                                    return null;
                                 }
                                 return (
                                     <button
@@ -295,7 +302,8 @@ const UserProfile = () => {
 
                         </>
                     }
-                    {activeTab === 'notification' && showUserData &&
+
+                    {/* {activeTab === 'notification' && showUserData &&
                         <div className='bg-black w-full'>
                             {notifications?.length === 0 ?
                                 <div className='PixelOperator text-2xl text-center'>
@@ -323,29 +331,31 @@ const UserProfile = () => {
                                             </SmallCardWrapper>
                                         ))}
 
-                                    {notifications.map((notification, index) => (
-                                        <SmallCardWrapper>
-                                            <Notifications key={index} notification={notification} />
-                                        </SmallCardWrapper>
-                                    ))}
+                                    {pusherLike.length <= 0 && pusherFollow.length <= 0 && pusherNotificationThread.length <= 0 && (
+                                        notifications.map((notification, index) => (
+                                            <SmallCardWrapper>
+                                                <Notifications key={index} notification={notification} />
+                                            </SmallCardWrapper>
+                                        )))}
                                 </div>
                             }
 
 
                         </div>
-                    }
+                    } */}
+
                     {activeTab === 'followers' &&
                         <div className='grid grid-cols-1 sm:grid-cols-1 gap-3'>
 
-                            {profileState?.data?.data?.followers.length === 0 ?
+                            {profileState?.data?.data?.user?.followers.length === 0 ?
                                 <div className='PixelOperator text-2xl text-center'>
                                     No Followers
                                 </div>
                                 :
                                 <div className='mx-auto w-full'>
-                                    {profileState?.data?.data?.followers?.map((followers, index) => (
+                                    {profileState?.data?.data?.user?.followers?.map((followers, index) => (
                                         <SmallCardWrapper>
-                                            <Followers followers={followers} followerLength={profileState?.data?.data?.followers.length} />
+                                            <Followers followers={followers} followerLength={profileState?.data?.data?.user?.followers.length} />
                                         </SmallCardWrapper>
                                     ))}
                                 </div>
@@ -354,15 +364,15 @@ const UserProfile = () => {
                     }
                     {activeTab === 'following' &&
                         <div className='grid grid-cols-1 sm:grid-cols-1 gap-3'>
-                            {profileState?.data?.data?.following.length === 0 ?
+                            {profileState?.data?.data?.user?.following.length === 0 ?
                                 <div className='PixelOperator text-2xl text-center'>
                                     No Following
                                 </div>
                                 :
                                 <div className='mx-auto w-full'>
-                                    {profileState?.data?.data?.followers?.map((followers, index) => (
+                                    {profileState?.data?.data?.user?.following?.map((followers, index) => (
                                         <SmallCardWrapper>
-                                            <Follwoing Follwoing={followers} FollwoingLength={profileState?.data?.data?.following.length} />
+                                            <Follwoing Follwoing={followers} FollwoingLength={profileState?.data?.data?.user?.following.length} />
                                         </SmallCardWrapper>
                                     ))}
                                 </div>

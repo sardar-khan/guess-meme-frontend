@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createChart } from "lightweight-charts";
 import { TradeGraphData } from "../../utils/api";
+import { useWalletContext } from "../../context/WalletContext";
 
 const LightweightCandlestickChart = ({ coinId }) => {
     const chartContainerRef = useRef();
+    const {block_chain} = useWalletContext();
     const chartRef = useRef(null);
     const candlestickSeriesRef = useRef(null);
+    const [refetch,setRefetch]=useState(false)
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -40,6 +43,7 @@ const LightweightCandlestickChart = ({ coinId }) => {
                 secondsVisible: false,
             },
         });
+       
 
         candlestickSeriesRef.current = chartRef.current.addCandlestickSeries({
             upColor: "#00C853",
@@ -49,8 +53,8 @@ const LightweightCandlestickChart = ({ coinId }) => {
             wickUpColor: "#00C853",
             wickDownColor: "#D50000",
             priceFormat: {
-                minMove: 0.000000001,
-                precision: 9,
+                minMove: 0.000000000001,
+                precision: 12,
             },
         });
 
@@ -76,11 +80,11 @@ const LightweightCandlestickChart = ({ coinId }) => {
     }, []);
 
     useEffect(() => {
-        if (!coinId) return;
+        if (!coinId && block_chain) return;
 
         const fetchCoinData = async () => {
             try {
-                const response = await TradeGraphData(coinId);
+                const response = await TradeGraphData(coinId,block_chain);
                 // 
 
                 if (response.status === 200 && Array.isArray(response.data)) {
@@ -104,15 +108,15 @@ const LightweightCandlestickChart = ({ coinId }) => {
         };
 
         fetchCoinData();
-        const interval = setInterval(fetchCoinData, 20000);
+        const interval = setInterval(fetchCoinData, 10000);
 
         return () => clearInterval(interval);
-    }, [coinId]);
+    }, [coinId,refetch]);
 
     return (
         <div className="w-full">
             {error ? (
-                <p className="text-red-500 text-center">{error}</p>
+                <p className=" text-center">please click here to <span className="text-blue-400 underline cursor-pointer" onClick={(()=>{setRefetch(!refetch)})}>reload </span></p>
             ) : (
                 <div ref={chartContainerRef} style={{ width: "100%", height: "450px" }} />
             )}

@@ -3,7 +3,40 @@ import CardWrapper from '../CardWrapper/CardWrapper';
 
 const SetSlipPage = ({ isOpen, onClose ,setSlipage,setPriorityFee}) => {
     const [slippage, setSlippage] = useState('');
+    const [error, setError] = useState("");
 
+
+    const handleSlippageChange = (e) => {
+        let value = e.target.value;
+
+        // Allow only numbers
+        if (!/^\d*\.?\d*$/.test(value)) return;
+
+        // Prevent negative numbers
+        if (value < 0) {
+            value = "";
+        }
+
+        // Set limit
+        if (value > 4) {
+            setError("warning: setting your slippage too high may result in bots front-running your trades. we highly recommend turning on front-running protection if you have high slippage.");
+           
+        } else {
+            setError(""); // Clear error if valid
+        }
+        if(value > 25){
+            value =25
+        }
+
+        setSlippage(value);
+        setSlipage(value);
+    };
+    const handleBlur = () => {
+        if (slippage === "" || slippage < 0) {
+            setSlippage("0");
+            setSlipage("0");
+        }
+    };
     if (!isOpen) return null;
 
     return (
@@ -21,8 +54,10 @@ const SetSlipPage = ({ isOpen, onClose ,setSlipage,setPriorityFee}) => {
                         className='bg-[#A49DD2] p-5'
                     >
                         <h5 className='text-[#000000] font-bold PixelOperatorbold mb-1'>Set max. slippage (%)</h5>
-                        <input type="number" className='rounded' onChange={((e)=>{setSlipage(e.target.value)})} />
+                        <input type="number"value={slippage} className='rounded' onChange={handleSlippageChange} />
+                       
                         <p className='text-[#000000] text-base leading-4 font-bold PixelOperator my-2'>This is the maximum amount of slippage you are willing to accept when placing trades</p>
+                        {error && <p className="text-red-500 text-[18px] mt-1">{error}</p>}
 
                         <h3 className='text-[#000000] font-bold PixelOperatorbold mb-1'>Enable front-running protection:</h3>
                         <h3 className='text-[#000000] font-bold PixelOperatorbold mb-1'>Priority fee</h3>

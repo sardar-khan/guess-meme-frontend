@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { fetchTrades } from "../../features/tradesSlice";
 import { connection } from "./config";
-import { buy, reteriveTokenDetails, sell, TokenPriceCalculations } from "./solanaBuySellFunction";
+import { buy, getTransactionDetails, reteriveTokenDetails, sell, TokenPriceCalculations, waitForTransactionFinalization } from "./solanaBuySellFunction";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useAppKitProvider } from '@reown/appkit/react';
@@ -49,7 +49,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
     const [prorityFee, setPriorityFee] = useState('');
 
     useEffect(() => {
-         
+
         if (tokenid && walletProvider) {
             getUserBalances()
 
@@ -72,21 +72,22 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
 
     const remaningAndMaxbuyTokens = async (tokenAddress) => {
         if (!walletProvider) {
-             
+
         }
         if (!tokenAddress) {
             return toast.error("Token address not found!")
         }
         try {
             const res = await reteriveTokenDetails(tokenAddress);
-             
+            console.log("res", res)
+
             const maxBuyPercentage = 100
             const percentage = (res?.totalTokens * maxBuyPercentage) / 100;
 
             setMaxBuyTokens(percentage)
             setRemaningTokens(res?.remainingTokens)
         } catch (error) {
-             
+
 
         }
     }
@@ -96,8 +97,8 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
         if (!isConnected) return toast.error("Please connect wallet")
         if (!amount || isNaN(amount) || parseFloat(amount) <= 0) return toast.error("Please enter a valid amount")
         setIsLoading(true);
-        if (block_chain === "SOL" && tradeType === 'buy') {
 
+        if (block_chain === "SOL" && tradeType === 'buy') {
             buyTokens()
         }
         else if (block_chain === "SOL" && tradeType === 'sell') {
@@ -105,89 +106,113 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
         }
     };
 
+    //buy tokens call on block chain with saving in backend
     const buyTokens = async () => {
+        setIsButtonDisabled(true)
+        toast.loading(`Executing trade`);
         try {
-
-            const buySuccess = await buy(walletProvider, tokenToBuy, tokenAddress_mint, slipage);
+            const buySuccess = await buy(walletProvider, tokenToBuy, tokenAddress_mint, slipage,solAmount);
             if (buySuccess?.success) {
-                setAmount('')
-                setTokenToBuy('')
-                setSolAmount('')
-                const apiResponse = await BuyToken({
-                    account_type: 'solana',
-                    amount: parseFloat(tokenToBuy),
-                    token_amount: parseFloat(solAmount),
-                    token_id: id,
-                    type: tradeType,
-                    transaction_hash: buySuccess?.data,
-                });
-                if (apiResponse?.status === 201) {
-                    toast.success(`Transction Successfull: ${buySuccess?.data}`)
-                    setRefresh(!refresh);
-                    dispatch(fetchTrades(id)); // Fetch updated trades
-                    setIsLoading(false);
-
-                } else {
-                    setIsLoading(false);
-                    throw new Error(
-                        `Failed to record ${tradeType} trade in the backend`
-                    );
+                const txConfirmation = await waitForTransactionFinalization(buySuccess?.data)
+                if (txConfirmation) {
+                    setAmount('')
+                    setTokenToBuy('')
+                    setSolAmount('')
+                    const apiResponse = await BuyToken({
+                        account_type: 'solana',
+                        amount: parseFloat(tokenToBuy),
+                        token_amount: parseFloat(solAmount),
+                        token_id: id,
+                        type: tradeType,
+                        transaction_hash: buySuccess?.data,
+                    });
+                    if (apiResponse?.status === 201) {
+                        toast.dismiss()
+                        setRefresh(!refresh);
+                        dispatch(fetchTrades(id)); // Fetch updated trades
+                        setIsLoading(false);
+                        setIsButtonDisabled(false)
+                        toast.success(`Transction Successfull: ${buySuccess?.data}`)
+                    } else {
+                        toast.dismiss()
+                        setIsButtonDisabled(false)
+                        setIsLoading(false);
+                        throw new Error(
+                            `Failed to record ${tradeType} trade in the backend`
+                        );
+                    }
 
                 }
-
-
             } else {
+                toast.dismiss()
+                setIsButtonDisabled(false)
                 toast.error(`${buySuccess?.data}`)
                 setIsLoading(false);
             }
+            const tx = buySuccess?.data
+
         } catch (error) {
+            toast.dismiss()
+            setIsButtonDisabled(false)
             toast.error(error.message || `Error placing ${tradeType} trade`);
-             
             setIsLoading(false);
         }
     }
 
+    //sell tokens call on block chain with saving in backend
     const sellTokens = async () => {
+        setIsButtonDisabled(true)
+        toast.loading(`Executing trade`);
+
         try {
 
 
             const sellTrxHash = await sell(walletProvider, amount, tokenAddress_mint);
-
             if (sellTrxHash?.success) {
-                setAmount('')
-                setSolAmount('')
-                setTokenToBuy('')
-                // toast.success("Successfully Sell")
-                const apiResponse = await BuyToken({
-                    account_type: 'solana',
-                    amount: parseFloat(amount), // no of tokens to be deducted
-                    token_amount: parseFloat(solAmount).toFixed(10), // amount of sol to be received 
-                    token_id: id,
-                    type: tradeType,
-                    transaction_hash: sellTrxHash?.data,
-                });
-                if (apiResponse?.status === 201) {
-                    toast.success(`Transction Successfull: ${sellTrxHash?.data}`)
-                    setRefresh(!refresh);
-                    dispatch(fetchTrades(id)); // Fetch updated trades
-                    setIsLoading(false);
-
-                } else {
-                    setIsLoading(false);
-                    throw new Error(
-                        `Failed to record ${tradeType} trade in the backend`
-                    );
+                const txConfirmation = await waitForTransactionFinalization(sellTrxHash?.data)
+                if (txConfirmation) {
+                    setAmount('')
+                    setSolAmount('')
+                    setTokenToBuy('')
+                    // toast.success("Successfully Sell")
+                    const apiResponse = await BuyToken({
+                        account_type: 'solana',
+                        amount: parseFloat(amount), // no of tokens to be deducted
+                        token_amount: parseFloat(solAmount).toFixed(10), // amount of sol to be received 
+                        token_id: id,
+                        type: tradeType,
+                        transaction_hash: sellTrxHash?.data,
+                    });
+                    if (apiResponse?.status === 201) {
+                        toast.dismiss()
+                        setRefresh(!refresh);
+                        dispatch(fetchTrades(id)); // Fetch updated trades
+                        setIsLoading(false);
+                        setIsButtonDisabled(false)
+                        toast.success(`Transction Successfull: ${sellTrxHash?.data}`)
+                    } else {
+                        toast.dismiss()
+                        setIsButtonDisabled(false)
+                        setIsLoading(false);
+                        throw new Error(
+                            `Failed to record ${tradeType} trade in the backend`
+                        );
+                    }
                 }
             } else {
-                 
+                toast.dismiss()
+                setIsButtonDisabled(false)
                 toast.error(`${sellTrxHash?.error}`)
                 setIsLoading(false);
             }
 
+
         } catch (error) {
+            toast.dismiss()
+            setIsButtonDisabled(false)
             setIsLoading(false);
             toast.error(error.message || `Error placing ${tradeType} trade`);
-             
+
         }
     }
 
@@ -210,6 +235,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                 }))
             }
 
+            console.log("maxBuyTokens", maxBuyTokens)
 
             if (res?.tokensbuy > maxBuyTokens) {
 
@@ -342,7 +368,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                 await connection.getParsedTokenAccountsByOwner(walletProvider.publicKey, {
                     mint: tokenMintAddress,
                 })
-             
+
             let tokenBalance
             if (tokenAccounts?.value?.length > 0) {
                 tokenBalance =
@@ -357,7 +383,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                 tokenBalance: tokenBalance === undefined ? 0 : tokenBalance,
             }))
         } catch (error) {
-             
+
         }
     }
 
@@ -385,6 +411,64 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
 
 
     }
+    const buyMax = async () => {
+        const val = remaningTokens;
+        const res = await TokenPriceCalculations(
+            tokenid,
+            val === '' ? 0 : val,
+            false,
+            true
+        )
+        if (!walletProvider) {
+            return setAmountError((prevState) => ({
+                ...prevState,
+                error: true,
+                reason: 'Please connect your wallet!',
+            }))
+        }
+
+        if (val > maxBuyTokens) {
+
+            return setAmountError((prevState) => ({
+                ...prevState,
+                error: true,
+                reason: 'max buy exceeded',
+            }))
+
+        }
+        if (
+            val > remaningTokens
+        ) {
+            return setAmountError((prevState) => ({
+                ...prevState,
+                error: true,
+                reason: 'Max token reserved reached',
+            }))
+
+        }
+
+        if (res?.tokensbuy < userBalance?.solBalance) {
+            console.log("object",res,val)
+            setSolAmount(res?.tokensbuy)
+            setAmount(res?.tokensbuy)
+
+            setTokenToBuy(val)
+            setAmountError((prevState) => ({
+                ...prevState,
+                error: false,
+                reason: '',
+            }))
+        } else {
+
+            setAmountError((prevState) => ({
+                ...prevState,
+                error: true,
+                reason: `you don't have enough sol`,
+            }))
+        }
+
+
+    }
     return (
         <div className="border flex justify-center items-center w-full ">
             <div className="relative w-full border-t-[1px] border-t-[#fff] border-l-[5px] border-l-[#fff] border-r-[2px] border-r-[#353535] border-b-[2px] border-b-[#353535]">
@@ -400,7 +484,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                                 ? "bg-[#4ADE80] text-[#202020]"
                                                 : "bg-[#1F2937] text-[gray]"
                                                 }`}
-                                            onClick={() => {selectTradeTab("buy") }}
+                                            onClick={() => { selectTradeTab("buy") }}
                                         >
                                             Buy
                                         </button>
@@ -420,9 +504,9 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                         {tradeType === 'buy' && block_chain !== 'ETH' ?
                                             <span
                                                 className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
-                                                onClick={ handleSwitchClick}
+                                                onClick={handleSwitchClick}
                                             >
-                                                {showSOGs ? `Switch to ${block_chain}` :  coinData?.status !=="created"? `Switch to ${coinData?.name}`:`Switch to token`}
+                                                {showSOGs ? `Switch to ${block_chain}` : coinData?.status !== "created" ? `Switch to ${coinData?.name}` : `Switch to guess`}
                                             </span>
                                             :
                                             <span></span>
@@ -461,7 +545,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                           'border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'
                            w-full `}>
                                                     <div className="flex w-full justify-between border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]">
-                                                        <input
+                                                        {/* <input
                                                             type="number"
                                                             name="amount"
                                                             value={amount}
@@ -474,9 +558,26 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                                             }}
 
                                                             className="w-full px-2 py-3 pr-4"
+                                                        /> */}
+                                                        <input
+                                                            type="text" // Using text to control input behavior
+                                                            name="amount"
+                                                            value={amount}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value.replace(/[^\d.]/g, ""); // Allow only numbers and dot
+                                                                if (/^\d*\.?\d*$/.test(value)) {
+                                                                    handleAmount(value);
+                                                                }
+                                                            }}
+                                                            onKeyDown={(e) => {
+                                                                if (["+", "-", "e"].includes(e.key)) {
+                                                                    e.preventDefault(); // Prevent typing +, -, e
+                                                                }
+                                                            }}
+                                                            className="w-full px-2 py-3 pr-4"
                                                         />
 
-                                                       {  coinData?.status !=="created"&& <div className="w-fit flex items-center gap-1 bg-white">
+                                                        {coinData?.status !== "created" && <div className="w-fit flex items-center gap-1 bg-white">
                                                             <span className="whitespace-nowrap text-black font-semibold text-sm SegoeUi">
                                                                 {!showSOGs && block_chain !== 'ETH' ? block_chain : coinData?.name}
                                                                 {/* {block_chain === "ETH" ? "ETH" : "SOL"} */}
@@ -497,11 +598,12 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
 
                                                 </div>
                                                 :
+                                                // sell
                                                 <div className={`
                           'border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'
                            w-full `}>
                                                     <div className="flex w-full justify-between border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]">
-                                                        <input
+                                                        {/* <input
                                                             type="number"
                                                             name="amount"
                                                             value={amount}
@@ -512,9 +614,26 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                                                 }
                                                             }}
                                                             className="w-full px-2 py-3 pr-4"
+                                                        /> */}
+                                                        <input
+                                                            type="text"
+                                                            name="amount"
+                                                            value={amount}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value.replace(/[^\d.]/g, ""); // Allow only numbers and dot
+                                                                if (/^\d*\.?\d*$/.test(value)) {
+                                                                    handleAmountSell(value);
+                                                                }
+                                                            }}
+                                                            onKeyDown={(e) => {
+                                                                if (["+", "-", "e"].includes(e.key)) {
+                                                                    e.preventDefault(); // Prevent typing +, -, e
+                                                                }
+                                                            }}
+                                                            className="w-full px-2 py-3 pr-4"
                                                         />
 
-                                                        {  coinData?.status !=="created" &&<div className="w-fit flex items-center gap-1 bg-white">
+                                                        {coinData?.status !== "created" && <div className="w-fit flex items-center gap-1 bg-white">
                                                             <span className="whitespace-nowrap text-black font-semibold text-sm SegoeUi">
                                                                 {coinData?.name}
                                                             </span>
@@ -534,7 +653,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                 {!showSOGs && tradeType === 'buy' &&
                                     <div className='flex justify-start items-center gap-[3px] mt-3 ml-3'>
                                         <span onClick={() => { setAmount(''); handleAmount('') }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
-                                            reset
+                                            Reset
                                         </span>
                                         <span onClick={() => { setAmount(0.1); handleAmount(0.1) }} className='Inter whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                                             0.1 {block_chain}
@@ -545,6 +664,9 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                         <span onClick={() => { setAmount(1); handleAmount(1) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                                             1 {block_chain}
                                         </span>
+                                        <span onClick={() => { buyMax() }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                                            max
+                                        </span>
                                         {/* <span onClick={() => { setAmount(1); handleAmount(1) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                                             1 {block_chain}
                                         </span> */}
@@ -553,7 +675,7 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                 {tradeType === 'sell' &&
                                     <div className='flex justify-start items-center gap-[3px] mt-3 ml-3'>
                                         <span onClick={() => { setAmount(''); handleBuyPercentage('') }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
-                                            reset
+                                            Reset
                                         </span>
                                         <span onClick={() => { handleBuyPercentage(25) }} className='Inter whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                                             25 %
@@ -570,17 +692,24 @@ const PlaceTradeSol = ({ refresh, setRefresh, coinData, tokenid }) => {
                                     </div>
                                 }
 
-                                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && block_chain == "SOL" && <p p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? block_chain :  coinData?.status !=="created"?coinData?.name: "tokens"}</p>}
+                                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && block_chain == "SOL" && <p p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? block_chain : coinData?.status !== "created" ? coinData?.name : "guess"}</p>}
                                 {/* {amount != '' && <p p className="mt-2 ml-3"> {block_chain}</p>} */}
 
                                 {amountError.error && <p className="text-red-700 mt-2 ml-3">{amountError.reason}</p>}
 
-                                <button
+                                {/* <button
                                     className="themeBtn Inter w-fit mt-5 mx-auto"
                                     onClick={handleTrade}
                                     disabled={isLoading || amountError.error || isButtonDisabled}
                                 >
                                     <span>{isLoading ? "Processing..." : "Trade"}</span>
+                                </button> */}
+                                <button
+                                    className={`themeBtn Inter w-fit mt-5 mx-auto ${isButtonDisabled ? 'animate-pulse' : 'animate-none'}`}
+                                    onClick={handleTrade}
+                                    disabled={amountError.error || isButtonDisabled}
+                                >
+                                    <span>{isButtonDisabled ? "Processing..." : "Trade"}</span>
                                 </button>
                             </div>
                         </div>

@@ -27,17 +27,17 @@ const ChatRoom = ({ coinData }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const coin = useSelector((state) => selectCoinById(state, id));
-     
 
-     
+
+
 
 
     const { pusherThread, pusherNotificationThread } = useNotificationContext();
     const hasPusherThread = Object.keys(pusherThread).length > 0;
     const hasPusherNotificationThread = Object.keys(pusherNotificationThread).length > 0;
     // const checkNewPusherTokenStatus = createNotifications?.status;
-     
-     
+
+
 
 
     const fetchLikeStatuses = async () => {
@@ -47,7 +47,7 @@ const ChatRoom = ({ coinData }) => {
                 threads?.data?.map(async (item) => {
                     try {
                         const response = await checkLikeStatus(item?._id);
-                         
+
                         statuses[item?._id] = response.liked;
                     } catch (error) {
                         console.error(`Error fetching like status for thread ${item?._id}`, error);
@@ -61,7 +61,7 @@ const ChatRoom = ({ coinData }) => {
         fetchLikeStatuses();
     }, [threads]);
 
-     
+
 
 
     const fetchThreadData = async () => {
@@ -69,7 +69,7 @@ const ChatRoom = ({ coinData }) => {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}thread/view/${id}`);
             setThreads(response.data);
             setError(null);
-             
+
         } catch (error) {
             if (error.response && error.response.status === 404) {
                 setError("No trades found for the specified token.");
@@ -97,9 +97,9 @@ const ChatRoom = ({ coinData }) => {
 
 
     const handleModalSubmit = (data) => {
-         
+
     };
-     
+
 
     const handleReplyId = (threadid) => {
         setIsModalOpen(true)
@@ -133,7 +133,7 @@ const ChatRoom = ({ coinData }) => {
 
             // Toggle like status through the API
             const response = await toggleLike(thread_id);
-             
+
 
             // Fetch updated data
             fetchLikeStatuses();
@@ -146,19 +146,19 @@ const ChatRoom = ({ coinData }) => {
 
 
 
- 
+
 
 
 
     return (
-        <>
+        <div className=''>
             <h2>ChatRoom</h2>
             <div className='flex flex-col mt-3'>
 
                 <div className='secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]'>
                     <div className='flex items-center gap-1'>
-                  {coinData?.creator?.profile_photo ==="https://ibb.co/7zrpRwk"?<img className='w-4 h-4 rounded-md' src={logoSmall} alt="img" /> :  <img className='w-4 h-4 rounded-md' src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.creator?.profile_photo}`} alt="" />}
-                       <Link to={`/userprofile/${coinData?.creator?._id}`  }> <span className='Inter hover:underline text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8281c9]'>{coinData?.creator?.user_name}</span></Link>
+                        {coinData?.creator?.profile_photo === "https://ibb.co/7zrpRwk" ? <img className='w-4 h-4 rounded-md' src={logoSmall} alt="img" /> : <img className='w-4 h-4 rounded-md' src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${coinData?.creator?.profile_photo}`} alt="" />}
+                        <Link to={`/profile/${coinData?.creator?._id}`}> <span className='Inter hover:underline text-black text-[10px] font-medium p-[2px] rounded-md bg-[#8281c9]'>{coinData?.creator?.user_name}</span></Link>
                         <p className='Inter text-black text-[10px] font-medium'>
                             {new Date(coinData?.time).toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })}
                         </p>
@@ -174,8 +174,8 @@ const ChatRoom = ({ coinData }) => {
                             </div>
                         )}
                         <div className="pl-3 w-[calc(100%-128px)]">
-                            <h5 className='Inter text-[#121212] text-sm font-bold'>{coinData?.metadata?.name} (ticker: {coinData?.ticker})</h5>
-                            <p className='Inter text-sm font-medium'>
+                            <h5 className='Inter text-[#121212] text-sm font-bold'>{coinData?.metadata?.name} (Ticker: {coinData?.ticker})</h5>
+                            <p className='Inter text-sm font-medium overflow-hidden text-ellipsis break-words max-w-full'>
                                 {coinData?.metadata?.description}
                             </p>
                         </div>
@@ -273,12 +273,12 @@ const ChatRoom = ({ coinData }) => {
                                 >
                                     <div className="flex items-center gap-2">
                                         <img
-                                        className='w-4 h-4 rounded-md'
+                                            className='w-4 h-4 rounded-md'
                                             src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${item?.user_id?.profile_photo}`}
                                             alt=""
                                         />
                                         <Link
-                                            to={`/userprofile/${item?.user_id?._id}`}
+                                            to={`/profile/${item?.user_id?._id}`}
                                             className="Inter text-black text-[10px] font-semibold p-[2px] rounded-md bg-[#8E8DC7] cursor-pointer hover:underline"
                                         >
                                             {item?.user_id?.user_name}
@@ -300,8 +300,8 @@ const ChatRoom = ({ coinData }) => {
                                         >
                                             <Icon
                                                 icon={`${likeStatuses[item._id]
-                                                        ? "mdi:cards-heart"
-                                                        : "mdi:cards-heart-outline"
+                                                    ? "mdi:cards-heart"
+                                                    : "mdi:cards-heart-outline"
                                                     }`}
                                                 style={{
                                                     fontSize: "15px",
@@ -329,7 +329,7 @@ const ChatRoom = ({ coinData }) => {
                                         )}
 
                                         <div className="w-[calc(100%-128px)] pl-2">
-                                            <p className="Inter text-sm font-medium text-[#000000]">
+                                            <p className="text-sm font-medium text-[#000000] Inter overflow-hidden text-ellipsis break-words max-w-full">
                                                 <span className="text-[#4225ff] text-base font-extrabold">
                                                     {item?.reply_id}
                                                 </span>{" "}
@@ -348,8 +348,9 @@ const ChatRoom = ({ coinData }) => {
                                     id={`like-icon-${pusherThread?.newThread?._id}`}
                                     className={`color-transition secondary-bg p-[4px] pb-2 border-b border-[#EEF2FF]`}
                                 >
-                                    <div className="flex items-center gap-2 ">
+                                    <div className="flex  items-center gap-2 ">
                                         <img
+                                            className='h-4 w-4'
                                             src={`${import.meta.env.VITE_API_URL.slice(0, -1)}${pusherThread?.user_profile}`}
                                             alt=""
                                         />
@@ -403,7 +404,7 @@ const ChatRoom = ({ coinData }) => {
                                         )}
 
                                         <div className="w-[calc(100%-128px)] pl-2">
-                                            <p className="Inter text-sm font-medium text-[#000000]">
+                                            <p className="text-sm font-medium text-[#000000] Inter overflow-hidden text-ellipsis break-words max-w-full">
                                                 <span className="text-[#4225ff] text-base font-extrabold">
                                                     {pusherThread?.newThread?.reply_id}
                                                 </span>{" "}
@@ -426,7 +427,7 @@ const ChatRoom = ({ coinData }) => {
                 <button
                     onClick={() => { openModalReferral() }}
                     className='themeBtn w-fit px-5 py-4 SegoeUi mt-5'>
-                    <span>post a reply</span>
+                    <span>Post a reply</span>
                 </button>
 
                 {/* Referral Modal */}
@@ -440,7 +441,7 @@ const ChatRoom = ({ coinData }) => {
 
 
             </div >
-        </>
+        </div>
     )
 }
 

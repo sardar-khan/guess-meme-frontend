@@ -11,8 +11,8 @@ const BoxHeader = ({label}) => {
                 <span className='PixelOperatorbold text-white text-[31px] !font-normal pl-2'>{label}</span>
             </div>
             <div className='flex items-center gap-1 cursor-pointer'>
-                <img src={minimize} alt="" />
-                <img src={maximize} alt="" />
+                {/* <img src={minimize} alt="" />
+                <img src={maximize} alt="" /> */}
                 <Link to='/'><img src={cross} alt="" /></Link>
             </div>
         </div>

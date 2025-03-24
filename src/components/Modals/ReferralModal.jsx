@@ -6,13 +6,28 @@ import { useParams } from 'react-router-dom';
 
 const ReferralModal = ({ isOpen, onClose, onSubmit, threadID, fetchThreadData }) => {
     const [comment, setComment] = useState();
+    const [error, setError] = useState('');
     const [image, setImage] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
     const fileInputRef = useRef(null);
     const { id } = useParams();
-     
+
     useEffect(() => {
     }, [threadID, comment])
+
+
+
+
+    const handleCommentChange = (e) => {
+        const value = e.target.value;
+
+        if (value.length > 2000) {
+            setError('Character limit exceeded! Maximum 2000 characters allowed.');
+        } else {
+            setError('');
+            setComment(value);
+        }
+    };
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -55,7 +70,7 @@ const ReferralModal = ({ isOpen, onClose, onSubmit, threadID, fetchThreadData })
                 reply_id: threadID,
                 image: imageUrl
             });
-             
+
             toast.success(data?.message);
             setImageUrl('');
             // fetchThreadData();
@@ -98,10 +113,11 @@ const ReferralModal = ({ isOpen, onClose, onSubmit, threadID, fetchThreadData })
                 <textarea
                     className='w-full p-2 border-2 border-gray-300 rounded-md bg-transparent placeholder:text-black'
                     rows="4"
-                    placeholder={threadID ? `Replying to ${threadID}` : `Add a comment...`}
+                    placeholder="Add a comment..."
                     value={comment}
-                    onChange={(e) => setComment(e.target.value)}
+                    onChange={handleCommentChange}
                 ></textarea>
+                {error && <p className="text-lg font-semibold text-red-700 mt-1">{error}</p>}
 
                 {/* Image Upload */}
                 <div className="mt-3">

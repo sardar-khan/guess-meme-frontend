@@ -18,13 +18,22 @@ const InputField = ({
             setError("Username cannot exceed 10 characters");
             return; // Ignore changes that exceed 10 characters
         }
+        if (label === "Ticker:" && inputValue.length > 6) {
+            setError("Ticker cannot exceed 6 characters");
+            return; // Prevent further input
+        }
+        
+        if (label === "Name:" && inputValue.length > 32) {
+            setError("Name too long: it must be less than 32 characters");
+            return; // Prevent further input
+        }
 
         setError(""); // Clear error if within limit
         onChange(e);
     };
 
     return (
-        <>
+        <div className='flex flex-col gap-6'>
             <div className="flex flex-col sm:flex-row sm:items-center items-start gap-4">
                 <label className="formLabel min-w-auto md:min-w-[150px] text-right">
                     {checkRequired && <>*</>}
@@ -47,7 +56,7 @@ const InputField = ({
 
             </div>
             {error && <p className="text-[#be2323] text-lg mt-[-25px] text-right">{error}</p>}
-        </>
+        </div>
     );
 };
 

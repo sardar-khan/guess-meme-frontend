@@ -31,7 +31,6 @@ const PlaceTrade = ({ coinData }) => {
   const wallet = useWallet()
   const [showSOGs, setShowSOGs] = useState(false);
   const [amount, setAmount] = useState("");
-
   const [tokenInfo, setTokenInfo] = useState({
     loading: false,
     success: false,
@@ -70,7 +69,7 @@ const PlaceTrade = ({ coinData }) => {
 
   //selltoksn-blockchain-calls
   const { data: sellHash, writeContract: sellTokens, error: errorInSell, reset: resetSellEvent } = useWriteContract()
-  const { isLoading: isSelling, isSuccess: isSold, data: txSellData } = useWaitForTransactionReceipt({
+  const { isLoading: isSelling, isSuccess: isSold, data: txSellData, error: selltxerror } = useWaitForTransactionReceipt({
     hash: sellHash,
   });
 
@@ -114,12 +113,14 @@ const PlaceTrade = ({ coinData }) => {
       setContractInfo(res);
     })
   }, [coinData?.token_address, address, isButtonDisabled])
+
   //save buy transaction to backend
   useEffect(() => {
     if (isBuyed && txData) {
       buyCreatedCoin({ buyTxHash, txData })
     }
   }, [isBuying, isBuyed, txData])
+
   //give tokenAllowance to contract
   useEffect(() => {
     if (isAllowanced && txAllowanceData && txAllowanceData?.status === "success") {
@@ -138,33 +139,46 @@ const PlaceTrade = ({ coinData }) => {
   //handle errors-------------------------
   useEffect(() => {
     if (errorInBuy) {
-      console.log("error in buy bc ",errorInBuy)
+      console.log("error in buy bc ", errorInBuy)
       const errorMessage = errorInBuy?.message?.split("\n")[0] || "Transaction failed";
-      toast.error(errorMessage);
+      if (toastId) {
+        toast.update(toastId, { render: errorMessage, type: "error", isLoading: false, autoClose: 3000 });
+
+      }
+
       resetBuyEvent();
       setIsButtonDisabled(false);
     }
   }, [errorInBuy]);
-  
+
   useEffect(() => {
     if (errorInAllowance) {
-      console.log("error in  allwance ",errorInAllowance)
+      console.log("error in  allwance ", errorInAllowance)
       const errorMessage = errorInAllowance?.message?.split("\n")[0] || "Transaction failed";
+      if (toastId) {
+        toast.update(toastId, { render: errorMessage, type: "error", isLoading: false, autoClose: 3000 });
+
+      }
       toast.error(errorMessage);
       resetAllowanceEvent();
       setIsButtonDisabled(false);
     }
   }, [errorInAllowance]);
-  
+
   useEffect(() => {
     if (errorInSell) {
-      console.log("error in sell  ",errorInSell)
+      console.log("error in sell  ", errorInSell)
       const errorMessage = errorInSell?.message?.split("\n")[0] || "Transaction failed";
+      if (toastId) {
+        toast.update(toastId, { render: errorMessage, type: "error", isLoading: false, autoClose: 3000 });
+
+      }
       toast.error(errorMessage);
       resetSellEvent();  // Fixed the reset function to match the error type
       setIsButtonDisabled(false);
     }
   }, [errorInSell]);
+  //---------------------------------------
 
   const handleTrade = async () => {
 
@@ -175,7 +189,7 @@ const PlaceTrade = ({ coinData }) => {
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0) return toast.error("Please enter a valid amount")
 
     try {
-      setIsButtonDisabled(true)
+    setIsButtonDisabled(true)
       if (tradeType === "buy") {
 
         handleBuyTokens(showSOGs ? amount : ethAmount, coinData?.token_address)
@@ -192,19 +206,24 @@ const PlaceTrade = ({ coinData }) => {
     }
   };
 
-
+  // block chain call to buy tokens ---------------
   const handleBuyTokens = async (amount, tokenAddress) => {
     try {
-
+      console.log("checking-amounts", tokenAddress, amount, balanceData?.formatted)
+      const id = toast.loading(`Executing trade`);
+      setToastId(id);
       const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
       const payAbleAmountEther = await getPayAbleEtherAmount(tokenAddress, amount, balanceData?.formatted)
-      if (!payAbleAmountEther?.success) { return setIsButtonDisabled(false) }
+      if (!payAbleAmountEther?.success) {
+        toast.update(toastId, { render: payAbleAmountEther?.error, type: "error", isLoading: false, autoClose: 3000 });
+        setIsButtonDisabled(false)
+        return
+      }
 
       const SelectedAbi = contractInfo.Abi
       const contractAddress = contractInfo.ContractAddress
 
       const payAmount = payAbleAmountEther?.data
-
 
       useBuyTokens({
         address: contractAddress,
@@ -212,7 +231,7 @@ const PlaceTrade = ({ coinData }) => {
         functionName: 'buyTokens',
         args: [
           tokenAddress,
-          formattedAmount,
+          formattedAmount?.toString(),
         ],
         value: payAmount?.toString()
 
@@ -220,6 +239,12 @@ const PlaceTrade = ({ coinData }) => {
 
     } catch (error) {
       setIsButtonDisabled(false)
+      if (toastId) {
+        toast.update(toastId, { render: "Some thing went wrong while executing trade", type: "error", isLoading: false, autoClose: 3000 });
+
+      }
+
+
 
       // setIsCreatingCoin(false);
       // if (toastId) { toast.update(toastId, { render: "Failed to buy Tokens", type: "error", isLoading: false, autoClose: 3000 }); }
@@ -227,6 +252,7 @@ const PlaceTrade = ({ coinData }) => {
     }
   }
 
+  // api call to save the transation in the backend ----
   const buyCreatedCoin = async ({ buyTxHash, txData }) => {
     try {
 
@@ -234,7 +260,7 @@ const PlaceTrade = ({ coinData }) => {
         const apiResponse = await BuyToken({
           account_type: currentChain,
           amount: parseFloat(amount),
-          token_amount: "0",
+          token_amount: parseFloat(amount),
           token_id: coinData?._id,
           type: "buy",
           transaction_hash: buyTxHash,
@@ -242,20 +268,33 @@ const PlaceTrade = ({ coinData }) => {
 
 
         if (apiResponse?.status === 201) {
+          if (toastId) {
+            toast.update(toastId, {
+              render: "Trade executed successfully!",
+              type: "success",
+              isLoading: false,
+              autoClose: 3000, // Auto dismiss after 3 seconds
+            });
+          }
           setAmount('')
           setEthAmount('')
           setIsButtonDisabled(false)
           resetBuyEvent()
+          setToastId(null)
 
-          toast.success(`${tradeType === "buy" ? "Buy" : "Sell"} successful`);
           dispatch(fetchTrades(id));
         } else {
           throw new Error(`Failed to Buy tokens`);
 
+
         }
       } else {
         setIsButtonDisabled(false)
-        toast.error('Transaction failed. Please try again.');
+        if (toastId) {
+          toast.update(toastId, { render: "Some thing went wrong while executing trade", type: "error", isLoading: false, autoClose: 3000 });
+
+        }
+
         resetBuyEvent()
 
       }
@@ -277,6 +316,7 @@ const PlaceTrade = ({ coinData }) => {
     return /^\d{11}$/.test(amount.toString());
   }
 
+  //---------------Calculate pricing on buy ------------------------- //
   const calculateTokenEthOnchange = async (amount) => {
     if (isConnected) {
       setAmountError((prevState) => ({
@@ -314,7 +354,7 @@ const PlaceTrade = ({ coinData }) => {
 
     }
   };
-
+  //-------balance and token amount checks-----------//
   const handleEthtoTokensCheck = async (amount, realTokenReserves, userNativeBalance, tokentoGet) => {
 
     if (parseFloat(tokentoGet) > parseFloat(realTokenReserves)) {
@@ -393,30 +433,33 @@ const PlaceTrade = ({ coinData }) => {
 
   }
 
+  //give sell alowane on block chain
   const handleSellTokens = async (amount, tokenAddress) => {
 
     try {
       const res = await sellTokensInfo(tokenAddress, address, amount, contractInfo)
 
       if (res?.success) {
-        if (!res?.doesContractHasAllowance) {
-          const SelectedAbi = contractInfo.tokenAbi
-          const contractAddress = contractInfo.ContractAddress
+        // if (!res?.doesContractHasAllowance) {
+        //   const SelectedAbi = contractInfo.tokenAbi
+        //   const contractAddress = contractInfo.ContractAddress
+        //   const id = toast.loading(` Allwoance in process`);
 
+        //   setToastId(id);
 
-          giveAllowance({
-            address: tokenAddress,
-            abi: SelectedAbi,
-            functionName: 'approve',
-            args: [
-              contractAddress,
-              res?.tokenInWei,
-            ],
-          })
-        } else {
-          sellTokensBlockChain()
-        }
-
+        //   giveAllowance({
+        //     address: tokenAddress,
+        //     abi: SelectedAbi,
+        //     functionName: 'approve',
+        //     args: [
+        //       contractAddress,
+        //       res?.tokenInWei,
+        //     ],
+        //   })
+        // } else {
+        //   sellTokensBlockChain()
+        // }
+        sellTokensBlockChain()
       } else {
         // 
         throw new Error(`Error while fetching token info ${JSON.stringify(res?.error)} `)
@@ -432,10 +475,16 @@ const PlaceTrade = ({ coinData }) => {
     } finally {
     }
   };
-
+  //execute sell call on block chain
   const sellTokensBlockChain = async () => {
     try {
 
+
+
+      if (toastId) toast.update(toastId, {
+        render: "Executing trade",
+        isLoading: true,
+      });
       const SelectedAbi = contractInfo.Abi
       const contractAddress = contractInfo.ContractAddress
       const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
@@ -450,11 +499,16 @@ const PlaceTrade = ({ coinData }) => {
       })
     } catch (error) {
       setIsButtonDisabled(false)
+      if (toastId) {
+        toast.update(toastId, { render: "Some thing went wrong while executing trade", type: "error", isLoading: false, autoClose: 3000 });
+
+      }
 
     }
 
   }
 
+  //save transaction in the backend
   const saveSellTransaction = async ({ sellHash, txSellData }) => {
     try {
       if (txSellData?.status === "success" && sellHash) {
@@ -472,7 +526,14 @@ const PlaceTrade = ({ coinData }) => {
           setAmount('')
           setEthAmount('')
           setIsButtonDisabled(false)
-          toast.success(`${tradeType === "buy" ? "Buy" : "Sell"} successful`);
+          if (toastId) {
+            toast.update(toastId, {
+              render: "Trade executed successfully!",
+              type: "success",
+              isLoading: false,
+              autoClose: 3000, // Auto dismiss after 3 seconds
+            });
+          }
           dispatch(fetchTrades(id));
           resetSellEvent()
         } else {
@@ -488,6 +549,10 @@ const PlaceTrade = ({ coinData }) => {
     } catch (error) {
       resetSellEvent()
       setIsButtonDisabled(false)
+      if (toastId) {
+        toast.update(toastId, { render: "Some thing went wrong while executing trade", type: "error", isLoading: false, autoClose: 3000 });
+
+      }
     }
   }
 
@@ -522,6 +587,48 @@ const PlaceTrade = ({ coinData }) => {
   }
 
 
+  const buyMaxTokens = async (buyState = "eth") => {
+    const amount = Number(tokenInfo?.data?.realTokenReserves)
+
+    if (isConnected) {
+      setAmountError((prevState) => ({
+        ...prevState,
+        error: false,
+        reason: '',
+      }))
+      if (hasElevenDigits(amount)) {
+        setIsButtonDisabled(false)
+
+        return setAmountError((prevState) => ({
+          ...prevState,
+          error: true,
+          reason: 'Max token reserves reached',
+        }))
+      }
+      buyState === 'eth' ? setEthAmount(amount) : setAmount(amount);
+      try {
+        //eth value is 
+        const calculateEthValue = await calculateTokenEthValues(coinData?.token_address, amount, true)
+
+        buyState === 'eth' ? setAmount(calculateEthValue) : setEthAmount(calculateEthValue)
+
+        showSOGs ? handleTokenstoEthCheck(tokenInfo?.data?.realTokenReserves, tokenInfo?.data?.realTokenReserves, userNativeBalance?.data?.formatted, calculateEthValue) : handleEthtoTokensCheck(calculateEthValue, tokenInfo?.data?.realTokenReserves, userNativeBalance?.data?.formatted, calculateEthValue)
+
+      } catch (error) {
+        console.error("Error calculating ETH value:", error);
+      }
+    } else {
+      setIsButtonDisabled(false)
+      setAmountError((prevState) => ({
+        ...prevState,
+        error: true,
+        reason: 'Connect Wallet First',
+      }))
+
+    }
+
+  }
+  console.log("token-info", tokenInfo)
   //false  = amount in eth & true = amount in tokens
   return (
     <div className="border flex justify-center items-center w-full ">
@@ -559,9 +666,10 @@ const PlaceTrade = ({ coinData }) => {
                     {tradeType === 'buy' ?
                       <span
                         className="SegoeUi bg-[#4E496E] px-2 py-1 rounded text-xs text-[#9CA3AF] font-semibold cursor-pointer"
-                        onClick={coinData?.status === "deployed" && handleSwitchClick}
+                        onClick={handleSwitchClick}
                       >
-                        {showSOGs ? `Switch to ${blockchainType}` : `Switch to ${coinData?.name}`}
+                        {showSOGs ? `Switch to ${blockchainType}` :
+                          coinData?.status === "created" ? `Switch to guess` : `Switch to ${coinData?.name}`}
                       </span>
                       :
                       <span></span>
@@ -593,7 +701,7 @@ const PlaceTrade = ({ coinData }) => {
                           'border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'
                            w-full `}>
                           <div className="flex w-full justify-between border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]">
-                            <input
+                            {/* <input
                               type="number"
                               name="amount"
                               value={amount}
@@ -606,7 +714,25 @@ const PlaceTrade = ({ coinData }) => {
                               }}
 
                               className="w-full px-2 py-3 pr-4"
+                            /> */}
+                            <input
+                              type="text" // Using text to have full control
+                              name="amount"
+                              value={amount}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^\d.]/g, ""); // Allow only numbers and dot
+                                if (/^\d*\.?\d*$/.test(value)) {
+                                  calculateTokenEthOnchange(value);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (["+", "-", "e"].includes(e.key)) {
+                                  e.preventDefault(); // Prevent typing +, -, e
+                                }
+                              }}
+                              className="w-full px-2 py-3 pr-4"
                             />
+
 
                             <div className="w-fit flex items-center gap-1 bg-white">
                               {coinData?.status !== "created" ? <span className="whitespace-nowrap text-black font-semibold text-sm SegoeUi">
@@ -631,7 +757,7 @@ const PlaceTrade = ({ coinData }) => {
                           'border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'
                            w-full `}>
                           <div className="flex w-full justify-between border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]">
-                            <input
+                            {/* <input
                               type="number"
                               name="amount"
                               value={amount}
@@ -644,7 +770,25 @@ const PlaceTrade = ({ coinData }) => {
                                 }
                               }}
                               className="w-full px-2 py-3 pr-4"
+                            /> */}
+                            <input
+                              type="text" // Change to "text" to fully control input behavior
+                              name="amount"
+                              value={amount}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^\d.]/g, ""); // Allow only numbers and dot
+                                if (value === "" || /^[0-9]*\.?[0-9]*$/.test(value)) {
+                                  handleAmountSell(value);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "+" || e.key === "-" || e.key === "e") {
+                                  e.preventDefault(); // Prevent typing +, -, and e (scientific notation)
+                                }
+                              }}
+                              className="w-full px-2 py-3 pr-4"
                             />
+
 
                             <div className="w-fit flex items-center gap-1 bg-white">
                               {coinData?.status !== "created" ? <span className="whitespace-nowrap text-black font-semibold text-sm SegoeUi">
@@ -668,7 +812,7 @@ const PlaceTrade = ({ coinData }) => {
                   <div className='flex justify-start items-center gap-[3px] mt-3 ml-3'>
                     <span onClick={resetStates}
                       className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
-                      reset
+                      Reset
                     </span>
                     <span onClick={() => { handleSetAmount(0.1) }} className='Inter whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                       0.1 {blockchainType}
@@ -678,6 +822,9 @@ const PlaceTrade = ({ coinData }) => {
                     </span>
                     <span onClick={() => { handleSetAmount(1) }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                       1 {blockchainType}
+                    </span>
+                    <span onClick={() => { buyMaxTokens() }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
+                      max
                     </span>
                   </div>
                 }
@@ -690,7 +837,7 @@ const PlaceTrade = ({ coinData }) => {
                         reason: ``,
                       }))
                     }} className='Inter whitespace-nowrap px-2 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
-                      reset
+                      Reset
                     </span>
                     <span onClick={() => { handleBuyPercentage(25) }} className='Inter whitespace-nowrap px-1 py-1 rounded text-[10px] text-[#9CA3AF] bg-[#4E496E] font-semibold cursor-pointer'>
                       25 %
@@ -707,8 +854,10 @@ const PlaceTrade = ({ coinData }) => {
                   </div>
                 }
 
-                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && blockchainType == "SOL" && <p p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? blockchainType : coinData?.status !== "created" ? coinData?.name : "tokens"}</p>}
-                {amount != '' && <p p className="mt-2 ml-3">{ethAmount} {blockchainType}</p>}
+                {amount != '' && tokenToBuy != '' && tokenToBuy != '0' && tokenToBuy != 0 && blockchainType == "SOL" &&
+                  <p p className="mt-2 ml-3">{!showSOGs ? tokenToBuy : solAmount} {showSOGs ? blockchainType : coinData?.status !== "created" ? coinData?.name : "guess"}</p>}
+
+                {amount != '' && ethAmount && <p p className="mt-2 ml-3">{ethAmount}  {showSOGs ? blockchainType : coinData?.status === "created" ? `guess` : ` ${coinData?.name}`}</p>}
 
                 {amountError.error && <p className="text-red-700 mt-2 ml-3">{amountError.reason}</p>}
 

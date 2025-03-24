@@ -6,7 +6,6 @@ import PlatformInformation from '../components/Global/PlatformInformation'
 const Home = () => {
     return (
         <>
-        
             <Hero />
             <AllLaunchs />
         </>

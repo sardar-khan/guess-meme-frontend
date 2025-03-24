@@ -2,10 +2,10 @@ import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit'
 import { viewCoins } from '../utils/api';
 
 
-export const fetchCoins = createAsyncThunk('coins/fetchCoins', async ({sortBy,coinSorting}) => {
-   //  
-    const response = await viewCoins({sortBy,coinSorting});
-    return response; 
+export const fetchCoins = createAsyncThunk('coins/fetchCoins', async ({ sortBy, coinSorting }) => {
+    //  
+    const response = await viewCoins({ sortBy, coinSorting });
+    return response;
 });
 
 
@@ -58,7 +58,7 @@ export const selectCoinById = (state, id) =>
 export const selectDeployedCoins = createSelector(
     (state) => state.coins.coins, // Input selector
     (coins) => coins.filter((coin) => coin?.status === 'deployed') // Memoized output
-  );
+);
 
 
 // export const selectCreatedCoins = (state) =>
@@ -66,7 +66,11 @@ export const selectDeployedCoins = createSelector(
 export const selectCreatedCoins = createSelector(
     (state) => state.coins.coins, // Input selector
     (coins) => coins.filter((coin) => coin?.status === 'created') // Memoized output
-  );
+);
+export const selectAllCoins = createSelector(
+    (state) => state.coins.coins, // Input selector
+    (coins) => coins // Returns all coins without filtering
+);
 
 export const selectFilteredCoins = (state) => state.coins.filteredCoins;
 

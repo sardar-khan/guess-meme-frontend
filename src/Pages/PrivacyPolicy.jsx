@@ -2,8 +2,8 @@ import React from 'react'
 
 const PrivacyPolicy = () => {
   return (
-    <div className='h-[80vh] '>
-        <div className='px-14 py-14 flex flex-col gap-4'>
+    <div className='min-h-[100%] '>
+        <div className='px-4 py-14 sm:px-14 sm:py-14 flex flex-col gap-4'>
       <h1>Privacy Policy</h1>
       <p >
       This "Privacy Notice" describes the privacy practices of GuessMeme and GuessMeme Affiliates (collectively, "GuessMeme", "our", "us" or "we"), in connection with the Sites and the GuessMeme Platform (collectively, "Services"). This Privacy Notice also explains the rights and choices available to individuals with respect to their information.

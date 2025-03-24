@@ -39,7 +39,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
         setTokenAddress(e.target.value);
         getCoinByWalletAddress(e.target.value).then((res) => {
             if (res.status === 200) {
-                 
+
                 setCoinData(res.data)
             } else {
                 setCoinData(null);
@@ -50,20 +50,24 @@ const DirectBuy = ({ isOpen, onClose }) => {
 
 
 
-   
+
 
     const buyTokens = async () => {
         try {
             setIsLoading(true);
+
+            if (!tokenToBuy) { setIsLoading(false); return toast.error("Please enter valid amount buy") }
+            if (!tokenAddress) { setIsLoading(false); return toast.error("Please enter valid token address") }
+
             const buySuccess = await buy(walletProvider, tokenToBuy, new PublicKey(coinData?.token_address));
-             
+
             if (buySuccess?.success) {
                 setAmount('')
                 setTokenToBuy('')
                 const apiResponse = await BuyToken({
                     account_type: 'solana',
                     amount: tokenToBuy,
-                    token_amount:amount,
+                    token_amount: amount,
                     token_id: coinData?._id,
                     type: "buy",
                     transaction_hash: buySuccess?.data,
@@ -89,7 +93,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
             }
         } catch (error) {
             toast.error(error.message || `Error placing ${tradeType} trade`);
-             
+
             setIsLoading(false);
         }
     }
@@ -106,8 +110,8 @@ const DirectBuy = ({ isOpen, onClose }) => {
     return (
         <div
             className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'
+            onClick={closeModal}
             style={{ zIndex: '2000' }}
-          
         >
             <div
                 className='bg-[#A49DD2] p-5 z-[1000] rounded-lg w-[90%] max-w-md'
@@ -146,7 +150,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
                     <div className="w-full Inter">
                         <div className="w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]">
                             <div className="flex w-full justify-between border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]">
-                                <input
+                                {/* <input
                                     type="number"
                                     name="amount"
                                     value={isSoltoToken ? amount : tokenToBuy}
@@ -158,7 +162,26 @@ const DirectBuy = ({ isOpen, onClose }) => {
                                             isSoltoToken ? setAmount(value) : setTokenToBuy(value)
                                         }
                                     }}
+                                /> */}
+                                <input
+                                    type="text" // Prevents unwanted number input behavior
+                                    name="amount"
+                                    value={isSoltoToken ? amount : tokenToBuy}
+                                    placeholder="Amount"
+                                    className="w-full px-2 py-3 pr-4"
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/[^\d.]/g, ""); // Allow only numbers and dot
+                                        if (/^\d*\.?\d*$/.test(value)) {
+                                            isSoltoToken ? setAmount(value) : setTokenToBuy(value);
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (["+", "-", "e"].includes(e.key)) {
+                                            e.preventDefault(); // Prevent typing +, -, e
+                                        }
+                                    }}
                                 />
+
                                 <div className="w-fit flex items-center gap-1 bg-white">
                                     <span className="text-black font-semibold text-sm SegoeUi">
                                         {selectedName(block_chain, isSoltoToken, coinData?.name)}
@@ -188,7 +211,7 @@ const DirectBuy = ({ isOpen, onClose }) => {
                             walletProvider={walletProvider}
                             amountError={amountError}
                             setAmountError={setAmountError}
-                            
+
                         />}
                     </div>
                 </div>
@@ -251,7 +274,7 @@ const SelectedImage = ({ isSoltoToken, block_chain, imageUrl, tokenName }) => {
 }
 
 
-const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTokenToBuy, tokenName, tokenAddress, walletProvider , amountError , setAmountError }) => {
+const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTokenToBuy, tokenName, tokenAddress, walletProvider, amountError, setAmountError }) => {
     const [price, setPrice] = useState({});
     const [remaningTokens, setRemaningTokens] = useState('')
     const [maxBuyTokens, setMaxBuyTokens] = useState('')
@@ -259,7 +282,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
         tokenBalance: null,
         solBalance: null,
     })
-     
+
     //fetch price conversions for token
     const fetchPrice = async () => {
 
@@ -272,13 +295,13 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
                 isSoltoToken,
                 true
             );
-             
-            
+
+
             setPrice(res);
             isSoltoToken ? setTokenToBuy(res?.tokensbuy) : setAmount(res?.tokensbuy)
-             
-             
-            checkBuyConditions(parseFloat(tokenToBuy), parseFloat   (amount))
+
+
+            checkBuyConditions(parseFloat(tokenToBuy), parseFloat(amount))
             // Store the response in state to render it
         } catch (error) {
             console.error("Error fetching token price:", error);
@@ -287,21 +310,21 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
 
     const remaningAndMaxbuyTokens = async (tokenAddress) => {
         if (!walletProvider) {
-             
+
         }
         if (!tokenAddress) {
             return toast.error("Token address not found!")
         }
         try {
-            const res = await reteriveTokenDetails( tokenAddress);
-             
+            const res = await reteriveTokenDetails(tokenAddress);
+
             const maxBuyPercentage = 100
             const percentage = (res?.totalTokens * maxBuyPercentage) / 100;
 
             setMaxBuyTokens(percentage)
             setRemaningTokens(res?.remainingTokens)
         } catch (error) {
-             
+
 
         }
     }
@@ -309,7 +332,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
     const getUserBalances = async () => {
         try {
             if (!tokenAddress) { return }
-             
+
             //user-sol-balance
             const balance = await connection.getBalance(walletProvider.publicKey)
 
@@ -320,7 +343,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
                 await connection.getParsedTokenAccountsByOwner(walletProvider.publicKey, {
                     mint: tokenMintAddress,
                 })
-             
+
             let tokenBalance
             if (tokenAccounts?.value?.length > 0) {
                 tokenBalance =
@@ -335,14 +358,14 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
                 tokenBalance: tokenBalance === undefined ? 0 : tokenBalance,
             }))
         } catch (error) {
-             
+
         }
     }
 
-   
-    const checkBuyConditions = (tokens ,sol) => {
-         
-         
+
+    const checkBuyConditions = (tokens, sol) => {
+
+
         if (!walletProvider) {
             return setAmountError((prevState) => ({
                 ...prevState,
@@ -350,7 +373,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
                 reason: 'Please connect your wallet!',
             }))
         }
-         
+
         if (tokens > maxBuyTokens) {
             return setAmountError((prevState) => ({
                 ...prevState,
@@ -359,7 +382,7 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
             }))
         }
 
-         
+
         if (tokens > remaningTokens) {
             return setAmountError((prevState) => ({
                 ...prevState,
@@ -367,14 +390,14 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
                 reason: 'Max token reserved reached',
             }))
         }
-         
+
         if (sol > userBalance?.solBalance) {
             setAmountError((prevState) => ({
                 ...prevState,
                 error: true,
                 reason: 'Not Enough Sol Balance',
             }))
-        }else{
+        } else {
             setAmountError((prevState) => ({
                 ...prevState,
                 error: false,
@@ -391,14 +414,14 @@ const PriceCalculations = ({ amount, setAmount, isSoltoToken, tokenToBuy, setTok
     return (
         <div className='pt-2'>
             {isSoltoToken ?
-               <div className='flex flex-col'>
-                 <span>You receive : {price?.tokensbuy} {tokenName}</span>
-                 {amountError.error && <p className="text-red-700 mt-2 ">{amountError.reason}</p>}
-               </div>
+                <div className='flex flex-col'>
+                    <span>You receive : {price?.tokensbuy} {tokenName}</span>
+                    {amountError.error && <p className="text-red-700 mt-2 ">{amountError.reason}</p>}
+                </div>
                 :
-                <div  className='flex flex-col'>
-                <span>Cost : {price?.tokensbuy} SOL</span>
-                {amountError.error && <p className="text-red-700 mt-2 ">{amountError.reason}</p>}
+                <div className='flex flex-col'>
+                    <span>Cost : {price?.tokensbuy} SOL</span>
+                    {amountError.error && <p className="text-red-700 mt-2 ">{amountError.reason}</p>}
                 </div>
             }
         </div>

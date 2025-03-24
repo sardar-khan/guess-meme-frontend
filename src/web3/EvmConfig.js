@@ -6,7 +6,7 @@ export const BscConfig = {
     "tokenAbi":tokenAbi
 }
 export const EthConfig = {
-  "ContractAddress": "0xE2D4cEA37961EA559815830642152AbFE7a87EC5",
+  "ContractAddress": "0xb70488520517bcF99e7C60536A6899a882b89a55",
   "Abi": EthContractAbi,
   "tokenAbi":tokenAbi
 }

@@ -42,7 +42,7 @@ const CreatorBuyToken = ({ isOpen, onClose, tokenName, isSoltoToken, setIsSoltoT
                 onClick={(e) => e.stopPropagation()}
             >
                 <h3 className='text-xl Inter text-center font-semibold mb-3'> Choose how many <span className=' text-purple-900 text-lg font-bold '>{tokenName}</span> you want to buy  <span className='font-sans'>(optional)</span></h3>
-                <p className='text-sm Inter text-center  mb-3'>tip: its optional but buying a small amount of coins helps protect your coin from snipers</p>
+                <p className='text-sm Inter text-center  mb-3'>tip: its optional but buying a small amount of coins helps to protect your coin from snipers</p>
 
                 <SwitchBuyToken
                     tokenName={tokenName}
@@ -128,7 +128,7 @@ const SwitchBuyToken = ({ tokenName, isSoltoToken, setIsSoltoToken }) => {
 
         <div className='flex Inter items-center justify-end'>
             <button onClick={(() => { setIsSoltoToken(!isSoltoToken) })} className='text-base  tracking ease-in-out transition-all duration-300 hover:bg-purple-500 hover:text-white p-1.5 rounded-md mb-2'>
-                switch to {isSoltoToken ? tokenName : "SOL"}
+                Switch to {isSoltoToken ? tokenName : "SOL"}
             </button>
         </div>
     );

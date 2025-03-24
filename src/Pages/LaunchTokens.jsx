@@ -5,7 +5,7 @@ import folder from '../assets/icons/Group 110.png';
 import BoxHeader from '../components/Global/BoxHeader';
 import InputField from '../components/Global/InputField';
 import TextArea from '../components/Global/TextArea';
-import { BuyToken, createCoin, uploadImage } from '../utils/api';
+import { BuyToken, createCoin, saveDevBuyTrade, uploadImage } from '../utils/api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAppKitAccount } from '@reown/appkit/react';
@@ -38,6 +38,7 @@ const LaunchTokens = () => {
     const [ticker, setTicker] = useState('');
     const [iscreatingCoin, setIsCreatingCoin] = useState(false);
     const [revealTime, setRevealTime] = useState('');
+    const [unixTimeStamp, setUnixStamp] = useState('')
     const [selectedMinutes, setSelectedMinutes] = useState(0); // Default to 0 minutes
     const [isModalOpen, setIsModalOpen] = useState(false);
     // const [currentDateTime, setCurrentDateTime] = useState(new Date().toISOString().slice(0, 16));
@@ -63,31 +64,35 @@ const LaunchTokens = () => {
     const navigate = useNavigate();
     const currentChain = block_chain === "BNB" ? "bsc" : "sepolia"
 
-     
 
-    const { data: txHash, writeContract } = useWriteContract()
-    const { data: buyTxHash, writeContract: useBuyTokens } = useWriteContract()
+
+    const { data: txHash, writeContract, error: errorInCreate, reset: resetCreateEvent, status: createStatus, isError } = useWriteContract()
+    const { data: buyTxHash, writeContract: useBuyTokens, error: errorInBuy, reset: resetBuyEvent } = useWriteContract()
     const { isLoading: isBuying, isSuccess: isBuyed, data: txData } = useWaitForTransactionReceipt({
         hash: buyTxHash,
     });
 
-    const createCoinresult = useWaitForTransactionReceipt({
-        hash: txHash,
-    });
-    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    // const createCoinresult = useWaitForTransactionReceipt({
+    //     hash: txHash,
+    // });
+    const { isLoading: isConfirming, isSuccess: isConfirmed, data: createTxData, error: createCointxError, failureReason: txcreatereason } = useWaitForTransactionReceipt({
         hash: txHash,
     });
 
+    console.log("createTxData", isConfirming, isConfirmed, createTxData, createCointxError, txHash)
+    // const { isLoading: isConfirming, isSuccess: isConfirmed , data: createTxData } = useWaitForTransactionReceipt({
+    //     hash: txHash,
+    // });
 
-     
+
 
 
 
 
     useEffect(() => {
-         
+
         GetContractConfiguration(block_chain).then(async (res) => {
-             
+
             setContractInfo(res);
         })
 
@@ -113,7 +118,40 @@ const LaunchTokens = () => {
         return () => clearInterval(interval);
     }, [adminAddress]);
 
+    useEffect(() => {
+        if (errorInCreate || createCointxError) {
+            console.log("error in create bc ", errorInCreate)
 
+
+            if (toastId && errorInCreate) {
+                const errorMessage = errorInCreate?.message?.split("\n")[0] || "Transaction failed";
+                toast.update(toastId, { render: errorMessage, type: "error", isLoading: false, autoClose: 3000 });
+
+            }
+            if (toastId && createCointxError) {
+                const reason = JSON.stringify(txcreatereason)
+                const errorMessage = reason?.split("\n")[0] || "Transaction failed";
+                toast.update(toastId, { render: errorMessage, type: "error", isLoading: false, autoClose: 3000 });
+
+            }
+
+            resetCreateEvent();
+        }
+    }, [errorInCreate, createCointxError])
+
+    useEffect(() => {
+        if (errorInBuy) {
+            console.log("error in create bc ", errorInBuy)
+            const errorMessage = errorInBuy?.message?.split("\n")[0] || "Transaction failed";
+            if (toastId) {
+                toast.update(toastId, { render: errorMessage, type: "error", isLoading: false, autoClose: 3000 });
+
+            }
+
+            resetCreateEvent();
+            setIsButtonDisabled(false);
+        }
+    }, [errorInBuy])
 
 
     const handleImageUpload = async (e) => {
@@ -144,7 +182,7 @@ const LaunchTokens = () => {
 
 
     useEffect(() => {
-        if (isConfirmed && txHash) { createEthCoin({ txHash, createCoinresult }) }
+        if (isConfirmed && txHash) { createEthCoin({ txHash, createTxData }) }
 
     }, [isConfirming, isConfirmed, txHash])
 
@@ -153,6 +191,7 @@ const LaunchTokens = () => {
 
     }, [isBuying, isBuyed, txData])
 
+    //create token on blockchain
     const createToken = async () => {
         setIsCreatingCoin(true);
         if (!name || !ticker || !imageUrl || !description || !revealTime) {
@@ -167,17 +206,17 @@ const LaunchTokens = () => {
             const SelectedAbi = contractInfo.Abi
             const contractAddress = contractInfo.ContractAddress
             const totalSupply = parseUnits('1000000000', 18)
-             
+
 
             writeContract({
                 address: contractAddress,
                 abi: SelectedAbi,
                 functionName: 'createToken',
                 args: [
-                    name,
-                    ticker,
+                    "guess",
+                    "guess",
                     totalSupply,
-                    100
+                    100,
                 ],
             })
 
@@ -198,13 +237,14 @@ const LaunchTokens = () => {
         setIsModalOpen(true);
     }
 
-    const createEthCoin = async ({ txHash, createCoinresult }) => {
+    //save coin to backend
+    const createEthCoin = async ({ txHash, createTxData }) => {
         try {
 
             //   
             const formattedRevealTime = new Date(revealTime).toISOString();
             if (txHash) {
- 
+
 
                 // Step 2: If the transaction is successful, proceed with creating the coin
                 const response = await createCoin({
@@ -223,13 +263,13 @@ const LaunchTokens = () => {
                     timer: formattedRevealTime,
                     hash: txHash,
                     bondingCurve: "",
-                    tokenAddress: createCoinresult?.data?.logs[0]?.address
+                    tokenAddress: createTxData?.logs[0]?.address
                 });
-                setCreatedTokenAddress(createCoinresult?.data?.logs[0]?.address)
+                setCreatedTokenAddress(createTxData?.logs[0]?.address)
                 if (response.status === 200) {
                     setCreateCoinRes(response.data)
                     if (tokenToBuy && tokenToBuy !== 0) {
-                        handleBuyTokens(tokenToBuy, createCoinresult?.data?.logs[0]?.address)
+                        handleBuyTokens(tokenToBuy, createTxData?.logs[0]?.address)
                     } else {
                         if (toastId) {
                             toast.update(toastId, {
@@ -254,7 +294,7 @@ const LaunchTokens = () => {
                 }
             }
         } catch (error) {
-             
+
             setIsCreatingCoin(false);
             if (toastId) { toast.update(toastId, { render: "Failed to save coin", type: "error", isLoading: false, autoClose: 3000 }); }
 
@@ -281,6 +321,7 @@ const LaunchTokens = () => {
         currentTime.setMinutes(currentTime.getMinutes() + minutes);
 
         currentTime.setHours(currentTime.getHours());
+        const unixTimestamp = Math.floor(currentTime.getTime() / 1000); // Convert to Unix timestamp (seconds)
 
         const formattedTime = currentTime.toLocaleString(undefined, {
             year: "numeric",
@@ -290,18 +331,20 @@ const LaunchTokens = () => {
             minute: "2-digit",
             hour12: false,
         });
-
+        console.log("reveal-time", unixTimestamp)
+        setUnixStamp(unixTimestamp);
         setRevealTime(formattedTime);
     };
 
 
+    //buy tokens from blockchain
     const handleBuyTokens = async (amount, tokenAddress) => {
         try {
 
             setPreTokenBuy(amount)
             const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
             const payAbleAmountEther = await getPayAbleEtherAmount(tokenAddress, amount, balanceData?.formatted)
-             
+
             const SelectedAbi = contractInfo.Abi
             const contractAddress = contractInfo.ContractAddress
 
@@ -324,7 +367,7 @@ const LaunchTokens = () => {
             })
 
         } catch (error) {
-             
+
             setIsCreatingCoin(false);
             if (toastId) { toast.update(toastId, { render: "Failed to buy Tokens", type: "error", isLoading: false, autoClose: 3000 }); }
 
@@ -334,42 +377,52 @@ const LaunchTokens = () => {
     const calculateRevealTime = (date, minutes) => {
         const baseDate = new Date(date);
         const revealTime = new Date(baseDate.getTime() + minutes * 60 * 1000);
+
         return revealTime.toISOString().replace("T", " ").slice(0, 16); // Format: "YYYY-MM-DD HH:MM"
     };
 
-
+    //save buy trade to backend
     const buyCreatedCoin = async ({ buyTxHash, txData }) => {
         try {
 
 
             if (txData?.status === "success" && buyTxHash) {
-                const apiResponse = await BuyToken({
-                    account_type: currentChain,
-                    amount: parseFloat(preTokenBuy),
-                    token_amount: "0",
-                    token_id: createCoinRes?._id,
-                    type: "buy",
-                    transaction_hash: buyTxHash,
-                });
-                 
 
-                if (apiResponse?.status === 201) {
-                    if (toastId) {
-                        toast.update(toastId, {
-                            render: "Token bought successfully!",
-                            type: "success",
-                            isLoading: false,
-                            autoClose: 3000, // Auto dismiss after 3 seconds
-                        });
+                const saveDevBuy = await saveDevBuyTrade({
+                    tokenId: createCoinRes?._id,
+                    dev_buy: parseFloat(preTokenBuy)
+                })
+                if (saveDevBuy?.status === 200) {
+
+                    const apiResponse = await BuyToken({
+                        account_type: currentChain,
+                        amount: parseFloat(preTokenBuy),
+                        token_amount: "0",
+                        token_id: createCoinRes?._id,
+                        type: "buy",
+                        transaction_hash: buyTxHash,
+                    });
+
+
+                    if (apiResponse?.status === 201) {
+                        if (toastId) {
+                            toast.update(toastId, {
+                                render: "Token bought successfully!",
+                                type: "success",
+                                isLoading: false,
+                                autoClose: 3000, // Auto dismiss after 3 seconds
+                            });
+                        }
+                        // toast.success(apiResponse.message);
+                        resetForm();
+
+                        dispatch(fetchCoins({ sortBy: sortOption, coinSorting: "" }));
+                        setIsCreatingCoin(false);
+                        navigate('/');
+                    } else {
+                        throw new Error(`Failed to Buy tokens`);
+
                     }
-                    // toast.success(apiResponse.message);
-                    resetForm();
-                   /// navigate('/');
-                    dispatch(fetchCoins({ sortBy: sortOption, coinSorting: "" }));
-                    setIsCreatingCoin(false);
-                } else {
-                    throw new Error(`Failed to Buy tokens`);
-
                 }
             } else {
                 toast.error('Transaction failed. Please try again now.');
@@ -382,7 +435,7 @@ const LaunchTokens = () => {
             setIsCreatingCoin(false);
             if (toastId) { toast.update(toastId, { render: "Failed to record buy transaction", type: "error", isLoading: false, autoClose: 3000 }); }
 
-             
+
         }
     }
     return (
@@ -391,7 +444,7 @@ const LaunchTokens = () => {
                 <div className='absolute top-0 left-0 h-[5px] w-full bg-white'></div>
 
 
-                <BoxHeader label='Launch Token' />
+                <BoxHeader label='Launch Coin' />
                 <div className='secondary-bg p-[14px]'>
                     <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
                         <div className='h-full flex w-full justify-between gap-1 border-[3px] border-t-[#7D73BF] border-l-[4.2px] border-l-[#7D73BF] border-b-[2px] border-b-[#F2F2F2] border-r-[#fff]'>
@@ -417,6 +470,8 @@ const LaunchTokens = () => {
                                         onChange={handleImageUpload}
                                         className="hidden" // Hide the default file input
                                     />
+
+
                                     {imageUrl ? (
                                         <div className="w-[100px]">
                                             <label htmlFor="imageUpload" className="cursor-pointer">
@@ -426,12 +481,21 @@ const LaunchTokens = () => {
                                                     className="border border-gray-300 rounded"
                                                 />
                                             </label>
+
                                         </div>
+
                                     ) : (
-                                        <label htmlFor="imageUpload" className="cursor-pointer">
+                                        <label htmlFor="imageUpload" className="relative Inter cursor-pointer group">
                                             <img src={folder} alt="Folder icon" />
+
+                                            {/* Tooltip */}
+                                            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-max px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                                150px × 180px
+                                            </span>
                                         </label>
+
                                     )}
+                                    {!imageUrl && <p>jpg, png, gif, jpeg</p>}
                                 </div>
                                 {/* <div className='flex items-center gap-4'>
                                     <label htmlFor="imageUpload" className='formLabel min-w-auto md:min-w-[150px] text-right'>*Image:</label>
@@ -499,7 +563,7 @@ const LaunchTokens = () => {
 
                                         })}
                                     ><span>
-                                            {iscreatingCoin ? "Launching ..." : " Launch Token"}
+                                            {iscreatingCoin ? "Launching ..." : " Launch Coin"}
                                         </span>
                                     </button>
                                 </div>
@@ -535,3 +599,8 @@ const LaunchTokens = () => {
 };
 
 export default LaunchTokens;
+
+
+
+
+

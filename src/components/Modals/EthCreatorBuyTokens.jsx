@@ -45,7 +45,7 @@ const EthCreatorBuyToken = ({ isOpen, onClose, tokenName, isEthToToken, setIsEth
                 onClick={(e) => e.stopPropagation()}
             >
                 <h3 className='text-xl Inter text-center font-semibold mb-3'> Choose how many <span className=' text-purple-900 text-lg font-bold '>{tokenName}</span> you want to buy  <span className='font-sans'>(optional)</span></h3>
-                <p className='text-sm Inter text-center  mb-3'>tip: its optional but buying a small amount of coins helps protect your coin from snipers</p>
+                <p className='text-sm Inter text-center  mb-3'>tip: its optional but buying a small amount of coins helps to protect your coin from snipers</p>
 
                 {/* <SwitchBuyToken
                     tokenName={tokenName}
@@ -133,7 +133,7 @@ const SwitchBuyToken = ({ tokenName, isEthToToken, setIsEthToToken ,block_chain}
 
         <div className='flex Inter items-center justify-end'>
             <button onClick={(() => { setIsEthToToken(!isEthToToken) })} className='text-base  tracking ease-in-out transition-all duration-300 hover:bg-purple-500 hover:text-white p-1.5 rounded-md mb-2'>
-                switch to {isEthToToken ? tokenName : block_chain}
+                Switch to {isEthToToken ? tokenName : block_chain}
             </button>
         </div>
     );

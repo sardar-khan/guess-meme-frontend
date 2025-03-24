@@ -43,6 +43,7 @@ const LaunchTokenSolana = () => {
     const [imageFile, setImageFile] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
     const [fileName, setFileName] = useState('');
+    const [toastId, setToastId] = useState(null)
 
     const navigate = useNavigate();
 
@@ -94,7 +95,7 @@ const LaunchTokenSolana = () => {
 
                 try {
                     const data = await uploadImage(formData);
-                     
+
                     setImageUrl(data.imageUrl);
                     toast.success('Image uploaded successfully!');
                 } catch (error) {
@@ -187,10 +188,11 @@ const LaunchTokenSolana = () => {
         try {
             if (!walletProvider) {
                 // return toast.error("Please connect your wallet");
-                 
+
             }
             const formattedRevealTime = new Date(revealTime).toISOString();
 
+            const id = toast.loading("Creating Coin...");
 
 
             const isTokenCreated = await launchSolToken(
@@ -201,13 +203,15 @@ const LaunchTokenSolana = () => {
                 tokenToBuy,
                 walletProvider,
                 connection,
-                setIsCreatingCoin
+                setIsCreatingCoin,
+
 
             );
 
-             
+
             if (!isTokenCreated.success) {
-                toast.error(isTokenCreated?.error);
+
+                toast.update(id, { render: isTokenCreated?.error, type: "error", isLoading: false, autoClose: 3000 });
                 return;
             }
 
@@ -227,22 +231,23 @@ const LaunchTokenSolana = () => {
                 amount: tokenToBuy,
                 timer: formattedRevealTime,
                 hash: isTokenCreated?.hash,
+                dev_buy: tokenToBuy,
                 bondingCurve: isTokenCreated?.bonding_curve,
                 tokenAddress: isTokenCreated?.token_address
             });
-             
+
             if (response.status === 200) {
-                toast.success(response.message);
+                toast.update(id, { render: "Coin created successfully", type: "success", isLoading: false, autoClose: 3000 })
                 resetForm();
                 navigate('/');
-                dispatch(fetchCoins({sortBy:'deployed',coinSorting:""}));
+                dispatch(fetchCoins({ sortBy: 'deployed', coinSorting: "" }));
             } else {
-                toast.error('Failed to create coin. Please try again.');
+                if (toastId) { toastId, toast.update(id, { render: "Failed to create coin. Please try again.", type: "error", isLoading: false, autoClose: 3000 }); }
                 setIsCreatingCoin(false)
             }
         } catch (error) {
             setIsCreatingCoin(false)
-            toast.error('Error creating coin. Please try again.');
+            toast.update(id, { render: "Error creating coin.Please try again", type: "error", isLoading: false, autoClose: 3000 });
             console.error('Error creating coin:', error);
         }
     };
@@ -268,7 +273,7 @@ const LaunchTokenSolana = () => {
     };
 
 
-   
+
 
     // Open the modal to buy tokens
     const handleSubmit = async () => {
@@ -286,7 +291,7 @@ const LaunchTokenSolana = () => {
             <div className='relative w-full max-w-[830px] border-t-[5px] border-t-[#fff] border-l-[5px] border-l-[#fff] border-r-[2px] border-r-[#353535] border-b-[2px] border-b-[#353535]'>
                 <div className='absolute top-0 left-0 h-[5px] w-full bg-white'></div>
 
-                <BoxHeader label='Launch Token' />
+                <BoxHeader label='Launch Coin' />
 
                 <div className='secondary-bg p-[14px]'>
                     <div className='h-full w-full border-[3px] border-b-[5px] border-r-[5px] border-[#353535] border-t-[4px] border-t-[#353535] border-l-[#353535] border-b-[#F2F2F2] border-r-[#CBC7E5]'>
@@ -313,6 +318,7 @@ const LaunchTokenSolana = () => {
                                         onChange={handleImageUpload}
                                         className="hidden" // Hide the default file input
                                     />
+
                                     {imageUrl ? (
                                         <div className="w-[100px]">
                                             <label htmlFor="imageUpload" className="cursor-pointer">
@@ -323,11 +329,20 @@ const LaunchTokenSolana = () => {
                                                 />
                                             </label>
                                         </div>
+
                                     ) : (
-                                        <label htmlFor="imageUpload" className="cursor-pointer">
+                                        // <label htmlFor="imageUpload" className="cursor-pointer">
+                                        //     <img src={folder} alt="Folder icon" />
+                                        // </label>
+                                        <label htmlFor="imageUpload" className="relative Inter cursor-pointer group">
                                             <img src={folder} alt="Folder icon" />
+                                            {/* Tooltip */}
+                                            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-max px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                                150px × 180px
+                                            </span>
                                         </label>
                                     )}
+                                    {!imageUrl && <p>jpg, png, gif, jpeg</p>}
                                 </div>
 
 
@@ -368,14 +383,14 @@ const LaunchTokenSolana = () => {
                                 <InputField label="Twitter (Optional):" value={twitterLink} onChange={(e) => setTwitterLink(e.target.value)} />
                                 <div className='mx-auto'>
                                     <button className='themeBtn SegoeUi w-fit'
-                                    disabled={iscreatingCoin}
+                                        disabled={iscreatingCoin}
                                         onClick={(() => {
 
                                             handleSubmit()
 
                                         })}
                                     ><span>
-                                           {iscreatingCoin? "Processing":"Launch Token"}
+                                            {iscreatingCoin ? "Processing" : "Launch Coin"}
                                         </span>
                                     </button>
                                 </div>

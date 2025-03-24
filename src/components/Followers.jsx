@@ -9,8 +9,8 @@ const Followers = ({ followers, followerLength }) => {
                 <img src={img} className='' alt="" />
             </div>
             <div className='text-center'>
-                <h5 className='PixelOperatorbold text-base flex items-center justify-center mt-1'>{followers?.username}</h5>
-                <p className='text-base'>{followerLength} followers</p>
+                <h5 className='PixelOperatorbold text-base flex items-center justify-center mt-1'>{followers?.user_name}</h5>
+                {/* <p className='text-base'>{followerLength} followers</p> */}
             </div>
         </div>
     )

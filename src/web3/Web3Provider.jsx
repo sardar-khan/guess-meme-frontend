@@ -13,10 +13,15 @@ import { useEffect, useState } from "react";
 export function Web3ModalProvider({ children }) {
   const [blockChain, setBlockChain] = useState(localStorage.getItem('blockchain') || 'SOL');
   const [isConnected, setIsConnected] = useState(false);
+  //////
+  const [isMobile, setIsMobile] = useState(false);
+
 
   useEffect(() => {
     const storedChain = localStorage.getItem('blockchain') || 'SOL';
     setBlockChain(storedChain);
+    // Check if device is mobile
+    setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
   }, []);
 
   const queryClient = new QueryClient();
@@ -29,56 +34,35 @@ export function Web3ModalProvider({ children }) {
   };
 
   // Configure adapters and wallets based on the selected blockchain
-  const solanaWallets = [new PhantomWalletAdapter(), new SolflareWalletAdapter()];
-  const ethereumNetworks = 
-  blockChain === "ETH" ? [sepolia] :
-  blockChain === "POL" ? [polygonAmoy] :
-  blockChain === "BNB" ? [bscTestnet] :[];
+  // const solanaWallets = [new PhantomWalletAdapter(), new SolflareWalletAdapter()];
+  const solanaWallets = [
+    new PhantomWalletAdapter({ appIdentity: metadata }),
+    new SolflareWalletAdapter({ appIdentity: metadata })
+  ];  
+
+  const ethereumNetworks =
+    blockChain === "ETH" ? [sepolia] :
+      blockChain === "POL" ? [polygonAmoy] :
+        blockChain === "BNB" ? [bscTestnet] : [];
 
   const activeAdapter = blockChain === "SOL"
     ? new SolanaAdapter({
-        wallets: solanaWallets,
-        defaultNetwork: solanaDevnet.id,
-        onConnect: () => setIsConnected(true),
-        onDisconnect: () => setIsConnected(false)
-      })
+      wallets: solanaWallets,
+      defaultNetwork: solanaDevnet.id,
+      onConnect: () => setIsConnected(true),
+      onDisconnect: () => setIsConnected(false)
+    })
     : new WagmiAdapter({
-        networks: ethereumNetworks,
-        projectId,
-        ssr: true,
-        defaultChainId: ethereumNetworks[0].id,
-        features: {
-          metamask: true,
-          walletConnect: true,
-          coinbase: true,
-        },
-        // onConnect: async ({ address, connector }) => {
-        //   setIsConnected(true);
-        //   if (window.ethereum) {
-        //     const chainId = `0x${ethereumNetworks[0].id.toString(16)}`;
-        //     try {
-        //       await window.ethereum.request({
-        //         method: 'wallet_switchEthereumChain',
-        //         params: [{ chainId }],
-        //       });
-        //     } catch (switchError) {
-        //       if (switchError.code === 4902) {
-        //         const networkConfig = {
-        //           chainId,
-        //           chainName: ethereumNetworks[0].name, // Use dynamic network name
-        //           rpcUrls: ethereumNetworks[0].rpcUrls,
-        //           nativeCurrency: ethereumNetworks[0].nativeCurrency,
-        //         };
-        //         await window.ethereum.request({
-        //           method: 'wallet_addEthereumChain',
-        //           params: [networkConfig],
-        //         });
-        //       }
-        //     }
-        //   }
-        // },
-        // onDisconnect: () => setIsConnected(false)
-      });
+      networks: ethereumNetworks,
+      projectId,
+      ssr: true,
+      defaultChainId: ethereumNetworks[0].id,
+      features: {
+        metamask: true,
+        walletConnect: true,
+        coinbase: true,
+      },
+    });
 
   createAppKit({
     adapters: [activeAdapter],
@@ -91,21 +75,8 @@ export function Web3ModalProvider({ children }) {
       email: false,
       socials: false,
       analytics: true,
-      // ...(blockChain === "SOL"
-      //   ? { phantom: true, solflare: true, metamask: false, coinbase: false }
-      //   : { phantom: false, solflare: false, metamask: true, coinbase: true })
+      mobileWallets: true, // Explicitly enable mobile wallets
     },
-    // disconnect: {
-    //   enabled: true,
-    //   callback: async () => {
-    //     try {
-    //       await activeAdapter.disconnect();
-    //       setIsConnected(false);
-    //     } catch (error) {
-    //       console.error('Disconnect error:', error);
-    //     }
-    //   }
-    // }
   });
 
   return blockChain !== "SOL" ? (

@@ -40,7 +40,7 @@ const CoinsCreatedCard = ({ coinsCreated, userData }) => {
                     <p className='text-sm'>{timeAgo(coinsCreated?.time)}</p>
                 </div> */}
                 <h5 className='PixelOperatorbold text-base flex items-center justify-center gap-2 mt-2'>
-                    {coinsCreated?.name} (ticker: {coinsCreated?.ticker})
+                    {coinsCreated?.name} (Ticker: {coinsCreated?.ticker})
                 </h5>
                 <p className='text-xs'>{coinsCreated?.description}</p>
             </div>
